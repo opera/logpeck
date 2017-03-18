@@ -3,6 +3,18 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "F6GCLoORCK5o/lmSTA+in1JrHCQ=",
+			"path": "github.com/BurntSushi/toml",
+			"revision": "e643e9ef00b049d75de26e61109c5ea01885cd21",
+			"revisionTime": "2017-03-07T03:38:02Z"
+		},
+		{
+			"checksumSHA1": "fmtJPOSqioLxBve4Mz/dPpGMKmY=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "d4158e8bbd3220596557f967617f1ff37bd93c80",
+			"revisionTime": "2017-01-10T20:37:04Z"
+		},
+		{
 			"checksumSHA1": "J+kVue/HTH4sELlqMO4z0tx9DiA=",
 			"path": "github.com/boltdb/bolt",
 			"revision": "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd",
