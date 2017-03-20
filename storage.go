@@ -14,7 +14,7 @@ type DB struct {
 }
 
 func OpenDB(path string) (db *DB, err error) {
-	boltdb, e := bolt.Open("path", 0600, nil)
+	boltdb, e := bolt.Open(path, 0600, nil)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "Open database error: %s.", e)
 		return nil, e
