@@ -14,25 +14,21 @@ type PeckTaskConfig struct {
 }
 
 type Stat struct {
+	Name        string
 	LinesPerSec int64
 	BytesPerSec int64
 	LinesTotal  int64
 	BytesTotal  int64
 }
 
-type PeckTaskStat struct {
-	Name string
-	Stat Stat
-}
-
 type LogStat struct {
 	LogPath         string
 	PeckTaskConfigs []PeckTaskConfig
-	PeckTaskStats   []PeckTaskStat
+	PeckTaskStats   []Stat
 }
 
 type PeckerStat struct {
 	Name     string
-	Stat     string
+	Stat     Stat
 	LogStats []LogStat
 }
