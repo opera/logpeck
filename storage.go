@@ -20,11 +20,11 @@ func OpenDB(path string) (db *DB, err error) {
 		return nil, e
 	}
 	err = boltdb.Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists([]byte(configBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(configBucket))
 		if err != nil {
 			return fmt.Errorf("create bucket(%s): %s", configBucket, err)
 		}
-		b, err = tx.CreateBucketIfNotExists([]byte(statBucket))
+		_, err = tx.CreateBucketIfNotExists([]byte(statBucket))
 		if err != nil {
 			return fmt.Errorf("create bucket(%s): %s", statBucket, err)
 		}
@@ -55,8 +55,8 @@ func (p *DB) get(bucket string, key string) (string, error) {
 	var value []byte
 	err := p.boltdb.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
-		value := b.Get([]byte(key))
-		return err
+		value = b.Get([]byte(key))
+		return nil
 	})
 	return string(value[:]), err
 }

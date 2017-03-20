@@ -1,7 +1,9 @@
 package logpeck
 
 import (
+	"fmt"
 	"github.com/BurntSushi/toml"
+	"os"
 )
 
 type PeckerConfig struct {
@@ -15,10 +17,10 @@ type TaskLimit struct {
 	MaxBytesPerSec int64 `toml:"max_bytes_per_sec"`
 }
 
-var PeckerConfig PeckerConfig
+var PkConfig PeckerConfig
 
 func InitConfig(file string) bool {
-	if _, err := toml.DecodeFile(configFile, &AggrConfig); err != nil {
+	if _, err := toml.DecodeFile(file, &PkConfig); err != nil {
 		fmt.Fprintf(os.Stderr, "Parse config fail: %s.\n", err)
 		return false
 	}
