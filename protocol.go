@@ -1,6 +1,6 @@
 package logpeck
 
-type ESConfig struct {
+type ElasticSearchConfig struct {
 	URL   string
 	Index string
 	Type  string
@@ -10,7 +10,7 @@ type PeckTaskConfig struct {
 	Name       string
 	LogPath    string
 	FilterExpr string
-	ESConfig   EsConfig
+	ESConfig   ElasticSearchConfig
 }
 
 type Stat struct {
