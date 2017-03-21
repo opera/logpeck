@@ -1,7 +1,7 @@
 package logpeck
 
 import (
-	"fmt"
+//	"fmt"
 )
 
 type Filter struct {
@@ -15,14 +15,17 @@ type PeckTask struct {
 }
 
 func (p *PeckTask) Init(c *PeckTaskConfig) error {
-
+	return nil
 }
 
 func (p *PeckTask) Run() {
+
 }
 
 func (p *PeckTask) Pause() error {
+	return nil
 }
 
 func (p *PeckTask) Cancel() error {
+	return nil
 }
