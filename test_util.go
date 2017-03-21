@@ -18,9 +18,10 @@ func logExecTime(start time.Time, prefix string) {
 type MockLog struct {
 	Path      string
 	IsRunning bool
-	stop      bool
-	file      *os.File
-	mu        sync.Mutex
+
+	stop bool
+	file *os.File
+	mu   sync.Mutex
 }
 
 func NewMockLog(path string) (*MockLog, error) {

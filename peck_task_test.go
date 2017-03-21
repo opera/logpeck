@@ -7,13 +7,16 @@ import (
 )
 
 func TestPeckTask(*testing.T) {
-	logname := ".test.log"
-	mock_log, m_err := NewMockLog(logname)
+	log_name := ".test.log"
+
+	// Mock a user log
+	mock_log, m_err := NewMockLog(log_name)
 	if m_err != nil {
 		panic(m_err)
 	}
+	defer mock_log.Close()
 	go mock_log.Run()
+
 	time.Sleep(1001 * time.Millisecond)
 	fmt.Print(mock_log)
-	mock_log.Close()
 }
