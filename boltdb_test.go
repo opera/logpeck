@@ -14,18 +14,20 @@ func TestBoltDB(*testing.T) {
 	}
 	defer db.Close()
 
-	fmt.Printf("put key[hello] value[logpeck]\n")
-	err = db.put(configBucket, "hello", "logpeck")
+	key, value := "helloBoltDB", "logpeck"
+
+	fmt.Printf("put key[%s] value[%s]\n", key, value)
+	err = db.put(configBucket, key, value)
 	if err != nil {
 		panic(err)
 	}
 
-	value, e := db.get(configBucket, "hello")
+	value_get, e := db.get(configBucket, key)
 	if e != nil {
 		panic(err)
 	}
-	fmt.Printf("value: %s\n", value)
-	if value != "logpeck" {
-		panic(value)
+	fmt.Printf("value: %s\n", value_get)
+	if value_get != value {
+		panic(value_get)
 	}
 }
