@@ -28,6 +28,20 @@ func NewLogTask(path string) (*LogTask, error) {
 	return task, nil
 }
 
+func (p *LogTask) AddPeckTask(conf *PeckTaskConfig) error {
+	return nil
+}
+
+func (p *LogTask) RemovePeckTask(conf *PeckTaskConfig) error {
+	return nil
+}
+
+func (p *LogTask) Empty() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return true
+}
+
 func (p *LogTask) Run() {
 
 }
@@ -36,7 +50,7 @@ func (p *LogTask) Pause() error {
 	return nil
 }
 
-func (p *LogTask) Cancel() error {
+func (p *LogTask) Close() error {
 	return nil
 }
 
