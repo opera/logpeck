@@ -39,3 +39,7 @@ func (p *LogTask) Pause() error {
 func (p *LogTask) Cancel() error {
 	return nil
 }
+
+func (p *LogTask) GetStat() *LogStat {
+	return nil
+}
