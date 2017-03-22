@@ -1,29 +1,22 @@
 package logpeck
 
-import (
-	"fmt"
-	"os"
-)
+import ()
 
 type Filter struct {
 }
 
 type PeckTask struct {
-	Name     string
-	LogPath  string
-	Filter   Filter
-	ESConfig ElasticSearchConfig
-
-	file *os.File
+	Name       string
+	FilterExpr string
+	ESConfig   ElasticSearchConfig
 }
 
 func NewPeckTask(c *PeckTaskConfig) (*PeckTask, error) {
-	f, f_err := os.Open(c.LogPath)
-	if f_err != nil {
-		return nil, f_err
+	task := &PeckTask{
+		Name:     c.Name,
+		ESConfig: c.ESConfig,
 	}
-	fmt.Println(f)
-	return &PeckTask{}, nil
+	return task, nil
 }
 
 func (p *PeckTask) Run() {
