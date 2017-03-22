@@ -7,14 +7,13 @@ import (
 )
 
 type Pecker struct {
-	LogTasks map[string]*LogTask
-
-	mu sync.Mutex
+	logTasks map[string]*LogTask
+	mu       sync.Mutex
 }
 
 func NewPecker() (*Pecker, error) {
 	pecker := &Pecker{
-		LogTasks: make(map[string]*LogTask),
+		logTasks: make(map[string]*LogTask),
 	}
 	return pecker, nil
 }
@@ -23,7 +22,7 @@ func (p *Pecker) AddPeckTask(peck_conf *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	log_path := peck_conf.LogPath
-	log_task, ok := p.LogTasks[log_path]
+	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		// Log file is not open. Open and tail it.
 		var err error
@@ -46,14 +45,14 @@ func (p *Pecker) RemovePeckTask(peck_conf *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	log_path := peck_conf.LogPath
-	log_task, ok := p.LogTasks[log_path]
+	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return nil
 	}
 	log_task.RemovePeckTask(peck_conf)
 	if log_task.Empty() {
 		log_task.Close()
-		delete(p.LogTasks, log_path)
+		delete(p.logTasks, log_path)
 	}
 	return nil
 }

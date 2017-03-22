@@ -9,6 +9,7 @@ type ElasticSearchConfig struct {
 type PeckTaskConfig struct {
 	Name       string
 	LogPath    string
+	Action     string
 	FilterExpr string
 	ESConfig   ElasticSearchConfig
 }
