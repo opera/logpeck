@@ -7,12 +7,12 @@ import (
 
 type LogTask struct {
 	LogPath   string
-	PeckTasks map[string]PeckTask
 	IsRunning bool
 
-	file *os.File
-	stop bool
-	mu   sync.Mutex
+	peckTasks map[string]PeckTask
+	file      *os.File
+	stop      bool
+	mu        sync.Mutex
 }
 
 func NewLogTask(path string) (*LogTask, error) {
@@ -22,7 +22,7 @@ func NewLogTask(path string) (*LogTask, error) {
 	}
 	task := &LogTask{
 		LogPath:   path,
-		PeckTasks: make(map[string]PeckTask),
+		peckTasks: make(map[string]PeckTask),
 		file:      f,
 	}
 	return task, nil
@@ -39,7 +39,11 @@ func (p *LogTask) RemovePeckTask(conf *PeckTaskConfig) error {
 func (p *LogTask) Empty() bool {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return true
+	if len(p.peckTasks) == 0 {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (p *LogTask) Run() {
