@@ -19,6 +19,12 @@
 			"path": "github.com/boltdb/bolt",
 			"revision": "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd",
 			"revisionTime": "2017-01-31T19:20:18Z"
+		},
+		{
+			"checksumSHA1": "Yz28Zxff+3FcqcfL9iIZE3MEn38=",
+			"path": "github.com/go-zoo/bone",
+			"revision": "11ae278a93c8268a0f98758aa915def5dfca3254",
+			"revisionTime": "2017-02-24T18:17:32Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"
