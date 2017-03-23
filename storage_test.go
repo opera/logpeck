@@ -24,7 +24,7 @@ func TestBoltDB(*testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	db := GetDB()
+	db := GetDBHandler()
 	defer CleanTestDB(db)
 
 	key, value := "helloBoltDB", "logpeck"

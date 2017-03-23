@@ -15,7 +15,7 @@ type DB struct {
 
 var db *DB
 
-func GetDB() *DB {
+func GetDBHandler() *DB {
 	if db == nil {
 		panic("DB not open")
 	}

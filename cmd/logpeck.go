@@ -21,6 +21,13 @@ func main() {
 	}
 	fmt.Println(pecker)
 
+	err = logpeck.OpenDB(logpeck.Config.DatabaseFile)
+	if err != nil {
+		panic(err)
+	}
+	db := logpeck.GetDBHandler()
+	defer db.Close()
+
 	mux := bone.New()
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
 	//	mux.Post("/peck_task/add", http.HandlerFunc(handler.NewsRedirectHandler))
