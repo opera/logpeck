@@ -2,9 +2,21 @@ package logpeck
 
 import (
 	"fmt"
+	"github.com/boltdb/bolt"
 	"testing"
 	"time"
 )
+
+func CleanTestDB(db *DB) {
+	err := db.boltdb.Update(func(tx *bolt.Tx) error {
+		err := tx.DeleteBucket([]byte(configBucket))
+		return err
+	})
+	if err != nil {
+		panic(err)
+	}
+	db.Close()
+}
 
 func TestBoltDB(*testing.T) {
 	defer logExecTime(time.Now(), "open_close")
@@ -13,16 +25,18 @@ func TestBoltDB(*testing.T) {
 		panic(err)
 	}
 	db := GetDB()
-	defer db.Close()
+	defer CleanTestDB(db)
 
 	key, value := "helloBoltDB", "logpeck"
 
+	// test put
 	fmt.Printf("put key[%s] value[%s]\n", key, value)
 	err = db.put(configBucket, key, value)
 	if err != nil {
 		panic(err)
 	}
 
+	// test get
 	value_get, e := db.get(configBucket, key)
 	if e != nil {
 		panic(err)
@@ -30,5 +44,23 @@ func TestBoltDB(*testing.T) {
 	fmt.Printf("value: %s\n", value_get)
 	if value_get != value {
 		panic(value_get)
+	}
+
+	// test scan
+	key = "2BoltDB"
+	fmt.Printf("put key[%s] value[%s]\n", key, value)
+	err = db.put(configBucket, key, value)
+	if err != nil {
+		panic(err)
+	}
+	res, s_err := db.scan(configBucket)
+	if s_err != nil {
+		panic(s_err)
+	}
+	if len(res) != 2 || res[key] != value {
+		for k, v := range res {
+			fmt.Printf("k:%s, v:%s\n", k, v)
+		}
+		panic(fmt.Errorf("result len: %d, value: %s", len(res), res[key]))
 	}
 }

@@ -69,3 +69,16 @@ func (p *DB) get(bucket string, key string) (string, error) {
 	})
 	return string(value[:]), err
 }
+
+func (p *DB) scan(bucket string) (map[string]string, error) {
+	result := make(map[string]string)
+	err := p.boltdb.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucket))
+		b.ForEach(func(k, v []byte) error {
+			result[string(k[:])] = string(v[:])
+			return nil
+		})
+		return nil
+	})
+	return result, err
+}
