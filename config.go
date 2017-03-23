@@ -24,7 +24,7 @@ func InitConfig(file *string) bool {
 	Config = LogPeckConfig{
 		Port:         7117,
 		MaxTaskNum:   16,
-		DatabaseFile: "meta.db",
+		DatabaseFile: "logpeck.db",
 	}
 
 	if _, err := toml.DecodeFile(*file, &Config); err != nil {
