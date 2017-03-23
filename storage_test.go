@@ -8,10 +8,11 @@ import (
 
 func TestBoltDB(*testing.T) {
 	defer logExecTime(time.Now(), "open_close")
-	db, err := OpenDB(kTestDBPath)
+	err := OpenDB(kTestDBPath)
 	if err != nil {
 		panic(err)
 	}
+	db := GetDB()
 	defer db.Close()
 
 	key, value := "helloBoltDB", "logpeck"

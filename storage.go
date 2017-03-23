@@ -13,11 +13,20 @@ type DB struct {
 	boltdb *bolt.DB
 }
 
-func OpenDB(path string) (db *DB, err error) {
+var db *DB
+
+func GetDB() *DB {
+	if db == nil {
+		panic("DB not open")
+	}
+	return db
+}
+
+func OpenDB(path string) (err error) {
 	boltdb, e := bolt.Open(path, 0600, nil)
 	if e != nil {
 		fmt.Fprintf(os.Stderr, "Open database error: %s.", e)
-		return nil, e
+		return e
 	}
 	err = boltdb.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(configBucket))
@@ -31,7 +40,7 @@ func OpenDB(path string) (db *DB, err error) {
 		return nil
 	})
 	db = &DB{boltdb: boltdb}
-	return db, nil
+	return nil
 }
 
 func (p *DB) Close() error {
