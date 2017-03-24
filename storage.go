@@ -1,6 +1,7 @@
 package logpeck
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"os"
@@ -49,6 +50,38 @@ func (p *DB) Close() error {
 		fmt.Fprintf(os.Stderr, "Close database error: %s.", e)
 	}
 	return e
+}
+
+func (p *DB) makeConfigRawKey(config *PeckTaskConfig) string {
+	return config.LogPath + "#" + config.Name
+}
+
+func (p *DB) SaveConfig(config *PeckTaskConfig) error {
+	rawKey := p.makeConfigRawKey(config)
+	rawValueByte, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+	rawValue := string(rawValueByte[:])
+	//	fmt.Println(rawKey + string(" ") + rawValue)
+	return p.put(configBucket, rawKey, rawValue)
+}
+
+func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
+	rawKV, err := p.scan(configBucket)
+	if err != nil {
+		return nil, err
+	}
+	//	fmt.Println(rawKV)
+	for _, v := range rawKV {
+		config := &PeckTaskConfig{}
+		err = json.Unmarshal([]byte(v), config)
+		if err != nil {
+			panic(fmt.Errorf("raw[%s], err[%s]", string(v[:]), err))
+		}
+		configs = append(configs, *config)
+	}
+	return
 }
 
 func (p *DB) put(bucket string, key string, value string) error {
