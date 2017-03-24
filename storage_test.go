@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
+	"log"
 	"strings"
 	"testing"
 	"time"
@@ -21,7 +22,7 @@ func CleanTestDB(db *DB) {
 }
 
 func TestBoltDBAccess(*testing.T) {
-	defer logExecTime(time.Now(), "database access")
+	defer LogExecTime(time.Now(), "database access")
 	err := OpenDB(kTestDBPath)
 	if err != nil {
 		panic(err)
@@ -32,7 +33,7 @@ func TestBoltDBAccess(*testing.T) {
 	key, value := "helloBoltDB", "logpeck"
 
 	// test put
-	fmt.Printf("put key[%s] value[%s]\n", key, value)
+	log.Printf("put key[%s] value[%s]\n", key, value)
 	err = db.put(configBucket, key, value)
 	if err != nil {
 		panic(err)
@@ -43,14 +44,14 @@ func TestBoltDBAccess(*testing.T) {
 	if e != nil {
 		panic(err)
 	}
-	fmt.Printf("value: %s\n", value_get)
+	log.Printf("value: %s\n", value_get)
 	if value_get != value {
 		panic(value_get)
 	}
 
 	// test scan
 	key = "2BoltDB"
-	fmt.Printf("put key[%s] value[%s]\n", key, value)
+	log.Printf("put key[%s] value[%s]\n", key, value)
 	err = db.put(configBucket, key, value)
 	if err != nil {
 		panic(err)
@@ -61,7 +62,7 @@ func TestBoltDBAccess(*testing.T) {
 	}
 	if len(res) != 2 || res[key] != value {
 		for k, v := range res {
-			fmt.Printf("k:%s, v:%s\n", k, v)
+			log.Printf("k:%s, v:%s\n", k, v)
 		}
 		panic(fmt.Errorf("result len: %d, value: %s", len(res), res[key]))
 	}
@@ -112,7 +113,7 @@ func TestConfigsAccess(*testing.T) {
 		FilterExpr: filterExpr,
 	}
 
-	defer logExecTime(time.Now(), "config access")
+	defer LogExecTime(time.Now(), "config access")
 	err := OpenDB(kTestDBPath)
 	if err != nil {
 		panic(err)

@@ -1,7 +1,7 @@
 package logpeck
 
 import (
-	"fmt"
+	"log"
 	"testing"
 	"time"
 )
@@ -18,5 +18,5 @@ func TestPeckTask(*testing.T) {
 	go mock_log.Run()
 
 	time.Sleep(1001 * time.Millisecond)
-	fmt.Print(mock_log)
+	log.Print(mock_log)
 }
