@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
+	"strings"
 	"testing"
 	"time"
 )
@@ -19,8 +20,8 @@ func CleanTestDB(db *DB) {
 	db.Close()
 }
 
-func TestBoltDB(*testing.T) {
-	defer logExecTime(time.Now(), "open_close")
+func TestBoltDBAccess(*testing.T) {
+	defer logExecTime(time.Now(), "database access")
 	err := OpenDB(kTestDBPath)
 	if err != nil {
 		panic(err)
@@ -96,4 +97,53 @@ func TestJson(*testing.T) {
 		unma.FilterExpr != filterExpr {
 		panic(unma)
 	}
+}
+
+func TestConfigsAccess(*testing.T) {
+	name := "test_peck_task"
+	logPath := "./test.log"
+	action := "add"
+	filterExpr := "panic"
+
+	config := PeckTaskConfig{
+		Name:       name,
+		LogPath:    logPath,
+		Action:     action,
+		FilterExpr: filterExpr,
+	}
+
+	defer logExecTime(time.Now(), "config access")
+	err := OpenDB(kTestDBPath)
+	if err != nil {
+		panic(err)
+	}
+	db := GetDBHandler()
+	defer CleanTestDB(db)
+
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			config.Name = fmt.Sprintf("%s-%d", name, j)
+			config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+			err = db.SaveConfig(&config)
+			if err != nil {
+				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
+			}
+		}
+	}
+
+	configs, c_err := db.GetAllConfigs()
+	if c_err != nil {
+		panic(c_err)
+	}
+	if len(configs) != 9 {
+		panic(len(configs))
+	}
+
+	for _, config := range configs {
+		if !strings.Contains(config.Name, name) ||
+			!strings.Contains(config.LogPath, logPath) {
+			panic(configs)
+		}
+	}
+
 }
