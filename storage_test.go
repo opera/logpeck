@@ -1,6 +1,7 @@
 package logpeck
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"testing"
@@ -62,5 +63,37 @@ func TestBoltDB(*testing.T) {
 			fmt.Printf("k:%s, v:%s\n", k, v)
 		}
 		panic(fmt.Errorf("result len: %d, value: %s", len(res), res[key]))
+	}
+}
+
+func TestJson(*testing.T) {
+	name := "test_peck_task"
+	logPath := "./test.log"
+	action := "add"
+	filterExpr := "panic"
+
+	config := PeckTaskConfig{
+		Name:       name,
+		LogPath:    logPath,
+		Action:     action,
+		FilterExpr: filterExpr,
+	}
+
+	raw, err := json.Marshal(config)
+	if err != nil {
+		panic(err)
+	}
+
+	//	fmt.Println(string(raw[:]))
+	var unma PeckTaskConfig
+	err = json.Unmarshal(raw, &unma)
+	if err != nil {
+		panic(err)
+	}
+	if unma.Name != name ||
+		unma.LogPath != logPath ||
+		unma.Action != action ||
+		unma.FilterExpr != filterExpr {
+		panic(unma)
 	}
 }
