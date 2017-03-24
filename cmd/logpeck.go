@@ -5,9 +5,22 @@ import (
 	"fmt"
 	"github.com/go-zoo/bone"
 	"github.com/opera/logpeck"
+	"log"
 	"net/http"
 	"time"
 )
+
+func restorePeckTasks(pecker *logpeck.Pecker, db *logpeck.DB) {
+	defer logpeck.LogExecTime(time.Now(), "Restore PeckTaskConfig")
+	configs, err := db.GetAllConfigs()
+	if err != nil {
+		panic(err)
+	}
+	for i, config := range configs {
+		pecker.AddPeckTask(&config)
+		log.Printf("Restore PeckTask[%d] : %s", i, config)
+	}
+}
 
 func main() {
 	configFile := flag.String("config", "./logpeck.conf", "Config file path")
@@ -19,7 +32,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(pecker)
 
 	err = logpeck.OpenDB(logpeck.Config.DatabaseFile)
 	if err != nil {
@@ -28,14 +40,16 @@ func main() {
 	db := logpeck.GetDBHandler()
 	defer db.Close()
 
+	restorePeckTasks(pecker, db)
+
 	mux := bone.New()
+	// mux.Post("/peck_task/add", http.HandlerFunc(handler.NewsRedirectHandler))
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
-	//	mux.Post("/peck_task/add", http.HandlerFunc(handler.NewsRedirectHandler))
 	//	mux.Post("/peck_task/remove", http.HandlerFunc(handler.NewsRedirectHandler))
 
 	address := fmt.Sprintf(":%d", logpeck.Config.Port)
 
-	fmt.Printf("Logpeck start serving on %s .\n", address)
+	log.Printf("Logpeck start serving on port %s ...\n", logpeck.Config.Port)
 	s := &http.Server{
 		Addr:         address,
 		Handler:      mux,

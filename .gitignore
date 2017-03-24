@@ -1,3 +1,4 @@
 .unittest.db
 .test.log
 logpeck
+logpeck.db
