@@ -43,13 +43,16 @@ func main() {
 	restorePeckTasks(pecker, db)
 
 	mux := bone.New()
-	// mux.Post("/peck_task/add", http.HandlerFunc(handler.NewsRedirectHandler))
+	mux.Post("/peck_task/add", logpeck.NewAddTaskHandler(pecker, db))
+	mux.Post("/peck_task/update", logpeck.NewUpdateTaskHandler(pecker, db))
+	mux.Post("/peck_task/pause", logpeck.NewPauseTaskHandler(pecker, db))
+	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker, db))
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
 	//	mux.Post("/peck_task/remove", http.HandlerFunc(handler.NewsRedirectHandler))
 
 	address := fmt.Sprintf(":%d", logpeck.Config.Port)
 
-	log.Printf("Logpeck start serving on port %s ...\n", logpeck.Config.Port)
+	log.Printf("Logpeck start serving on port %d ...\n", logpeck.Config.Port)
 	s := &http.Server{
 		Addr:         address,
 		Handler:      mux,
