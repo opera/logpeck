@@ -36,14 +36,6 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 			return
 		}
 
-		err = db.SaveConfig(&config)
-		if err != nil {
-			log.Printf("AddTaskConfig error, save config error, %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error() + "\n"))
-			return
-		}
-
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK\n"))
 		return
