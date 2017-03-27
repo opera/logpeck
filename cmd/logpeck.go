@@ -27,6 +27,7 @@ func main() {
 	flag.Parse()
 
 	logpeck.InitConfig(configFile)
+	log.Printf("Try create a new logpeck: %s", logpeck.Config)
 
 	pecker, err := logpeck.NewPecker()
 	if err != nil {
@@ -45,14 +46,14 @@ func main() {
 	mux := bone.New()
 	mux.Post("/peck_task/add", logpeck.NewAddTaskHandler(pecker, db))
 	mux.Post("/peck_task/update", logpeck.NewUpdateTaskHandler(pecker, db))
+	mux.Post("/peck_task/start", logpeck.NewStartTaskHandler(pecker, db))
 	mux.Post("/peck_task/pause", logpeck.NewPauseTaskHandler(pecker, db))
 	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker, db))
-	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
-	//	mux.Post("/peck_task/remove", http.HandlerFunc(handler.NewsRedirectHandler))
 
-	address := fmt.Sprintf(":%d", logpeck.Config.Port)
+	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
 
 	log.Printf("Logpeck start serving on port %d ...\n", logpeck.Config.Port)
+	address := fmt.Sprintf(":%d", logpeck.Config.Port)
 	s := &http.Server{
 		Addr:         address,
 		Handler:      mux,

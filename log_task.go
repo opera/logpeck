@@ -32,8 +32,19 @@ func (p *LogTask) AddPeckTask(conf *PeckTaskConfig) error {
 	return nil
 }
 
+func (p *LogTask) UpdatePeckTask(conf *PeckTaskConfig) error {
+	return nil
+}
+
 func (p *LogTask) RemovePeckTask(conf *PeckTaskConfig) error {
 	return nil
+}
+
+func (p *LogTask) Exist(config *PeckTaskConfig) bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	_, ok := p.peckTasks[config.Name]
+	return ok
 }
 
 func (p *LogTask) Empty() bool {
