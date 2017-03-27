@@ -9,26 +9,23 @@ type PeckTask struct {
 	Name       string
 	FilterExpr string
 	ESConfig   ElasticSearchConfig
-	Running    bool
+
+	pause bool
 }
 
-func NewPeckTask(c *PeckTaskConfig) (*PeckTask, error) {
+func NewPeckTask(c *PeckTaskConfig) *PeckTask {
 	task := &PeckTask{
 		Name:     c.Name,
 		ESConfig: c.ESConfig,
-		Running:  false,
+		pause:    true,
 	}
-	return task, nil
+	return task
 }
 
-func (p *PeckTask) Run() {
-
+func (p *PeckTask) Start() {
+	p.pause = false
 }
 
-func (p *PeckTask) Pause() error {
-	return nil
-}
-
-func (p *PeckTask) Cancel() error {
-	return nil
+func (p *PeckTask) Pause() {
+	p.pause = true
 }
