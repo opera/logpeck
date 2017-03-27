@@ -3,20 +3,41 @@ package logpeck
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 type Pecker struct {
 	logTasks map[string]*LogTask
 	mu       sync.Mutex
+	db       *DB
 }
 
-func NewPecker() (*Pecker, error) {
+func NewPecker(db *DB) (*Pecker, error) {
 	pecker := &Pecker{
 		logTasks: make(map[string]*LogTask),
+		db:       db,
+	}
+	err := pecker.restorePeckTasks(db)
+	if err != nil {
+		return nil, err
 	}
 	return pecker, nil
+}
+
+func (p *Pecker) restorePeckTasks(db *DB) error {
+	defer LogExecTime(time.Now(), "Restore PeckTaskConfig")
+	configs, err := p.db.GetAllConfigs()
+	if err != nil {
+		return err
+	}
+	for i, config := range configs {
+		p.AddPeckTask(&config)
+		log.Printf("Restore PeckTask[%d] : %s", i, config)
+	}
+	return nil
 }
 
 func (p *Pecker) AddPeckTask(peck_conf *PeckTaskConfig) error {

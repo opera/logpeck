@@ -10,29 +10,12 @@ import (
 	"time"
 )
 
-func restorePeckTasks(pecker *logpeck.Pecker, db *logpeck.DB) {
-	defer logpeck.LogExecTime(time.Now(), "Restore PeckTaskConfig")
-	configs, err := db.GetAllConfigs()
-	if err != nil {
-		panic(err)
-	}
-	for i, config := range configs {
-		pecker.AddPeckTask(&config)
-		log.Printf("Restore PeckTask[%d] : %s", i, config)
-	}
-}
-
 func main() {
 	configFile := flag.String("config", "./logpeck.conf", "Config file path")
 	flag.Parse()
 
 	logpeck.InitConfig(configFile)
 	log.Printf("Try create a new logpeck: %s", logpeck.Config)
-
-	pecker, err := logpeck.NewPecker()
-	if err != nil {
-		panic(err)
-	}
 
 	err = logpeck.OpenDB(logpeck.Config.DatabaseFile)
 	if err != nil {
@@ -41,7 +24,10 @@ func main() {
 	db := logpeck.GetDBHandler()
 	defer db.Close()
 
-	restorePeckTasks(pecker, db)
+	pecker, err := logpeck.NewPecker(db)
+	if err != nil {
+		panic(err)
+	}
 
 	mux := bone.New()
 	mux.Post("/peck_task/add", logpeck.NewAddTaskHandler(pecker, db))
