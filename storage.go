@@ -67,6 +67,21 @@ func (p *DB) SaveConfig(config *PeckTaskConfig) error {
 	return p.put(configBucket, rawKey, rawValue)
 }
 
+func (p *DB) GetConfig(config *PeckTaskConfig) (*PeckTaskConfig, error) {
+	rawKey := p.makeConfigRawKey(config)
+	rawValue, err := p.get(configBucket, rawKey)
+	if err != nil {
+		return nil, err
+	}
+	//	fmt.Println(rawKV)
+	var result PeckTaskConfig
+	err = json.Unmarshal([]byte(rawValue), &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
 func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 	rawKV, err := p.scan(configBucket)
 	if err != nil {

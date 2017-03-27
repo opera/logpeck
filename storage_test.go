@@ -132,6 +132,20 @@ func TestConfigsAccess(*testing.T) {
 		}
 	}
 
+	config_get_tmp := &PeckTaskConfig{
+		Name:    name + "-0",
+		LogPath: logPath + "-0",
+	}
+	config_get, e := db.GetConfig(config_get_tmp)
+	if e != nil {
+		panic(e)
+	}
+	if config_get.Name != config_get_tmp.Name ||
+		config_get.LogPath != config_get_tmp.LogPath ||
+		config_get.Action != action {
+		panic(config_get)
+	}
+
 	configs, c_err := db.GetAllConfigs()
 	if c_err != nil {
 		panic(c_err)
