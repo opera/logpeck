@@ -17,16 +17,16 @@ func main() {
 	logpeck.InitConfig(configFile)
 	log.Printf("Try create a new logpeck: %s", logpeck.Config)
 
-	err = logpeck.OpenDB(logpeck.Config.DatabaseFile)
+	err := logpeck.OpenDB(logpeck.Config.DatabaseFile)
 	if err != nil {
 		panic(err)
 	}
 	db := logpeck.GetDBHandler()
 	defer db.Close()
 
-	pecker, err := logpeck.NewPecker(db)
-	if err != nil {
-		panic(err)
+	pecker, p_err := logpeck.NewPecker(db)
+	if p_err != nil {
+		panic(p_err)
 	}
 
 	mux := bone.New()

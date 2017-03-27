@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"sync"
 	"time"
 )
@@ -40,29 +39,28 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 	return nil
 }
 
-func (p *Pecker) AddPeckTask(peck_conf *PeckTaskConfig) error {
+func (p *Pecker) AddPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path := peck_conf.LogPath
+	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
-		// Log file is not open. Open and tail it.
-		var err error
-		log_task, err = NewLogTask(log_path)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Add LogTask[%s] failed, err[%s].", log_path, err)
-			return err
-		}
+		log_task = NewLogTask(log_path)
+		p.logTasks[log_path] = log_task
 	}
 
-	if log_task.Exist(peck_conf) {
+	if log_task.Exist(config) {
 		return errors.New("Peck task already exist")
 	}
 
-	l_err := log_task.AddPeckTask(peck_conf)
-	if l_err != nil {
-		p.RemovePeckTask(peck_conf)
-		return l_err
+	err := db.SaveConfig(config)
+	if err != nil {
+		return err
+	}
+	err = log_task.AddPeckTask(config)
+	if err != nil {
+		// AddPeckTask must be successful
+		panic(err)
 	}
 	return nil
 }
@@ -73,20 +71,11 @@ func (p *Pecker) UpdatePeckTask(peck_conf *PeckTaskConfig) error {
 	log_path := peck_conf.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
-		// Log file is not open. Open and tail it.
-		var err error
-		log_task, err = NewLogTask(log_path)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Add LogTask[%s] failed, err[%s].", log_path, err)
-			return err
-		}
+		log.Printf("Failed to UpdatePeckTask, PeckTask not exist")
+		return fmt.Errorf("PeckTask not exist")
 	}
 
-	l_err := log_task.AddPeckTask(peck_conf)
-	if l_err != nil {
-		p.RemovePeckTask(peck_conf)
-		return l_err
-	}
+	log_task.AddPeckTask(peck_conf)
 	return nil
 }
 
