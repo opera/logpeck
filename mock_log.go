@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-const kTestDBPath string = ".unittest.db"
-
 type MockLog struct {
 	Path      string
 	IsRunning bool

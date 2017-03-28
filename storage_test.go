@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const kTestDBPath string = ".unittest.db"
+
 func CleanTestDB(db *DB) {
 	err := db.boltdb.Update(func(tx *bolt.Tx) error {
 		err := tx.DeleteBucket([]byte(configBucket))
