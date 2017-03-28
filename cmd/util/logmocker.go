@@ -12,6 +12,7 @@ func Usage() {
 }
 func main() {
 	filename := flag.String("filename", "", "log file name")
+	flag.Parse()
 	if *filename == "" {
 		Usage()
 		return

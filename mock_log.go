@@ -18,7 +18,7 @@ type MockLog struct {
 }
 
 func NewMockLog(path string) (*MockLog, error) {
-	f, f_err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
+	f, f_err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if f_err != nil {
 		return nil, f_err
 	}
@@ -42,7 +42,7 @@ func (p *MockLog) Run() error {
 	for !p.stop {
 		p.file.WriteString(genLog())
 		p.mu.Unlock()
-		time.Sleep(9 * time.Millisecond)
+		time.Sleep(89 * time.Millisecond)
 		p.mu.Lock()
 	}
 	p.IsRunning = false
