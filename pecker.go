@@ -12,12 +12,14 @@ type Pecker struct {
 	logTasks map[string]*LogTask
 	mu       sync.Mutex
 	db       *DB
+	stop     bool
 }
 
 func NewPecker(db *DB) (*Pecker, error) {
 	pecker := &Pecker{
 		logTasks: make(map[string]*LogTask),
 		db:       db,
+		stop:     true,
 	}
 	err := pecker.restorePeckTasks(db)
 	if err != nil {
@@ -42,6 +44,7 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 func (p *Pecker) AddPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	log.Printf("[Pecker] AddPeckTask %s", *config)
 	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
@@ -62,6 +65,7 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig) error {
 		// AddPeckTask must be successful
 		panic(err)
 	}
+	log_task.Start()
 	return nil
 }
 
@@ -107,6 +111,19 @@ func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
 	if log_task.Empty() {
 		log_task.Close()
 		delete(p.logTasks, log_path)
+	}
+	return nil
+}
+
+func (p *Pecker) Start() error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if !p.stop {
+		return errors.New("Pecker already started")
+	}
+	for path, logTask := range p.logTasks {
+		log.Printf("[Pecker] Start LogTask %s", path)
+		logTask.Start()
 	}
 	return nil
 }

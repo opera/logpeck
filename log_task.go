@@ -1,6 +1,8 @@
 package logpeck
 
 import (
+	"bufio"
+	"errors"
 	"log"
 	"os"
 	"sync"
@@ -14,6 +16,7 @@ type LogTask struct {
 	file      *os.File
 	mu        sync.Mutex
 	stop      bool
+	errMsg    string
 }
 
 func NewLogTask(path string) *LogTask {
@@ -21,7 +24,7 @@ func NewLogTask(path string) *LogTask {
 		LogPath:   path,
 		peckTasks: make(map[string]*PeckTask),
 		file:      nil,
-		stop:      false,
+		stop:      true,
 	}
 	return task
 }
@@ -62,15 +65,18 @@ func tailLog(f *os.File) string {
 	return "hello logpeck"
 }
 
-func peckLog(p *LogTask) {
-	for {
-		content := tailLog(p.file)
+func peckLogBG(p *LogTask) {
+	log.Printf("Start peck log %s", p.LogPath)
+	scanner := bufio.NewScanner(p.file)
+	for scanner.Scan() {
+		content := scanner.Text()
 		{
 			p.mu.Lock()
 			defer p.mu.Unlock()
 			for i, task := range p.peckTasks {
 				// process log
 				log.Printf("%d task[%s], content[%s]", i, task, content)
+				task.Process(content)
 			}
 			if p.stop {
 				break
@@ -83,16 +89,25 @@ func peckLog(p *LogTask) {
 func (p *LogTask) Start() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if !p.stop {
+		return errors.New("LogTask already started")
+	}
+	log.Printf("Start LogTask on %s", p.LogPath)
 	if p.file == nil {
 		f, f_err := os.Open(p.LogPath)
 		if f_err != nil {
-			return f_err
+			p.errMsg = f_err.Error()
+			log.Printf("Log open failed, %s", f_err)
+		} else {
+			p.file = f
+			p.file.Seek(0, 2)
 		}
-		p.file = f
+	} else {
+		p.file.Seek(0, 2)
 	}
-	p.file.Seek(0, 2)
 
-	go peckLog(p)
+	go peckLogBG(p)
+	p.stop = false
 	return nil
 }
 

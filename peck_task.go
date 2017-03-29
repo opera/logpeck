@@ -2,13 +2,10 @@ package logpeck
 
 import ()
 
-type Filter struct {
-}
-
 type PeckTask struct {
-	Name       string
-	FilterExpr string
-	ESConfig   ElasticSearchConfig
+	Name     string
+	Filter   string
+	ESConfig ElasticSearchConfig
 
 	pause bool
 }
@@ -28,4 +25,11 @@ func (p *PeckTask) Start() {
 
 func (p *PeckTask) Pause() {
 	p.pause = true
+}
+
+func (p *PeckTask) Process(content string) {
+	if p.pause {
+		return
+	}
+	SendToElasticSearch(p.ESConfig.URL, p.ESConfig.Index, p.ESConfig.Type, content)
 }

@@ -35,6 +35,7 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 			w.Write([]byte("Add failed, " + err.Error() + "\n"))
 			return
 		}
+		log.Printf("AddTaskConfig Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK\n"))
