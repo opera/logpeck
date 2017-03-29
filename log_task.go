@@ -66,7 +66,7 @@ func tailLog(f *os.File) string {
 }
 
 func peckLogBG(p *LogTask) {
-	log.Printf("Start peck log %s", p.LogPath)
+	log.Printf("[LogTask] Start peck log %s", p.LogPath)
 	scanner := bufio.NewScanner(p.file)
 	for scanner.Scan() {
 		content := scanner.Text()
@@ -75,7 +75,7 @@ func peckLogBG(p *LogTask) {
 			defer p.mu.Unlock()
 			for i, task := range p.peckTasks {
 				// process log
-				log.Printf("%d task[%s], content[%s]", i, task, content)
+				log.Printf("[LogTask] %d task[%s], content[%s]", i, task, content)
 				task.Process(content)
 			}
 			if p.stop {
@@ -92,12 +92,12 @@ func (p *LogTask) Start() error {
 	if !p.stop {
 		return errors.New("LogTask already started")
 	}
-	log.Printf("Start LogTask on %s", p.LogPath)
+	log.Printf("[LogTask] Start LogTask on %s", p.LogPath)
 	if p.file == nil {
 		f, f_err := os.Open(p.LogPath)
 		if f_err != nil {
 			p.errMsg = f_err.Error()
-			log.Printf("Log open failed, %s", f_err)
+			log.Printf("[LogTask] Log open failed, %s", f_err)
 		} else {
 			p.file = f
 			p.file.Seek(0, 2)

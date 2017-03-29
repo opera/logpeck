@@ -36,7 +36,7 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 	}
 	for i, config := range configs {
 		p.AddPeckTask(&config)
-		log.Printf("Restore PeckTask[%d] : %s", i, config)
+		log.Printf("[Pecker] Restore PeckTask[%d] : %s", i, config)
 	}
 	return nil
 }
@@ -75,7 +75,7 @@ func (p *Pecker) UpdatePeckTask(peck_conf *PeckTaskConfig) error {
 	log_path := peck_conf.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
-		log.Printf("Failed to UpdatePeckTask, PeckTask not exist")
+		log.Printf("[Pecker] Failed to UpdatePeckTask, PeckTask not exist")
 		return fmt.Errorf("PeckTask not exist")
 	}
 

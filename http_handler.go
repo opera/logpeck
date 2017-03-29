@@ -10,7 +10,7 @@ import (
 
 func logRequest(r *http.Request, prefix string) {
 	r_str, _ := httputil.DumpRequest(r, true)
-	log.Printf("[%s] req_len[%d] req[%s]", prefix, len(r_str), r_str)
+	log.Printf("[Handler] [%s] req_len[%d] req[%s]", prefix, len(r_str), r_str)
 }
 
 func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
@@ -22,7 +22,7 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		raw, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(raw, &config)
 		if err != nil {
-			log.Printf("Parse PeckTaskConfig error, %s", err)
+			log.Printf("[Handler] Parse PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Bad Request\n"))
 			return
@@ -30,12 +30,12 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 
 		err = pecker.AddPeckTask(&config)
 		if err != nil {
-			log.Printf("AddTaskConfig error, %s", err)
+			log.Printf("[Handler] AddTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusNotAcceptable)
 			w.Write([]byte("Add failed, " + err.Error() + "\n"))
 			return
 		}
-		log.Printf("AddTaskConfig Success: %s", raw)
+		log.Printf("[Handler] AddTaskConfig Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK\n"))
@@ -52,7 +52,7 @@ func NewUpdateTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		raw, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(raw, &config)
 		if err != nil {
-			log.Printf("Parse PeckTaskConfig error, %s", err)
+			log.Printf("[Handler] Parse PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Bad Request\n"))
 			return
@@ -67,7 +67,7 @@ func NewUpdateTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 
 		err = db.SaveConfig(&config)
 		if err != nil {
-			log.Printf("UpdateTaskConfig error, save config error, %s", err)
+			log.Printf("[Handler] UpdateTaskConfig error, save config error, %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error() + "\n"))
 			return
@@ -87,7 +87,7 @@ func NewStartTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		raw, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(raw, &config)
 		if err != nil {
-			log.Printf("Start PeckTaskConfig error, %s", err)
+			log.Printf("[Handler] Start PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Bad Request\n"))
 			return
@@ -109,7 +109,7 @@ func NewStartTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 
 		err = db.SaveConfig(&config)
 		if err != nil {
-			log.Printf("UpdateTaskConfig error, save config error, %s", err)
+			log.Printf("[Handler] UpdateTaskConfig error, save config error, %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error() + "\n"))
 			return
