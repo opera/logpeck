@@ -82,6 +82,15 @@ func (p *DB) GetConfig(config *PeckTaskConfig) (*PeckTaskConfig, error) {
 	return &result, nil
 }
 
+func (p *DB) RemoveConfig(config *PeckTaskConfig) error {
+	rawKey := p.makeConfigRawKey(config)
+	err := p.remove(configBucket, rawKey)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 	rawKV, err := p.scan(configBucket)
 	if err != nil {
@@ -116,6 +125,15 @@ func (p *DB) get(bucket string, key string) (string, error) {
 		return nil
 	})
 	return string(value[:]), err
+}
+
+func (p *DB) remove(bucket string, key string) error {
+	err := p.boltdb.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucket))
+		err := b.Delete([]byte(key))
+		return err
+	})
+	return err
 }
 
 func (p *DB) scan(bucket string) (map[string]string, error) {

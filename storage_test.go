@@ -68,6 +68,17 @@ func TestBoltDBAccess(*testing.T) {
 		}
 		panic(fmt.Errorf("result len: %d, value: %s", len(res), res[key]))
 	}
+
+	// test remove
+	log.Printf("remove key[%s] value[%s]\n", key)
+	err = db.remove(configBucket, key)
+	if err != nil {
+		panic(err)
+	}
+	value_get, err = db.get(configBucket, key)
+	if value_get != "" {
+		panic(value_get)
+	}
 }
 
 func TestJson(*testing.T) {
@@ -123,6 +134,7 @@ func TestConfigsAccess(*testing.T) {
 	db := GetDBHandler()
 	defer CleanTestDB(db)
 
+	// Test SaveConfig
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			config.Name = fmt.Sprintf("%s-%d", name, j)
@@ -134,6 +146,7 @@ func TestConfigsAccess(*testing.T) {
 		}
 	}
 
+	// Test GetConfig
 	config_get_tmp := &PeckTaskConfig{
 		Name:    name + "-0",
 		LogPath: logPath + "-0",
@@ -148,6 +161,7 @@ func TestConfigsAccess(*testing.T) {
 		panic(config_get)
 	}
 
+	// Test GetAllConfigs
 	configs, c_err := db.GetAllConfigs()
 	if c_err != nil {
 		panic(c_err)
@@ -161,6 +175,23 @@ func TestConfigsAccess(*testing.T) {
 			!strings.Contains(config.LogPath, logPath) {
 			panic(configs)
 		}
+	}
+
+	// Test RemoveConfig
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			config.Name = fmt.Sprintf("%s-%d", name, j)
+			config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+			err = db.RemoveConfig(&config)
+			if err != nil {
+				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
+			}
+		}
+	}
+
+	configs, c_err = db.GetAllConfigs()
+	if len(configs) != 0 {
+		panic(len(configs))
 	}
 
 }
