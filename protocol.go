@@ -12,6 +12,7 @@ type PeckTaskConfig struct {
 	Action     string
 	FilterExpr string
 	ESConfig   ElasticSearchConfig
+	Stop       bool
 }
 
 type Stat struct {

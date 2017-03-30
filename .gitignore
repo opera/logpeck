@@ -1,5 +1,6 @@
 .unittest.db
-.test.log
-logpeck
 logpeck.db
+.test.log
+logpeckd
 logmocker
+logpeckd.log

@@ -3,9 +3,9 @@ package logpeck
 import (
 	"bufio"
 	"errors"
+	"io"
 	"log"
 	"os"
-	"sync"
 	"time"
 )
 
@@ -14,7 +14,6 @@ type LogTask struct {
 
 	peckTasks map[string]*PeckTask
 	file      *os.File
-	mu        sync.Mutex
 	stop      bool
 	errMsg    string
 }
@@ -39,21 +38,39 @@ func (p *LogTask) UpdatePeckTask(conf *PeckTaskConfig) error {
 	return nil
 }
 
-func (p *LogTask) RemovePeckTask(conf *PeckTaskConfig) error {
-	// NOT IMPLEMENT
+func (p *LogTask) RemovePeckTask(config *PeckTaskConfig) error {
+	delete(p.peckTasks, config.Name)
+	return nil
+}
+
+func (p *LogTask) StartPeckTask(config *PeckTaskConfig) error {
+	if !p.Exist(config) {
+		panic(config)
+	}
+	if !p.peckTasks[config.Name].Stop {
+		panic(config)
+	}
+	p.peckTasks[config.Name].Stop = false
+	return nil
+}
+
+func (p *LogTask) StopPeckTask(config *PeckTaskConfig) error {
+	if !p.Exist(config) {
+		panic(config)
+	}
+	if p.peckTasks[config.Name].Stop {
+		panic(config)
+	}
+	p.peckTasks[config.Name].Stop = true
 	return nil
 }
 
 func (p *LogTask) Exist(config *PeckTaskConfig) bool {
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	_, ok := p.peckTasks[config.Name]
 	return ok
 }
 
 func (p *LogTask) Empty() bool {
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	if len(p.peckTasks) == 0 {
 		return true
 	} else {
@@ -66,38 +83,38 @@ func tailLog(f *os.File) string {
 }
 
 func peckLogBG(p *LogTask) {
-	log.Printf("[LogTask] Start peck log %s", p.LogPath)
-	scanner := bufio.NewScanner(p.file)
-	for scanner.Scan() {
-		content := scanner.Text()
-		{
-			p.mu.Lock()
-			defer p.mu.Unlock()
-			for i, task := range p.peckTasks {
-				// process log
-				log.Printf("[LogTask] %d task[%s], content[%s]", i, task, content)
-				task.Process(content)
-			}
-			if p.stop {
-				break
-			}
+	log.Printf("[LogTask %s] Start peck log", p.LogPath)
+	reader := bufio.NewReader(p.file)
+	for {
+		line, _, err := reader.ReadLine()
+		content := string(line[:])
+		if err == io.EOF {
+			log.Printf("[LogTask %s] Log finished", p.LogPath)
 		}
+		log.Printf("[LogTask %s] Log found, content[%s]", p.LogPath, content)
+		for name, task := range p.peckTasks {
+			// process log
+			log.Printf("[LogTask %s] %s content[%s]", p.LogPath, name, content)
+			task.Process(content)
+		}
+		if p.stop {
+			break
+		}
+		log.Printf("[LogTask %s] Sleep for a while", p.LogPath)
 		time.Sleep(10 * time.Millisecond)
 	}
 }
 
 func (p *LogTask) Start() error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	if !p.stop {
 		return errors.New("LogTask already started")
 	}
-	log.Printf("[LogTask] Start LogTask on %s", p.LogPath)
+	log.Printf(" [LogTask %s] Start LogTask", p.LogPath)
 	if p.file == nil {
 		f, f_err := os.Open(p.LogPath)
 		if f_err != nil {
 			p.errMsg = f_err.Error()
-			log.Printf("[LogTask] Log open failed, %s", f_err)
+			log.Printf("[LogTask %s] Log open failed, %s", p.LogPath, f_err)
 		} else {
 			p.file = f
 			p.file.Seek(0, 2)

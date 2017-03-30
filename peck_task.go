@@ -7,28 +7,28 @@ type PeckTask struct {
 	Filter   string
 	ESConfig ElasticSearchConfig
 
-	pause bool
+	Stop bool
 }
 
 func NewPeckTask(c *PeckTaskConfig) *PeckTask {
 	task := &PeckTask{
 		Name:     c.Name,
 		ESConfig: c.ESConfig,
-		pause:    true,
+		Stop:     true,
 	}
 	return task
 }
 
 func (p *PeckTask) Start() {
-	p.pause = false
+	p.Stop = false
 }
 
 func (p *PeckTask) Pause() {
-	p.pause = true
+	p.Stop = true
 }
 
 func (p *PeckTask) Process(content string) {
-	if p.pause {
+	if p.Stop {
 		return
 	}
 	SendToElasticSearch(p.ESConfig.URL, p.ESConfig.Index, p.ESConfig.Type, content)
