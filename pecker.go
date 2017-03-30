@@ -56,11 +56,14 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig) error {
 		return errors.New("Peck task already exist")
 	}
 
-	err := db.SaveConfig(config)
-	if err != nil {
-		return err
+	task := NewPeckTask(config)
+
+	err1 := db.SaveConfig(&task.Config)
+	err2 := db.SaveStat(&task.Stat)
+	if err1 != nil || err2 != nil {
+		panic(err1.Error() + " " + err2.Error())
 	}
-	err = log_task.AddPeckTask(config)
+	err := log_task.AddPeckTask(task)
 	if err != nil {
 		// AddPeckTask must be successful
 		panic(err)
@@ -78,7 +81,7 @@ func (p *Pecker) UpdatePeckTask(peck_conf *PeckTaskConfig) error {
 		return fmt.Errorf("PeckTask not exist")
 	}
 
-	log_task.AddPeckTask(peck_conf)
+	log_task.UpdatePeckTask(peck_conf)
 	return nil
 }
 
@@ -90,12 +93,16 @@ func (p *Pecker) RemovePeckTask(peck_conf *PeckTaskConfig) error {
 	if !ok {
 		return errors.New("Task Not Exist")
 	}
-	log.Printf("[Pecker] Remove PeckTask try clean db: %s", peck_conf)
-	err := db.RemoveConfig(peck_conf.LogPath, peck_conf.Name)
-	if err != nil {
-		log.Printf("[Pecker] Remove PeckTask clean db failed: %s", err)
-		return err
+
+	{
+		log.Printf("[Pecker] Remove PeckTask try clean db: %s", peck_conf)
+		err1 := db.RemoveConfig(peck_conf.LogPath, peck_conf.Name)
+		err2 := db.RemoveStat(peck_conf.LogPath, peck_conf.Name)
+		if err1 != nil || err2 != nil {
+			panic(err1.Error() + " " + err2.Error())
+		}
 	}
+
 	log_task.RemovePeckTask(peck_conf)
 	if log_task.Empty() {
 		log_task.Close()
@@ -114,16 +121,18 @@ func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
 		return errors.New("Task not exist")
 	}
 
-	// Try update peck task stat in boltdb
-	stat, err := db.GetStat(peck_conf.LogPath, peck_conf.Name)
-	if err != nil {
-		return err
+	{
+		// Try update peck task stat in boltdb
+		stat, err := db.GetStat(peck_conf.LogPath, peck_conf.Name)
+		if err != nil {
+			return err
+		}
+		if !stat.Stop {
+			return errors.New("Task already started")
+		}
+		stat.Stop = false
+		err = db.SaveStat(stat)
 	}
-	if !stat.Stop {
-		return errors.New("Task already started")
-	}
-	stat.Stop = false
-	err = db.SaveStat(stat)
 
 	return log_task.StartPeckTask(peck_conf)
 }

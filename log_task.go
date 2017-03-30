@@ -28,8 +28,8 @@ func NewLogTask(path string) *LogTask {
 	return task
 }
 
-func (p *LogTask) AddPeckTask(config *PeckTaskConfig) error {
-	p.peckTasks[config.Name] = NewPeckTask(config)
+func (p *LogTask) AddPeckTask(task *PeckTask) error {
+	p.peckTasks[task.Config.Name] = task
 	return nil
 }
 

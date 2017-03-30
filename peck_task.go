@@ -3,8 +3,8 @@ package logpeck
 import ()
 
 type PeckTask struct {
-	config PeckTaskConfig
-	stat   PeckTaskStat
+	Config PeckTaskConfig
+	Stat   PeckTaskStat
 }
 
 func NewPeckTask(c *PeckTaskConfig) *PeckTask {
@@ -24,20 +24,20 @@ func NewPeckTask(c *PeckTaskConfig) *PeckTask {
 }
 
 func (p *PeckTask) Start() {
-	p.stat.Stop = false
+	p.Stat.Stop = false
 }
 
 func (p *PeckTask) Stop() {
-	p.stat.Stop = true
+	p.Stat.Stop = true
 }
 
 func (p *PeckTask) IsStop() bool {
-	return p.stat.Stop
+	return p.Stat.Stop
 }
 
 func (p *PeckTask) Process(content string) {
-	if p.stat.Stop {
+	if p.Stat.Stop {
 		return
 	}
-	SendToElasticSearch(p.config.ESConfig.URL, p.config.ESConfig.Index, p.config.ESConfig.Type, content)
+	SendToElasticSearch(p.Config.ESConfig.URL, p.Config.ESConfig.Index, p.Config.ESConfig.Type, content)
 }
