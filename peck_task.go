@@ -1,6 +1,8 @@
 package logpeck
 
-import ()
+import (
+	"log"
+)
 
 type PeckTask struct {
 	Config PeckTaskConfig
@@ -24,6 +26,7 @@ func NewPeckTask(c *PeckTaskConfig) *PeckTask {
 }
 
 func (p *PeckTask) Start() {
+	log.Printf("[PeckTask] Start")
 	p.Stat.Stop = false
 }
 
@@ -37,6 +40,7 @@ func (p *PeckTask) IsStop() bool {
 
 func (p *PeckTask) Process(content string) {
 	if p.Stat.Stop {
+		log.Println("PeckTask stopped" + content)
 		return
 	}
 	SendToElasticSearch(p.Config.ESConfig.URL, p.Config.ESConfig.Index, p.Config.ESConfig.Type, content)

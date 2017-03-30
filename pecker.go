@@ -135,6 +135,9 @@ func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
 		stat.Stop = false
 		err = db.SaveStat(stat)
 	}
+	if log_task.IsStop() {
+		log_task.Start()
+	}
 
 	return log_task.StartPeckTask(peck_conf)
 }

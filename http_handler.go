@@ -96,7 +96,7 @@ func NewStartTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		err = pecker.StartPeckTask(&config)
 		if err != nil {
 			w.WriteHeader(http.StatusNotAcceptable)
-			w.Write([]byte("Update failed, " + err.Error() + "\n"))
+			w.Write([]byte("Start failed, " + err.Error() + "\n"))
 			return
 		}
 

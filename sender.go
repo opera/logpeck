@@ -31,7 +31,7 @@ func SendToElasticSearch(url, index, ty, content string) {
 	if err != nil {
 		panic(err)
 	}
-	uri := "http://" + url + "/" + index + "/" + ty
+	uri := url + "/" + index + "/" + ty
 	log.Printf("Post ElasticSearch %s content [%s] ", url, raw_data)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	resp, err := http.Post(uri, "application/json", body)

@@ -1,11 +1,9 @@
 package logpeck
 
 import (
-	"bufio"
 	"errors"
-	"io"
+	"github.com/hpcloud/tail"
 	"log"
-	"os"
 	"time"
 )
 
@@ -13,7 +11,7 @@ type LogTask struct {
 	LogPath string
 
 	peckTasks map[string]*PeckTask
-	file      *os.File
+	tail      *tail.Tail
 	stop      bool
 	errMsg    string
 }
@@ -22,7 +20,7 @@ func NewLogTask(path string) *LogTask {
 	task := &LogTask{
 		LogPath:   path,
 		peckTasks: make(map[string]*PeckTask),
-		file:      nil,
+		tail:      nil,
 		stop:      true,
 	}
 	return task
@@ -80,29 +78,17 @@ func (p *LogTask) Empty() bool {
 	}
 }
 
-func tailLog(f *os.File) string {
-	return "hello logpeck"
-}
-
 func peckLogBG(p *LogTask) {
 	log.Printf("[LogTask %s] Start peck log", p.LogPath)
-	reader := bufio.NewReader(p.file)
-	for {
-		line, _, err := reader.ReadLine()
-		content := string(line[:])
-		if err == io.EOF {
-			log.Printf("[LogTask %s] Log finished", p.LogPath)
-		}
-		log.Printf("[LogTask %s] Log found, content[%s]", p.LogPath, content)
+	for content := range p.tail.Lines {
 		for name, task := range p.peckTasks {
 			// process log
-			log.Printf("[LogTask %s] %s content[%s]", p.LogPath, name, content)
-			task.Process(content)
+			log.Printf("[LogTask %s] %s content[%s]", p.LogPath, name, content.Text)
+			task.Process(content.Text)
 		}
 		if p.stop {
 			break
 		}
-		log.Printf("[LogTask %s] Sleep for a while", p.LogPath)
 		time.Sleep(10 * time.Millisecond)
 	}
 }
@@ -112,17 +98,9 @@ func (p *LogTask) Start() error {
 		return errors.New("LogTask already started")
 	}
 	log.Printf(" [LogTask %s] Start LogTask", p.LogPath)
-	if p.file == nil {
-		f, f_err := os.Open(p.LogPath)
-		if f_err != nil {
-			p.errMsg = f_err.Error()
-			log.Printf("[LogTask %s] Log open failed, %s", p.LogPath, f_err)
-		} else {
-			p.file = f
-			p.file.Seek(0, 2)
-		}
-	} else {
-		p.file.Seek(0, 2)
+	if p.tail == nil {
+		tailConf := tail.Config{ReOpen: true, Poll: true, Follow: true}
+		p.tail, _ = tail.TailFile(p.LogPath, tailConf)
 	}
 
 	go peckLogBG(p)
@@ -130,9 +108,19 @@ func (p *LogTask) Start() error {
 	return nil
 }
 
-func (p *LogTask) Pause() error {
-	// NOT IMPLEMENT
+func (p *LogTask) Stop() error {
+	if p.stop {
+		return errors.New("LogTask already stopped")
+	}
+	log.Printf(" [LogTask %s] Stop LogTask", p.LogPath)
+	p.stop = true
+	p.tail.Stop()
+	p.tail = nil
 	return nil
+}
+
+func (p *LogTask) IsStop() bool {
+	return p.stop
 }
 
 func (p *LogTask) Close() error {
