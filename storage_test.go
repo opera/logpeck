@@ -81,13 +81,11 @@ func TestBoltDBAccess(*testing.T) {
 func TestJson(*testing.T) {
 	name := "test_peck_task"
 	logPath := "./test.log"
-	action := "add"
 	filterExpr := "panic"
 
 	config := PeckTaskConfig{
 		Name:       name,
 		LogPath:    logPath,
-		Action:     action,
 		FilterExpr: filterExpr,
 	}
 
@@ -104,7 +102,6 @@ func TestJson(*testing.T) {
 	}
 	if unma.Name != name ||
 		unma.LogPath != logPath ||
-		unma.Action != action ||
 		unma.FilterExpr != filterExpr {
 		panic(unma)
 	}
@@ -113,13 +110,11 @@ func TestJson(*testing.T) {
 func TestConfigsAccess(*testing.T) {
 	name := "test_peck_task"
 	logPath := "./test.log"
-	action := "add"
 	filterExpr := "panic"
 
 	config := PeckTaskConfig{
 		Name:       name,
 		LogPath:    logPath,
-		Action:     action,
 		FilterExpr: filterExpr,
 	}
 
@@ -148,13 +143,12 @@ func TestConfigsAccess(*testing.T) {
 		Name:    name + "-0",
 		LogPath: logPath + "-0",
 	}
-	config_get, e := db.GetConfig(config_get_tmp)
+	config_get, e := db.GetConfig(config_get_tmp.LogPath, config_get_tmp.Name)
 	if e != nil {
 		panic(e)
 	}
 	if config_get.Name != config_get_tmp.Name ||
-		config_get.LogPath != config_get_tmp.LogPath ||
-		config_get.Action != action {
+		config_get.LogPath != config_get_tmp.LogPath {
 		panic(config_get)
 	}
 
@@ -179,7 +173,7 @@ func TestConfigsAccess(*testing.T) {
 		for j := 0; j < 3; j++ {
 			config.Name = fmt.Sprintf("%s-%d", name, j)
 			config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
-			err = db.RemoveConfig(&config)
+			err = db.RemoveConfig(config.LogPath, config.Name)
 			if err != nil {
 				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
 			}
@@ -190,5 +184,82 @@ func TestConfigsAccess(*testing.T) {
 	if len(configs) != 0 {
 		panic(len(configs))
 	}
+}
 
+func TestStatsAccess(*testing.T) {
+	name := "test_peck_task"
+	logPath := "./test.log"
+
+	stat := PeckTaskStat{
+		Name:    name,
+		LogPath: logPath,
+		Stop:    true,
+	}
+
+	defer LogExecTime(time.Now(), "stats access")
+	err := OpenDB(kTestDBPath)
+	if err != nil {
+		panic(err)
+	}
+	db := GetDBHandler()
+	defer CleanTestDB(db)
+
+	// Test SaveStat
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			stat.Name = fmt.Sprintf("%s-%d", name, j)
+			stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+			err = db.SaveStat(&stat)
+			if err != nil {
+				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
+			}
+		}
+	}
+
+	// Test GetStat
+	stat_get_tmp := &PeckTaskStat{
+		Name:    name + "-0",
+		LogPath: logPath + "-0",
+	}
+	stat_get, e := db.GetStat(stat_get_tmp.LogPath, stat_get_tmp.Name)
+	if e != nil {
+		panic(e)
+	}
+	if stat_get.Name != stat_get_tmp.Name ||
+		stat_get.LogPath != stat_get_tmp.LogPath {
+		panic(stat_get)
+	}
+
+	// Test GetAllStats
+	stats, c_err := db.GetAllStats()
+	if c_err != nil {
+		panic(c_err)
+	}
+	if len(stats) != 9 {
+		panic(len(stats))
+	}
+
+	for _, stat := range stats {
+		if !strings.Contains(stat.Name, name) ||
+			!strings.Contains(stat.LogPath, logPath) {
+			panic(stats)
+		}
+	}
+
+	// Test RemoveStat
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			stat.Name = fmt.Sprintf("%s-%d", name, j)
+			stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+			err = db.RemoveStat(stat.LogPath, stat.Name)
+			if err != nil {
+				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
+			}
+		}
+	}
+
+	stats, c_err = db.GetAllStats()
+	if len(stats) != 0 {
+		panic(len(stats))
+	}
 }

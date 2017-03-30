@@ -53,12 +53,12 @@ func (p *DB) Close() error {
 	return e
 }
 
-func (p *DB) makeConfigRawKey(config *PeckTaskConfig) string {
-	return config.LogPath + "#" + config.Name
+func (p *DB) makeConfigRawKey(logPath, name string) string {
+	return logPath + "#" + name
 }
 
 func (p *DB) SaveConfig(config *PeckTaskConfig) error {
-	rawKey := p.makeConfigRawKey(config)
+	rawKey := p.makeConfigRawKey(config.LogPath, config.Name)
 	rawValueByte, err := json.Marshal(config)
 	if err != nil {
 		return err
@@ -68,8 +68,8 @@ func (p *DB) SaveConfig(config *PeckTaskConfig) error {
 	return p.put(configBucket, rawKey, rawValue)
 }
 
-func (p *DB) GetConfig(config *PeckTaskConfig) (*PeckTaskConfig, error) {
-	rawKey := p.makeConfigRawKey(config)
+func (p *DB) GetConfig(logPath, name string) (*PeckTaskConfig, error) {
+	rawKey := p.makeConfigRawKey(logPath, name)
 	rawValue := p.get(configBucket, rawKey)
 	if len(rawValue) == 0 {
 		return nil, errors.New("Task not exist")
@@ -83,8 +83,8 @@ func (p *DB) GetConfig(config *PeckTaskConfig) (*PeckTaskConfig, error) {
 	return &result, nil
 }
 
-func (p *DB) RemoveConfig(config *PeckTaskConfig) error {
-	rawKey := p.makeConfigRawKey(config)
+func (p *DB) RemoveConfig(logPath, name string) error {
+	rawKey := p.makeConfigRawKey(logPath, name)
 	err := p.remove(configBucket, rawKey)
 	if err != nil {
 		return err
@@ -105,6 +105,62 @@ func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 			panic(fmt.Errorf("raw[%s], err[%s]", string(v[:]), err))
 		}
 		configs = append(configs, *config)
+	}
+	return
+}
+
+func (p *DB) makeStatRawKey(logPath, name string) string {
+	return logPath + "#" + name
+}
+
+func (p *DB) SaveStat(stat *PeckTaskStat) error {
+	rawKey := p.makeStatRawKey(stat.LogPath, stat.Name)
+	rawValueByte, err := json.Marshal(stat)
+	if err != nil {
+		return err
+	}
+	rawValue := string(rawValueByte[:])
+	//	fmt.Println(rawKey + string(" ") + rawValue)
+	return p.put(statBucket, rawKey, rawValue)
+}
+
+func (p *DB) GetStat(logPath, name string) (*PeckTaskStat, error) {
+	rawKey := p.makeStatRawKey(logPath, name)
+	rawValue := p.get(statBucket, rawKey)
+	if len(rawValue) == 0 {
+		return nil, errors.New("Task not exist")
+	}
+	//	fmt.Println(rawKV)
+	var result PeckTaskStat
+	err := json.Unmarshal([]byte(rawValue), &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (p *DB) RemoveStat(logPath, name string) error {
+	rawKey := p.makeStatRawKey(logPath, name)
+	err := p.remove(statBucket, rawKey)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *DB) GetAllStats() (stats []PeckTaskStat, err error) {
+	rawKV, err := p.scan(statBucket)
+	if err != nil {
+		return nil, err
+	}
+	//	fmt.Println(rawKV)
+	for _, v := range rawKV {
+		stat := &PeckTaskStat{}
+		err = json.Unmarshal([]byte(v), stat)
+		if err != nil {
+			panic(fmt.Errorf("raw[%s], err[%s]", string(v[:]), err))
+		}
+		stats = append(stats, *stat)
 	}
 	return
 }
