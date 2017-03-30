@@ -42,7 +42,7 @@ func (p *MockLog) Run() error {
 	for !p.stop {
 		p.file.WriteString(genLog())
 		p.mu.Unlock()
-		time.Sleep(89 * time.Millisecond)
+		time.Sleep(1027 * time.Millisecond)
 		p.mu.Lock()
 	}
 	p.IsRunning = false

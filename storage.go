@@ -120,7 +120,7 @@ func (p *DB) SaveStat(stat *PeckTaskStat) error {
 		return err
 	}
 	rawValue := string(rawValueByte[:])
-	//	fmt.Println(rawKey + string(" ") + rawValue)
+	//	log.Println("[Storage] SaveStat: " + rawKey + string(" ") + rawValue)
 	return p.put(statBucket, rawKey, rawValue)
 }
 
@@ -130,7 +130,7 @@ func (p *DB) GetStat(logPath, name string) (*PeckTaskStat, error) {
 	if len(rawValue) == 0 {
 		return nil, errors.New("Task not exist")
 	}
-	//	fmt.Println(rawKV)
+	//	fmt.Println("[Storage] GetStat: " + rawKey + string(" ") + rawValue)
 	var result PeckTaskStat
 	err := json.Unmarshal([]byte(rawValue), &result)
 	if err != nil {

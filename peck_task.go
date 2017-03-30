@@ -9,20 +9,25 @@ type PeckTask struct {
 	Stat   PeckTaskStat
 }
 
-func NewPeckTask(c *PeckTaskConfig) *PeckTask {
-	task := &PeckTask{
-		PeckTaskConfig{
-			Name:     c.Name,
-			LogPath:  c.LogPath,
-			ESConfig: c.ESConfig,
-		},
-		PeckTaskStat{
-			Name:    c.Name,
-			LogPath: c.LogPath,
-			Stop:    true,
-		},
+func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
+	if s == nil {
+		return &PeckTask{
+			Config: *c,
+			Stat: PeckTaskStat{
+				Name:    c.Name,
+				LogPath: c.LogPath,
+				Stop:    true,
+			},
+		}
+	} else {
+		if c.LogPath != s.LogPath || c.Name != s.Name {
+			log.Fatalf("Config[%s], Stat[%s]", c, s)
+		}
+		return &PeckTask{
+			Config: *c,
+			Stat:   *s,
+		}
 	}
-	return task
 }
 
 func (p *PeckTask) Start() {

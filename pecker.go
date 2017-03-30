@@ -35,13 +35,14 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 		return err
 	}
 	for i, config := range configs {
-		p.AddPeckTask(&config)
+		stat, _ := p.db.GetStat(config.LogPath, config.Name)
+		p.AddPeckTask(&config, stat)
 		log.Printf("[Pecker] Restore PeckTask[%d] : %s", i, config)
 	}
 	return nil
 }
 
-func (p *Pecker) AddPeckTask(config *PeckTaskConfig) error {
+func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	log.Printf("[Pecker] AddPeckTask %s", *config)
@@ -56,7 +57,7 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig) error {
 		return errors.New("Peck task already exist")
 	}
 
-	task := NewPeckTask(config)
+	task := NewPeckTask(config, stat)
 
 	{
 		err1 := db.SaveConfig(&task.Config)

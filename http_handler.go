@@ -28,7 +28,7 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 			return
 		}
 
-		err = pecker.AddPeckTask(&config)
+		err = pecker.AddPeckTask(&config, nil)
 		if err != nil {
 			log.Printf("[Handler] AddTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusNotAcceptable)
