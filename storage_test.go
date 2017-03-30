@@ -42,10 +42,7 @@ func TestBoltDBAccess(*testing.T) {
 	}
 
 	// test get
-	value_get, e := db.get(configBucket, key)
-	if e != nil {
-		panic(err)
-	}
+	value_get := db.get(configBucket, key)
 	log.Printf("value: %s\n", value_get)
 	if value_get != value {
 		panic(value_get)
@@ -75,7 +72,7 @@ func TestBoltDBAccess(*testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	value_get, err = db.get(configBucket, key)
+	value_get = db.get(configBucket, key)
 	if value_get != "" {
 		panic(value_get)
 	}

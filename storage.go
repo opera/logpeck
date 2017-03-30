@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"os"
@@ -69,13 +70,13 @@ func (p *DB) SaveConfig(config *PeckTaskConfig) error {
 
 func (p *DB) GetConfig(config *PeckTaskConfig) (*PeckTaskConfig, error) {
 	rawKey := p.makeConfigRawKey(config)
-	rawValue, err := p.get(configBucket, rawKey)
-	if err != nil {
-		return nil, err
+	rawValue := p.get(configBucket, rawKey)
+	if len(rawValue) == 0 {
+		return nil, errors.New("Task not exist")
 	}
 	//	fmt.Println(rawKV)
 	var result PeckTaskConfig
-	err = json.Unmarshal([]byte(rawValue), &result)
+	err := json.Unmarshal([]byte(rawValue), &result)
 	if err != nil {
 		return nil, err
 	}
@@ -117,14 +118,14 @@ func (p *DB) put(bucket string, key string, value string) error {
 	return err
 }
 
-func (p *DB) get(bucket string, key string) (string, error) {
+func (p *DB) get(bucket string, key string) string {
 	var value []byte
-	err := p.boltdb.View(func(tx *bolt.Tx) error {
+	p.boltdb.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
 		value = b.Get([]byte(key))
 		return nil
 	})
-	return string(value[:]), err
+	return string(value[:])
 }
 
 func (p *DB) remove(bucket string, key string) error {
