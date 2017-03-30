@@ -25,6 +25,12 @@
 			"path": "github.com/go-zoo/bone",
 			"revision": "11ae278a93c8268a0f98758aa915def5dfca3254",
 			"revisionTime": "2017-02-24T18:17:32Z"
+		},
+		{
+			"checksumSHA1": "pjrfmwxpsR/8X6vkhU5uWkXC1oQ=",
+			"path": "github.com/hpcloud/tail",
+			"revision": "faf842bde7ed83bbc3c65a2c454fae39bc29a95f",
+			"revisionTime": "2017-02-07T02:33:46Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"
