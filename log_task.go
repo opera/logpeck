@@ -47,10 +47,11 @@ func (p *LogTask) StartPeckTask(config *PeckTaskConfig) error {
 	if !p.Exist(config) {
 		panic(config)
 	}
-	if !p.peckTasks[config.Name].Stop {
+	if p.peckTasks[config.Name].IsStop() {
+		p.peckTasks[config.Name].Start()
+	} else {
 		panic(config)
 	}
-	p.peckTasks[config.Name].Stop = false
 	return nil
 }
 
@@ -58,10 +59,11 @@ func (p *LogTask) StopPeckTask(config *PeckTaskConfig) error {
 	if !p.Exist(config) {
 		panic(config)
 	}
-	if p.peckTasks[config.Name].Stop {
+	if !p.peckTasks[config.Name].IsStop() {
+		p.peckTasks[config.Name].Stop()
+	} else {
 		panic(config)
 	}
-	p.peckTasks[config.Name].Stop = true
 	return nil
 }
 

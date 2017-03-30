@@ -3,33 +3,41 @@ package logpeck
 import ()
 
 type PeckTask struct {
-	Name     string
-	Filter   string
-	ESConfig ElasticSearchConfig
-
-	Stop bool
+	config PeckTaskConfig
+	stat   PeckTaskStat
 }
 
 func NewPeckTask(c *PeckTaskConfig) *PeckTask {
 	task := &PeckTask{
-		Name:     c.Name,
-		ESConfig: c.ESConfig,
-		Stop:     true,
+		PeckTaskConfig{
+			Name:     c.Name,
+			LogPath:  c.LogPath,
+			ESConfig: c.ESConfig,
+		},
+		PeckTaskStat{
+			Name:    c.Name,
+			LogPath: c.LogPath,
+			Stop:    true,
+		},
 	}
 	return task
 }
 
 func (p *PeckTask) Start() {
-	p.Stop = false
+	p.stat.Stop = false
 }
 
-func (p *PeckTask) Pause() {
-	p.Stop = true
+func (p *PeckTask) Stop() {
+	p.stat.Stop = true
+}
+
+func (p *PeckTask) IsStop() bool {
+	return p.stat.Stop
 }
 
 func (p *PeckTask) Process(content string) {
-	if p.Stop {
+	if p.stat.Stop {
 		return
 	}
-	SendToElasticSearch(p.ESConfig.URL, p.ESConfig.Index, p.ESConfig.Type, content)
+	SendToElasticSearch(p.config.ESConfig.URL, p.config.ESConfig.Index, p.config.ESConfig.Type, content)
 }

@@ -91,7 +91,7 @@ func (p *Pecker) RemovePeckTask(peck_conf *PeckTaskConfig) error {
 		return errors.New("Task Not Exist")
 	}
 	log.Printf("[Pecker] Remove PeckTask try clean db: %s", peck_conf)
-	err := db.RemoveConfig(peck_conf)
+	err := db.RemoveConfig(peck_conf.LogPath, peck_conf.Name)
 	if err != nil {
 		log.Printf("[Pecker] Remove PeckTask clean db failed: %s", err)
 		return err
@@ -115,17 +115,17 @@ func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
 	}
 
 	// Try update peck task stat in boltdb
-	config_w, err := db.GetConfig(peck_conf)
+	stat, err := db.GetStat(peck_conf.LogPath, peck_conf.Name)
 	if err != nil {
 		return err
 	}
-	if !config_w.Stop {
+	if !stat.Stop {
 		return errors.New("Task already started")
 	}
-	config_w.Stop = false
-	err = db.SaveConfig(config_w)
+	stat.Stop = false
+	err = db.SaveStat(stat)
 
-	return log_task.StartPeckTask(config_w)
+	return log_task.StartPeckTask(peck_conf)
 }
 
 func (p *Pecker) Start() error {

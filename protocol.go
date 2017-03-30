@@ -9,10 +9,18 @@ type ElasticSearchConfig struct {
 type PeckTaskConfig struct {
 	Name       string
 	LogPath    string
-	Action     string
 	FilterExpr string
 	ESConfig   ElasticSearchConfig
-	Stop       bool
+}
+
+type PeckTaskStat struct {
+	Name        string
+	LogPath     string
+	LinesPerSec int64
+	BytesPerSec int64
+	LinesTotal  int64
+	BytesTotal  int64
+	Stop        bool
 }
 
 type Stat struct {
@@ -26,7 +34,7 @@ type Stat struct {
 type LogStat struct {
 	LogPath         string
 	PeckTaskConfigs []PeckTaskConfig
-	PeckTaskStats   []Stat
+	PeckTaskStats   []PeckTaskStat
 }
 
 type PeckerStat struct {
