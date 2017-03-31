@@ -99,7 +99,15 @@ func (p *LogTask) Start() error {
 	}
 	log.Printf(" [LogTask %s] Start LogTask", p.LogPath)
 	if p.tail == nil {
-		tailConf := tail.Config{ReOpen: true, Poll: true, Follow: true}
+		tailConf := tail.Config{
+			ReOpen: true,
+			Poll:   true,
+			Follow: true,
+			Location: &tail.SeekInfo{
+				Offset: 0,
+				Whence: 2,
+			},
+		}
 		p.tail, _ = tail.TailFile(p.LogPath, tailConf)
 	}
 

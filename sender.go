@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 )
 
 type ElasticSearchSender struct {
@@ -32,11 +33,12 @@ func SendToElasticSearch(url, index, ty, content string) {
 		panic(err)
 	}
 	uri := url + "/" + index + "/" + ty
-	log.Printf("Post ElasticSearch %s content [%s] ", url, raw_data)
+	log.Printf("[Sender] Post ElasticSearch %s content [%s] ", url, raw_data)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
-		log.Printf("Post error, err[%s], resp[%s]", err, resp)
+		log.Printf("[Sender] Post error, err[%s]", err)
 	}
-	log.Printf("Response %s err %s", resp, err)
+	resp_str, _ := httputil.DumpResponse(resp, true)
+	log.Printf("[Sender] Response %s", resp_str)
 }
