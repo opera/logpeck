@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 
 	logpeck.InitConfig(configFile)
-	log.Printf("[LogPeckD] Try create a new logpeck: %s", logpeck.Config)
+	log.Printf("[LogPeckD] LogPeck(%s) Start %+v", logpeck.VersionString, logpeck.Config)
 
 	err := logpeck.OpenDB(logpeck.Config.DatabaseFile)
 	if err != nil {
