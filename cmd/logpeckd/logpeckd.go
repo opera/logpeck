@@ -34,7 +34,7 @@ func main() {
 	mux.Post("/peck_task/add", logpeck.NewAddTaskHandler(pecker, db))
 	mux.Post("/peck_task/update", logpeck.NewUpdateTaskHandler(pecker, db))
 	mux.Post("/peck_task/start", logpeck.NewStartTaskHandler(pecker, db))
-	mux.Post("/peck_task/pause", logpeck.NewPauseTaskHandler(pecker, db))
+	mux.Post("/peck_task/stop", logpeck.NewStopTaskHandler(pecker, db))
 	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker, db))
 
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))

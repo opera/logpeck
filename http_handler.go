@@ -35,7 +35,7 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 			w.Write([]byte("Add failed, " + err.Error() + "\n"))
 			return
 		}
-		log.Printf("[Handler] Add PeckTask Success: %s", raw)
+		log.Printf("[Handler] Add Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK\n"))
@@ -74,7 +74,7 @@ func NewUpdateTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("UpdateTaskHandler Success\n"))
+		w.Write([]byte("Update Success\n"))
 	}
 }
 
@@ -101,15 +101,34 @@ func NewStartTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("StartTask Success\n"))
+		w.Write([]byte("Start Success\n"))
 	}
 }
 
-func NewPauseTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
+func NewStopTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logRequest(r, "PauseTaskHandler")
+		logRequest(r, "StopTaskHandler")
+		defer r.Body.Close()
+
+		var config PeckTaskConfig
+		raw, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(raw, &config)
+		if err != nil {
+			log.Printf("[Handler] Stop PeckTask error, %s", err)
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Bad Request, " + err.Error() + "\n"))
+			return
+		}
+
+		err = pecker.StopPeckTask(&config)
+		if err != nil {
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte("Stop PeckTask failed, " + err.Error() + "\n"))
+			return
+		}
+
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("PauseTaskHandler Success\n"))
+		w.Write([]byte("Stop Success\n"))
 	}
 }
 
@@ -136,6 +155,6 @@ func NewRemoveTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK\n"))
+		w.Write([]byte("Remove Success\n"))
 	}
 }

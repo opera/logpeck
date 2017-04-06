@@ -2,7 +2,6 @@ package logpeck
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -74,51 +73,67 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	return nil
 }
 
-func (p *Pecker) UpdatePeckTask(peck_conf *PeckTaskConfig) error {
+func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path := peck_conf.LogPath
+	log.Printf("[Pecker] UpdatePeckTask %s", *config)
+	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
-		log.Printf("[Pecker] Failed to UpdatePeckTask, PeckTask not exist")
-		return fmt.Errorf("PeckTask not exist")
+		return errors.New("Peck task not exist")
 	}
 
-	log_task.UpdatePeckTask(peck_conf)
+	if !log_task.Exist(config) {
+		return errors.New("Peck task not exist")
+	}
+
+	task := NewPeckTask(config, nil)
+
+	{
+		err := db.SaveConfig(&task.Config)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+	err := log_task.UpdatePeckTask(&task.Config)
+	if err != nil {
+		// UpdatePeckTask must be successful
+		panic(err)
+	}
 	return nil
 }
 
-func (p *Pecker) RemovePeckTask(peck_conf *PeckTaskConfig) error {
+func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path := peck_conf.LogPath
+	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return errors.New("Task Not Exist")
 	}
 
 	{
-		log.Printf("[Pecker] Remove PeckTask try clean db: %s", peck_conf)
-		err1 := db.RemoveConfig(peck_conf.LogPath, peck_conf.Name)
-		err2 := db.RemoveStat(peck_conf.LogPath, peck_conf.Name)
+		log.Printf("[Pecker] Remove PeckTask try clean db: %s", config)
+		err1 := db.RemoveConfig(config.LogPath, config.Name)
+		err2 := db.RemoveStat(config.LogPath, config.Name)
 		if err1 != nil || err2 != nil {
 			panic(err1.Error() + " " + err2.Error())
 		}
 	}
 
-	log_task.RemovePeckTask(peck_conf)
+	log_task.RemovePeckTask(config)
 	if log_task.Empty() {
 		log_task.Close()
 		delete(p.logTasks, log_path)
 	}
-	log.Printf("[Pecker] Remove PeckTask finish: %s", peck_conf)
+	log.Printf("[Pecker] Remove PeckTask finish: %s", config)
 	return nil
 }
 
-func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
+func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path := peck_conf.LogPath
+	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return errors.New("Task not exist")
@@ -126,7 +141,7 @@ func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
 
 	{
 		// Try update peck task stat in boltdb
-		stat, err := db.GetStat(peck_conf.LogPath, peck_conf.Name)
+		stat, err := db.GetStat(config.LogPath, config.Name)
 		if err != nil {
 			return err
 		}
@@ -140,13 +155,13 @@ func (p *Pecker) StartPeckTask(peck_conf *PeckTaskConfig) error {
 		log_task.Start()
 	}
 
-	return log_task.StartPeckTask(peck_conf)
+	return log_task.StartPeckTask(config)
 }
 
-func (p *Pecker) StopPeckTask(peck_conf *PeckTaskConfig) error {
+func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path := peck_conf.LogPath
+	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return errors.New("Task not exist")
@@ -154,7 +169,7 @@ func (p *Pecker) StopPeckTask(peck_conf *PeckTaskConfig) error {
 
 	{
 		// Try update peck task stat in boltdb
-		stat, err := db.GetStat(peck_conf.LogPath, peck_conf.Name)
+		stat, err := db.GetStat(config.LogPath, config.Name)
 		if err != nil {
 			return err
 		}
@@ -165,7 +180,7 @@ func (p *Pecker) StopPeckTask(peck_conf *PeckTaskConfig) error {
 		err = db.SaveStat(stat)
 	}
 
-	return log_task.StopPeckTask(peck_conf)
+	return log_task.StopPeckTask(config)
 }
 
 func (p *Pecker) Start() error {

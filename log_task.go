@@ -32,7 +32,7 @@ func (p *LogTask) AddPeckTask(task *PeckTask) error {
 }
 
 func (p *LogTask) UpdatePeckTask(conf *PeckTaskConfig) error {
-	// NOT IMPLEMENT
+	p.peckTasks[conf.Name].Config = *conf
 	return nil
 }
 
