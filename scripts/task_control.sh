@@ -19,7 +19,7 @@ url="http://127.0.0.1:7117/peck_task/$cmd"
 config='{
   "Name":"TestLog",
 	"LogPath":".test.log",
-	"FilterExpr":"mocklog",
+	"FilterExpr":"mocklog hahaha|mocklog",
 	"ESConfig":{
 	  "URL":"http://127.0.0.1:9200",
 		"Index":"mocklog",

@@ -7,27 +7,31 @@ import (
 type PeckTask struct {
 	Config PeckTaskConfig
 	Stat   PeckTaskStat
+
+	filter PeckFilter
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
+	var config *PeckTaskConfig = c
+	var stat *PeckTaskStat
 	if s == nil {
-		return &PeckTask{
-			Config: *c,
-			Stat: PeckTaskStat{
-				Name:    c.Name,
-				LogPath: c.LogPath,
-				Stop:    true,
-			},
+		stat = &PeckTaskStat{
+			Name:    c.Name,
+			LogPath: c.LogPath,
+			Stop:    true,
 		}
 	} else {
-		if c.LogPath != s.LogPath || c.Name != s.Name {
-			log.Fatalf("Config[%s], Stat[%s]", c, s)
-		}
-		return &PeckTask{
-			Config: *c,
-			Stat:   *s,
-		}
+		stat = s
 	}
+	filter := NewPeckFilter(config.FilterExpr)
+
+	task := &PeckTask{
+		Config: *config,
+		Stat:   *stat,
+		filter: *filter,
+	}
+	log.Printf("[PeckTask] NewPeckTask %+v", task)
+	return task
 }
 
 func (p *PeckTask) Start() {
@@ -45,7 +49,9 @@ func (p *PeckTask) IsStop() bool {
 
 func (p *PeckTask) Process(content string) {
 	if p.Stat.Stop {
-		log.Println("PeckTask stopped" + content)
+		return
+	}
+	if p.filter.Drop(content) {
 		return
 	}
 	SendToElasticSearch(p.Config.ESConfig.URL, p.Config.ESConfig.Index, p.Config.ESConfig.Type, content)

@@ -95,7 +95,7 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 			panic(err.Error())
 		}
 	}
-	err := log_task.UpdatePeckTask(&task.Config)
+	err := log_task.UpdatePeckTask(task)
 	if err != nil {
 		// UpdatePeckTask must be successful
 		panic(err)

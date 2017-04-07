@@ -31,8 +31,9 @@ func (p *LogTask) AddPeckTask(task *PeckTask) error {
 	return nil
 }
 
-func (p *LogTask) UpdatePeckTask(conf *PeckTaskConfig) error {
-	p.peckTasks[conf.Name].Config = *conf
+func (p *LogTask) UpdatePeckTask(task *PeckTask) error {
+	task.Stat = p.peckTasks[task.Config.Name].Stat
+	p.peckTasks[task.Config.Name] = task
 	return nil
 }
 
@@ -97,7 +98,7 @@ func (p *LogTask) Start() error {
 	if !p.stop {
 		return errors.New("LogTask already started")
 	}
-	log.Printf(" [LogTask %s] Start LogTask", p.LogPath)
+	log.Printf("[LogTask %s] Start LogTask", p.LogPath)
 	if p.tail == nil {
 		tailConf := tail.Config{
 			ReOpen: true,
