@@ -30,14 +30,13 @@ func NewPeckFilter(filterExpr string) *PeckFilter {
 }
 
 func (p *PeckFilter) Drop(str string) bool {
-	res := true
+	res := false
 	for _, f := range p.incl {
 		if strings.Contains(str, f) {
-			if !p.have_excl {
-				return false
-			} else {
-				res = false
-			}
+			res = false
+			break
+		} else {
+			res = true
 		}
 	}
 	if res {

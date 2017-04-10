@@ -36,8 +36,15 @@ func TestNewPeckFilter(*testing.T) {
 }
 
 func TestDrop(*testing.T) {
-	filterExpr := "hello logpeck | golang|^ include "
+	filterExpr := ""
 	filter := NewPeckFilter(filterExpr)
+
+	if filter.Drop("hello") {
+		panic(filter)
+	}
+
+	filterExpr = "hello logpeck | golang|^ include "
+	filter = NewPeckFilter(filterExpr)
 
 	if !filter.Drop("hello") {
 		panic(filter)
