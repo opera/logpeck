@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	configFile := flag.String("config", "./logpeck.conf", "Config file path")
+	configFile := flag.String("config", "./logpeckd.conf", "Config file path")
 	flag.Parse()
 
 	logpeck.InitConfig(configFile)

@@ -24,6 +24,7 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
 		stat = s
 	}
 	filter := NewPeckFilter(config.FilterExpr)
+	InitElasticSearchMapping(&config.ESConfig)
 
 	task := &PeckTask{
 		Config: *config,
@@ -54,5 +55,5 @@ func (p *PeckTask) Process(content string) {
 	if p.filter.Drop(content) {
 		return
 	}
-	SendToElasticSearch(p.Config.ESConfig.URL, p.Config.ESConfig.Index, p.Config.ESConfig.Type, content)
+	SendToElasticSearch(&p.Config.ESConfig, content)
 }

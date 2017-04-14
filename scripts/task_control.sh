@@ -22,8 +22,8 @@ config='{
 	"FilterExpr":"mocklog hahaha|mocklog",
 	"ESConfig":{
 	  "URL":"http://127.0.0.1:9200",
-		"Index":"mocklog",
-		"Type":"Mock"
+		"Index":"mocklog10",
+		"Type":"Mocks"
 	}
 }'
 #echo $url

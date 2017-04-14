@@ -43,6 +43,13 @@ func TestDrop(*testing.T) {
 		panic(filter)
 	}
 
+	filterExpr = "logpeck"
+	filter = NewPeckFilter(filterExpr)
+
+	if !filter.Drop("hello") {
+		panic(filter)
+	}
+
 	filterExpr = "hello logpeck | golang|^ include "
 	filter = NewPeckFilter(filterExpr)
 
