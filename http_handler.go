@@ -38,7 +38,7 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 		log.Printf("[Handler] Add Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK\n"))
+		w.Write([]byte("Add Success\n"))
 		return
 	}
 }
