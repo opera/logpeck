@@ -21,20 +21,19 @@ func NewElasticSearchSender(url string) {
 
 type ElasticSearchData struct {
 	Host      string `json: "Host"`
-	Log       string `json: "Log"`
 	Timestamp string `json: "Timestamp"`
+	Log       string `json: "Log"`
 }
 
 const ESTimestampProp string = "\"Timestamp\": { \"type\": \"date\", \"format\": \"epoch_millis\" }"
 
-func HttpCall(method, url string, bodyRaw []byte) {
-	body := ioutil.NopCloser(bytes.NewBuffer(bodyRaw))
+func HttpCall(method, url string, bodyString string) {
+	body := ioutil.NopCloser(bytes.NewBuffer([]byte(bodyString)))
 
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Printf("[Sender] New request error, err[%s]", err)
 	}
-	//resp, err := http.Put(uri, "application/json", body)
 	client := &http.Client{Timeout: time.Duration(500) * time.Millisecond}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -47,23 +46,25 @@ func HttpCall(method, url string, bodyRaw []byte) {
 func InitElasticSearchMapping(config *ElasticSearchConfig) {
 
 	// Try init index mapping
-	indexMapping := []byte(`{"mappings":{}}`)
+	indexMapping := `{"mappings":{}}`
 	uri := config.URL + "/" + config.Index
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", indexMapping)
 	HttpCall(http.MethodPut, uri, indexMapping)
 
 	// Try init type mapping
-	propString := []byte(`{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`)
+	propString := `{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`
 	uri = config.URL + "/" + config.Index + "/_mappings/" + config.Type
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", propString)
 	HttpCall(http.MethodPut, uri, propString)
 }
 
-func SendToElasticSearch(config *ElasticSearchConfig, content string) {
-	data := ElasticSearchData{
-		Host:      GetHost(),
-		Log:       content,
-		Timestamp: strconv.FormatInt(time.Now().UnixNano()/1000000, 10),
+func SendToElasticSearch(config *ElasticSearchConfig, fields map[string]string) {
+	data := map[string]string{
+		"Host":      GetHost(),
+		"Timestamp": strconv.FormatInt(time.Now().UnixNano()/1000000, 10),
+	}
+	for k, v := range fields {
+		data[k] = v
 	}
 	log.Println(data)
 	raw_data, err := json.Marshal(data)

@@ -55,5 +55,6 @@ func (p *PeckTask) Process(content string) {
 	if p.filter.Drop(content) {
 		return
 	}
-	SendToElasticSearch(&p.Config.ESConfig, content)
+	fields := map[string]string{"Log": content}
+	SendToElasticSearch(&p.Config.ESConfig, fields)
 }
