@@ -9,6 +9,7 @@ type PeckTask struct {
 	Stat   PeckTaskStat
 
 	filter PeckFilter
+	fields map[string]bool
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
@@ -23,8 +24,12 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
 	} else {
 		stat = s
 	}
+	fields := make(map[string]bool)
+	for _, v := range config.Fields {
+		fields[v.Name] = true
+	}
 	filter := NewPeckFilter(config.FilterExpr)
-	InitElasticSearchMapping(&config.ESConfig)
+	InitElasticSearchMapping(config)
 
 	task := &PeckTask{
 		Config: *config,

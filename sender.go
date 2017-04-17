@@ -43,19 +43,26 @@ func HttpCall(method, url string, bodyString string) {
 	log.Printf("[Sender] Response %s", resp_str)
 }
 
-func InitElasticSearchMapping(config *ElasticSearchConfig) {
-
+func InitElasticSearchMapping(config *PeckTaskConfig) error {
 	// Try init index mapping
 	indexMapping := `{"mappings":{}}`
-	uri := config.URL + "/" + config.Index
+	uri := config.ESConfig.URL + "/" + config.ESConfig.Index
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", indexMapping)
 	HttpCall(http.MethodPut, uri, indexMapping)
 
-	// Try init type mapping
+	// Try init Timestamp Field type
 	propString := `{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`
-	uri = config.URL + "/" + config.Index + "/_mappings/" + config.Type
+	uri = uri + "/_mappings/" + config.ESConfig.Type
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", propString)
 	HttpCall(http.MethodPut, uri, propString)
+
+	// Try init user fields type
+	for _, v := range config.Fields {
+		propS := `{"properties":{"` + v.Name + `":{"type":"` + v.Type + `"}}}`
+		log.Printf("[Sender] Init ElasticSearch mapping %s ", propS)
+		HttpCall(http.MethodPut, uri, propS)
+	}
+	return nil
 }
 
 func SendToElasticSearch(config *ElasticSearchConfig, fields map[string]string) {
