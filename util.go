@@ -21,6 +21,9 @@ func GetHost() string {
 }
 
 func SplitString(content, delims string) []string {
+	if len(delims) == 0 {
+		delims = "\t\r\n "
+	}
 	splitFunc := func(r rune) bool {
 		for _, d := range delims {
 			if r == d {
