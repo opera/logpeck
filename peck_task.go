@@ -13,7 +13,12 @@ type PeckTask struct {
 	fields map[string]bool
 }
 
-func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
+func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
+	err := c.Check()
+	if err != nil {
+		log.Printf("[PeckTask] config check failed: %s", err)
+		return nil, err
+	}
 	var config *PeckTaskConfig = c
 	var stat *PeckTaskStat
 	if s == nil {
@@ -38,7 +43,7 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) *PeckTask {
 		filter: *filter,
 	}
 	log.Printf("[PeckTask] NewPeckTask %+v", task)
-	return task
+	return task, nil
 }
 
 func (p *PeckTask) Start() {

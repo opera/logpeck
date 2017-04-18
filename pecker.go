@@ -56,7 +56,10 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 		return errors.New("Peck task already exist")
 	}
 
-	task := NewPeckTask(config, stat)
+	task, err := NewPeckTask(config, stat)
+	if err != nil {
+		return err
+	}
 
 	{
 		err1 := db.SaveConfig(&task.Config)
@@ -65,7 +68,7 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 			panic(err1.Error() + " " + err2.Error())
 		}
 	}
-	err := log_task.AddPeckTask(task)
+	err = log_task.AddPeckTask(task)
 	if err != nil {
 		// AddPeckTask must be successful
 		panic(err)
@@ -87,7 +90,10 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 		return errors.New("Peck task not exist")
 	}
 
-	task := NewPeckTask(config, nil)
+	task, err := NewPeckTask(config, nil)
+	if err != nil {
+		return err
+	}
 
 	{
 		err := db.SaveConfig(&task.Config)
@@ -95,7 +101,7 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 			panic(err.Error())
 		}
 	}
-	err := log_task.UpdatePeckTask(task)
+	err = log_task.UpdatePeckTask(task)
 	if err != nil {
 		// UpdatePeckTask must be successful
 		panic(err)
