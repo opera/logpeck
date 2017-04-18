@@ -3,6 +3,7 @@ package logpeck
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -17,4 +18,16 @@ func GetHost() string {
 		panic(err)
 	}
 	return host
+}
+
+func SplitString(content, delims string) []string {
+	splitFunc := func(r rune) bool {
+		for _, d := range delims {
+			if r == d {
+				return true
+			}
+		}
+		return false
+	}
+	return strings.FieldsFunc(content, splitFunc)
 }
