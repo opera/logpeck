@@ -84,7 +84,8 @@ func SendToElasticSearch(config *ElasticSearchConfig, fields map[string]string) 
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
 		log.Printf("[Sender] Post error, err[%s]", err)
+	} else {
+		resp_str, _ := httputil.DumpResponse(resp, true)
+		log.Printf("[Sender] Response %s", resp_str)
 	}
-	resp_str, _ := httputil.DumpResponse(resp, true)
-	log.Printf("[Sender] Response %s", resp_str)
 }
