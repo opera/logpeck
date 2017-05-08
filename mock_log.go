@@ -27,7 +27,7 @@ func NewMockLog(path string) (*MockLog, error) {
 
 func genLog() string {
 	now := time.Now().String()
-	rand_num := rand.Int()
+	rand_num := rand.Intn(65536)
 	return fmt.Sprintf("%s mocklog %d .\n", now, rand_num)
 }
 
