@@ -136,6 +136,16 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	return nil
 }
 
+func (p *Pecker) ListPeckTask() ([]PeckTaskConfig, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	configs, err := p.db.GetAllConfigs()
+	if err != nil {
+		return nil, err
+	}
+	return configs, nil
+}
+
 func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()

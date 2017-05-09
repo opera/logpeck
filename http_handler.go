@@ -163,14 +163,18 @@ func NewListTaskHandler(pecker *Pecker) http.HandlerFunc {
 		logRequest(r, "ListTaskHandler")
 		defer r.Body.Close()
 
-		//		configs, err := pecker.RemovePeckTask(&config)
-		//		if err != nil {
-		//			w.WriteHeader(http.StatusNotAcceptable)
-		//			w.Write([]byte("Remove PeckTask failed, " + err.Error() + "\n"))
-		//			return
-		//		}
-		//
+		configs, err := pecker.ListPeckTask()
+		if err != nil {
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte("List PeckTask failed, " + err.Error() + "\n"))
+			return
+		}
+		jsonStr, jErr := json.Marshal(configs)
+		if jErr != nil {
+			panic(jErr)
+		}
+
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("List Success\n"))
+		w.Write([]byte(jsonStr))
 	}
 }

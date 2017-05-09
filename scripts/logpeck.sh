@@ -2,7 +2,7 @@
 
 function Usage() {
  echo "Usage:"
-  echo "  $0 <task.config> [add|remove|stop|start|update]"
+  echo "  $0 <task.config> [add|remove|stop|start|update|list]"
 }
 
 if [ $# != 2 ]; then
@@ -18,13 +18,11 @@ fi
 source $conf_file
 cmd=$2
 case $2 in
- 	add|remove|stop|start|update)
+ 	add|remove|stop|start|update|list)
 	 	;;
  	*)
 	 	Usage; exit 1
 	 	;;
 esac
 
-echo $url/$cmd
-echo $config
 curl -XPOST "$url/peck_task/$cmd" -d "$config"
