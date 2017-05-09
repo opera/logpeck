@@ -31,11 +31,12 @@ func main() {
 	pecker.Start()
 
 	mux := bone.New()
-	mux.Post("/peck_task/add", logpeck.NewAddTaskHandler(pecker, db))
-	mux.Post("/peck_task/update", logpeck.NewUpdateTaskHandler(pecker, db))
-	mux.Post("/peck_task/start", logpeck.NewStartTaskHandler(pecker, db))
-	mux.Post("/peck_task/stop", logpeck.NewStopTaskHandler(pecker, db))
-	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker, db))
+	mux.Post("/peck_task/add", logpeck.NewAddTaskHandler(pecker))
+	mux.Post("/peck_task/update", logpeck.NewUpdateTaskHandler(pecker))
+	mux.Post("/peck_task/start", logpeck.NewStartTaskHandler(pecker))
+	mux.Post("/peck_task/stop", logpeck.NewStopTaskHandler(pecker))
+	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker))
+	mux.Post("/peck_task/list", logpeck.NewListTaskHandler(pecker))
 
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
 

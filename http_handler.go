@@ -13,7 +13,7 @@ func logRequest(r *http.Request, prefix string) {
 	log.Printf("[Handler] [%s] req_len[%d] req[%s]", prefix, len(r_str), r_str)
 }
 
-func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
+func NewAddTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "AddTaskHandler")
 		defer r.Body.Close()
@@ -43,7 +43,7 @@ func NewAddTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 	}
 }
 
-func NewUpdateTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
+func NewUpdateTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "UpdateTaskHandler")
 		defer r.Body.Close()
@@ -65,7 +65,6 @@ func NewUpdateTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 			return
 		}
 
-		err = db.SaveConfig(&config)
 		if err != nil {
 			log.Printf("[Handler] UpdateTaskConfig error, save config error, %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -78,7 +77,7 @@ func NewUpdateTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 	}
 }
 
-func NewStartTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
+func NewStartTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "StartTaskHandler")
 		defer r.Body.Close()
@@ -105,7 +104,7 @@ func NewStartTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 	}
 }
 
-func NewStopTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
+func NewStopTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "StopTaskHandler")
 		defer r.Body.Close()
@@ -132,7 +131,7 @@ func NewStopTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 	}
 }
 
-func NewRemoveTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
+func NewRemoveTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "RemoveTaskHandler")
 		defer r.Body.Close()
@@ -156,5 +155,22 @@ func NewRemoveTaskHandler(pecker *Pecker, db *DB) http.HandlerFunc {
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Remove Success\n"))
+	}
+}
+
+func NewListTaskHandler(pecker *Pecker) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logRequest(r, "ListTaskHandler")
+		defer r.Body.Close()
+
+		//		configs, err := pecker.RemovePeckTask(&config)
+		//		if err != nil {
+		//			w.WriteHeader(http.StatusNotAcceptable)
+		//			w.Write([]byte("Remove PeckTask failed, " + err.Error() + "\n"))
+		//			return
+		//		}
+		//
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("List Success\n"))
 	}
 }
