@@ -12,6 +12,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
+from tinydb import TinyDB, Query
 import base64
 import datetime
 import flask
@@ -29,6 +30,9 @@ if not app.debug:
 
 reload(sys)
 sys.setdefaultencoding('utf8')
+
+g_db = TinyDB('logpeck_db.json')
+g_table_server = g_db.table('servers')
 
 
 def logger(prefix):
@@ -55,6 +59,25 @@ def logger(prefix):
             return result
         return wrapper
     return real_decorator
+
+
+@app.route('/list-servers', methods=['POST'])
+@logger('request')
+def list_servers():
+    all_servers = g_table_server.all()
+    servers = dict()
+    for node in all_servers:
+        for k, v in node.iteritems():
+            servers[k] = True
+    return flask.jsonify(**servers)
+
+
+@app.route('/add-server', methods=['POST'])
+@logger('request')
+def add_server():
+    server = request.args['server_addr']
+    g_table_server.insert({server:True})
+    return ""
 
 
 @app.route('/')
