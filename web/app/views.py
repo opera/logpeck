@@ -73,7 +73,7 @@ def list_servers():
     servers = dict()
     for node in all_servers:
         for k, v in node.iteritems():
-            servers[k] = True
+            servers[v] = True
     return flask.jsonify(**servers)
 
 
@@ -81,8 +81,19 @@ def list_servers():
 @logger('request')
 def add_server():
     server = request.args['server_addr']
-    g_table_server.insert({server:True})
-    return ""
+    g_table_server.insert({'server':server})
+    return 'Add success'
+
+
+@app.route('/remove-server', methods=['POST'])
+@logger('request')
+def remove_server():
+    server = request.args['server_addr']
+    q = Query()
+    while len(g_table_server.search(q.server == server)) != 0:
+        eid = g_table_server.get(q.server == server).eid
+        g_table_server.remove(eid)
+    return "Remove finish"
 
 
 @app.route('/')
