@@ -35,6 +35,11 @@ g_db = TinyDB('logpeck_db.json')
 g_table_server = g_db.table('servers')
 
 
+def log(msg):
+    prefix = '[' + time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + '] '
+    print(prefix + msg)
+
+
 def logger(prefix):
     """
     Wall Clocks
