@@ -1,28 +1,28 @@
 function listServers() {
-	console.log('listServers');
+	console.log('listPeckers');
 	$.ajax({
-		url: '/list-servers',
+		url: '/list-peckers',
 		type: 'POST',
 		success: function (response) {
-		var serverHtml = '<table id="server-list"  class="table"> <thead><tr>'
+		var serverHtml = '<table id="pecker-list"  class="table"> <thead><tr>'
 			+ '<th>Server Address</th>'
 			+ '</tr></thead><tbody>';
 		$.each(response, function (name, val) {
 		 	serverHtml += '<tr>'
 			 	+ '<td><span style="display:inline-block;width:500px">'
-				+   '<a href="/server?addr=' + name + '">' + name + '</a>'
+				+   '<a href="/pecker?addr=' + name + '">' + name + '</a>'
 				+ '</span>'
 				+ '<button class="btn btn-default" type="button" style="width:80px" onclick="removeServer(\''+name+'\')">Remove</button></td>'
 			 	+ '</tr>';
 	 	});
 		serverHtml += '<tr>'
 			+ '<td><span style="display:inline-block;width:500px">'
-		 	+ '<input id="add-server" type="text" size="50" placeholder="" style="margin-right: 30px;">'
+		 	+ '<input id="add-pecker" type="text" size="50" placeholder="" style="margin-right: 30px;">'
 			+ '</span>'
 			+ '<button class="btn btn-default" type="button" style="width:80px" onclick="addServer()">Add</button></td>'
 		 	+ '</tr>';
 	 	serverHtml += '</tbody></table>';
-	 	$('#server-list').html(serverHtml);
+	 	$('#pecker-list').html(serverHtml);
 	 	},
 	 	error: function (error) {
 		 	console.log(error);
@@ -31,14 +31,14 @@ function listServers() {
 }
 
 function addServer() {
-	var addr = document.getElementById('add-server').value;
+	var addr = document.getElementById('add-pecker').value;
 	if (addr.length < 10) {
 		alert("addr error: " + addr);
 		return;
 	}
-	console.log("add server: " + addr);
+	console.log("add pecker: " + addr);
  	$.ajax({
-	 	url: '/add-server?addr=' + addr,
+	 	url: '/add-pecker?addr=' + addr,
 	 	type: 'POST',
 	 	success: function (response) {
 			location.reload();
@@ -51,9 +51,9 @@ function addServer() {
 }
 
 function removeServer(addr) {
-	console.log("remove server: " + addr);
+	console.log("remove pecker: " + addr);
  	$.ajax({
-	 	url: '/remove-server?addr=' + addr,
+	 	url: '/remove-pecker?addr=' + addr,
 	 	type: 'POST',
 	 	success: function (response) {
 			location.reload();

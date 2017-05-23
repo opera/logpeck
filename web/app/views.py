@@ -32,7 +32,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 g_db = TinyDB('logpeck_db.json')
-g_table_server = g_db.table('servers')
+g_table_pecker = g_db.table('peckers')
 
 
 def log(msg):
@@ -66,35 +66,35 @@ def logger(prefix):
     return real_decorator
 
 
-@app.route('/list-servers', methods=['POST'])
+@app.route('/list-peckers', methods=['POST'])
 @logger('request')
-def list_servers():
-    all_servers = g_table_server.all()
-    servers = dict()
-    for node in all_servers:
+def list_peckers():
+    all_peckers = g_table_pecker.all()
+    peckers = dict()
+    for node in all_peckers:
         for k, v in node.iteritems():
-            servers[v] = True
-    return flask.jsonify(**servers)
+            peckers[v] = True
+    return flask.jsonify(**peckers)
 
 
-@app.route('/add-server', methods=['POST'])
+@app.route('/add-pecker', methods=['POST'])
 @logger('request')
-def add_server():
-    server = request.args['addr']
-    g_table_server.insert({'server':server})
+def add_pecker():
+    pecker = request.args['addr']
+    g_table_pecker.insert({'pecker':pecker})
     return 'Add success'
 
 
-@app.route('/remove-server', methods=['POST'])
+@app.route('/remove-pecker', methods=['POST'])
 @logger('request')
-def remove_server():
-    server = request.args['addr']
+def remove_pecker():
+    pecker = request.args['addr']
     q = Query()
-    elements = g_table_server.search(q.server == server)
+    elements = g_table_pecker.search(q.pecker == pecker)
     eids = []
     for e in elements:
         eids.append(e.eid)
-    g_table_server.remove(eids=eids)
+    g_table_pecker.remove(eids=eids)
     return "Remove finish"
 
 
