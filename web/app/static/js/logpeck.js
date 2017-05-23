@@ -5,7 +5,7 @@ function listServers() {
 		type: 'POST',
 		success: function (response) {
 		var serverHtml = '<table id="server-list"  class="table"> <thead><tr>'
-			+ '<th>Name</th>'
+			+ '<th>Server Address</th>'
 			+ '</tr></thead><tbody>';
 		$.each(response, function (name, val) {
 		 	serverHtml += '<tr>'
