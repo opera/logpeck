@@ -4,3 +4,9 @@ logpeck.db
 logpeckd
 logmocker
 logpeckd.log
+
+.DS_store
+*/.DS_store
+*/*/.DS_store
+*/*/*/.DS_store
+*/*/*/*/.DS_store
