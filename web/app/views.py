@@ -80,7 +80,7 @@ def list_servers():
 @app.route('/add-server', methods=['POST'])
 @logger('request')
 def add_server():
-    server = request.args['server_addr']
+    server = request.args['addr']
     g_table_server.insert({'server':server})
     return 'Add success'
 
@@ -88,11 +88,13 @@ def add_server():
 @app.route('/remove-server', methods=['POST'])
 @logger('request')
 def remove_server():
-    server = request.args['server_addr']
+    server = request.args['addr']
     q = Query()
-    while len(g_table_server.search(q.server == server)) != 0:
-        eid = g_table_server.get(q.server == server).eid
-        g_table_server.remove(eid)
+    elements = g_table_server.search(q.server == server)
+    eids = []
+    for e in elements:
+        eids.append(e.eid)
+    g_table_server.remove(eids=eids)
     return "Remove finish"
 
 
