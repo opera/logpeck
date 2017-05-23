@@ -12,12 +12,14 @@ function listServers() {
 			 	+ '<td><span style="display:inline-block;width:500px">'
 				+   '<a href="/server?addr=' + name + '">' + name + '</a>'
 				+ '</span>'
-				+ '<button class="btn btn-default" type="button" width="200px" onclick="removeServer(\''+name+'\')">Remove</button></td>'
+				+ '<button class="btn btn-default" type="button" style="width:80px" onclick="removeServer(\''+name+'\')">Remove</button></td>'
 			 	+ '</tr>';
 	 	});
 		serverHtml += '<tr>'
-		 	+ '<td><input id="add-server" type="text" size="50" placeholder="" style="margin-right: 30px;">'
-			+ '<button class="btn btn-default" type="button" width="50px" onclick="addServer()">Add</button></td>'
+			+ '<td><span style="display:inline-block;width:500px">'
+		 	+ '<input id="add-server" type="text" size="50" placeholder="" style="margin-right: 30px;">'
+			+ '</span>'
+			+ '<button class="btn btn-default" type="button" style="width:80px" onclick="addServer()">Add</button></td>'
 		 	+ '</tr>';
 	 	serverHtml += '</tbody></table>';
 	 	$('#server-list').html(serverHtml);
