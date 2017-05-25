@@ -1,9 +1,5 @@
 # -*- encoding:utf-8 -*-
 
-"""
-CloudTera
-"""
-
 from flask import Flask
 from flask import abort
 from flask import json
@@ -19,6 +15,7 @@ import flask
 import logging
 import os
 import re
+import requests
 import sys
 import time
 
@@ -38,6 +35,18 @@ g_table_pecker = g_db.table('peckers')
 def log(msg):
     prefix = '[' + time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + '] '
     print(prefix + msg)
+
+
+def http_post(url):
+    log(url)
+    try:
+        r = requests.post(url=url, data='', headers={'Content-Type': 'text/html'})
+        print(r.status_code, r.json())
+        return r.json()
+    except Exception,e:
+        log('post err: ' + str(e))
+        return ""
+    sys.stdout.flush()
 
 
 def logger(prefix):
@@ -64,6 +73,14 @@ def logger(prefix):
             return result
         return wrapper
     return real_decorator
+
+
+@app.route('/list-pecktasks', methods=['POST'])
+@logger('request')
+def list_pecktasks():
+    url = 'http://' + request.args['addr'] + '/peck_task/list'
+    ret = http_post(url)
+    return flask.jsonify(**ret)
 
 
 @app.route('/list-peckers', methods=['POST'])
@@ -98,10 +115,20 @@ def remove_pecker():
     return "Remove finish"
 
 
+@app.route('/pecker')
+@logger('request')
+def pecker():
+    return render_template(
+            'pecker.html',
+            address=request.args['addr'])
+
+
 @app.route('/')
 @logger('request')
 def index():
     return render_template('index.html')
 
 if __name__ == "__main__":
+    #url='http://127.0.0.1:7117/peck_task/list'
+    #http_post(url)
     app.run(host = '0.0.0.0', port = 7119, debug = True)
