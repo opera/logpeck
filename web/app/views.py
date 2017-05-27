@@ -79,8 +79,12 @@ def logger(prefix):
 @logger('request')
 def list_pecktasks():
     url = 'http://' + request.args['addr'] + '/peck_task/list'
+    tasks = dict()
     ret = http_post(url)
-    return flask.jsonify(**ret)
+    if ret != '':
+        for t in ret:
+            tasks[t['Name']] = t
+    return flask.jsonify(**tasks)
 
 
 @app.route('/list-peckers', methods=['POST'])
