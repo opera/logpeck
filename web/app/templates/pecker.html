@@ -21,12 +21,46 @@
 	</div>
 	<hr>
 	<div class="container">
-		<h4>PeckTask List</h4>
+			<h4>PeckTask List</h4>
 	 	<table id="pecktask-list"  class="table table-bordered"> </table>
 	</div>
 	<hr>
 	<div class="container">
-		<h4>New PeckTask</h4>
+		<div>
+			<h4>New PeckTask</h4>
+		</div>
+		<p>
+		<div style="float:left; margin-right:30px">
+		 	<h6>Name</h6>
+		 	<input id="new-name" type="text" size="20" placeholder="" style="">
+		</div>
+		<div style="float:left; margin-right:30px">
+		 	<h6>Log Path</h6>
+		 	<input id="new-logpath" type="text" size="50" placeholder="" style="">
+		</div>
+		<div style="float:left; clear:left; margin-right:30px">
+		 	<h6>Filter Expression</h6>
+		 	<input id="new-filterexpr" type="text" size="50" placeholder="" style="">
+		</div>
+		<div style="float:left; margin-right:30px">
+		 	<h6>Delimiters</h6>
+			<input id="new-delimiters" type="text" size="20" placeholder=", :{}[]" style="">
+		</div>
+		<div style="float:left; clear:left; margin-right:30px">
+		 	<h6>ElasticSearch Address</h6>
+		 	<input id="new-es-url" type="text" size="50" placeholder="" style="">
+		</div>
+		<div style="float:left; margin-right:30px">
+		 	<h6>Index</h6>
+		 	<input id="new-es-index" type="text" size="15" placeholder="" style="">
+		</div>
+		<div style="float:left; margin-right:30px">
+		 	<h6>Type</h6>
+		 	<input id="new-es-type" type="text" size="15" placeholder="" style="">
+		</div>
+		<div style="float:left; clear:left; margin:20px 0">
+			<button class="btn btn-default" type="button" style="width:80px" onclick="addServer()">New Task</button>
+		</div>
 
 	</div>
 </body>
