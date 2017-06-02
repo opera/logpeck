@@ -38,9 +38,10 @@ func HttpCall(method, url string, bodyString string) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("[Sender] Put error, err[%s]", err)
+	} else {
+		resp_str, _ := httputil.DumpResponse(resp, true)
+		log.Printf("[Sender] Response %s", resp_str)
 	}
-	resp_str, _ := httputil.DumpResponse(resp, true)
-	log.Printf("[Sender] Response %s", resp_str)
 }
 
 func InitElasticSearchMapping(config *PeckTaskConfig) error {
