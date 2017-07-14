@@ -12,6 +12,12 @@ Logpeck is an interactive log collector.
  * Web show/control conveniently
  * Avoid parsing json&regex 
  
+## Build & Start
+
+`go build cmd/logpeckd/logpeckd.go`
+
+`./logpeckd -config logpeckd.conf`
+ 
 ## Scenarios
  * Interactive analysis/debug
  * Visualized presentation
