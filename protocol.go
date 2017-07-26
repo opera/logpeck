@@ -1,5 +1,14 @@
 package logpeck
 
+type PeckTaskConfig struct {
+	Name       string
+	LogPath    string
+	FilterExpr string
+	Fields     []PeckField
+	Delimiters string
+	ESConfig   ElasticSearchConfig
+}
+
 type PeckField struct {
 	Name  string
 	Value string
@@ -10,15 +19,6 @@ type ElasticSearchConfig struct {
 	URL   string
 	Index string
 	Type  string
-}
-
-type PeckTaskConfig struct {
-	Name       string
-	LogPath    string
-	FilterExpr string
-	Fields     []PeckField
-	Delimiters string
-	ESConfig   ElasticSearchConfig
 }
 
 type PeckTaskStat struct {
