@@ -1,5 +1,9 @@
 package logpeck
 
+import (
+	JsonUtil "github.com/bitly/go-simplejson"
+)
+
 type PeckTaskConfig struct {
 	Name      string
 	LogPath   string
