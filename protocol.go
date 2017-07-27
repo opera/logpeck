@@ -1,38 +1,14 @@
 package logpeck
 
-import (
-	JsonUtil "github.com/bitly/go-simplejson"
-)
-
 type PeckTaskConfig struct {
-	Name      string
-	LogPath   string
-	ESConfig  ElasticSearchConfig
-	Extractor Extractor
+	Name     string
+	LogPath  string
+	ESConfig ElasticSearchConfig
 
-	// Deprecated
+	LogFormat  string
 	FilterExpr string
 	Fields     []PeckField
 	Delimiters string
-}
-
-type Extractor struct {
-	Name string
-}
-
-type PlainExtractor struct {
-	Extractor Extractor
-
-	FilterExpr string
-	Fields     []PeckField
-	Delimiters string
-}
-
-type JsonExtractor struct {
-	Extractor Extractor
-
-	FilterExpr string
-	Fields     []PeckField
 }
 
 type PeckField struct {
