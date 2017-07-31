@@ -1,6 +1,8 @@
 package logpeck
 
 import (
+	"fmt"
+	sjson "github.com/bitly/go-simplejson"
 	"log"
 	"strconv"
 )
@@ -59,7 +61,7 @@ func (p *PeckTask) IsStop() bool {
 	return p.Stat.Stop
 }
 
-func (p *PeckTask) ExtractFields(content string) map[string]string {
+func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]string {
 	if len(p.Config.Fields) == 0 {
 		return map[string]string{"Log": content}
 	}
@@ -79,6 +81,35 @@ func (p *PeckTask) ExtractFields(content string) map[string]string {
 		fields[field.Name] = arr[pos-1]
 	}
 	return fields
+}
+
+func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]string {
+	fields := make(map[string]string)
+	jContent, err := sjson.NewJson([]byte(content))
+	if err != nil {
+		return map[string]string{"Log": content, "Exception": err.Error()}
+	}
+	mContent, mErr := jContent.Map()
+	if mErr != nil {
+		return map[string]string{"Log": content, "Exception": mErr.Error()}
+	}
+	if len(p.Config.Fields) == 0 {
+		for k, v := range mContent {
+			fields[k] = fmt.Sprintf("%v", v)
+		}
+	}
+	for _, field := range p.Config.Fields {
+		fields[field.Name] = fmt.Sprintf("%v", mContent[field.Name])
+	}
+	return fields
+}
+
+func (p *PeckTask) ExtractFields(content string) map[string]string {
+	if p.Config.LogFormat == "json" {
+		return p.ExtractFieldsFromJson(content)
+	} else {
+		return p.ExtractFieldsFromPlain(content)
+	}
 }
 
 func (p *PeckTask) Process(content string) {

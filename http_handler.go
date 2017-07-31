@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -24,7 +25,7 @@ func NewAddTaskHandler(pecker *Pecker) http.HandlerFunc {
 		if err != nil {
 			log.Printf("[Handler] Parse PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Bad Request\n"))
+			w.Write([]byte(fmt.Sprintf("Bad Request, %s in %v\n", err, raw)))
 			return
 		}
 
@@ -54,7 +55,7 @@ func NewUpdateTaskHandler(pecker *Pecker) http.HandlerFunc {
 		if err != nil {
 			log.Printf("[Handler] Parse PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Bad Request\n"))
+			w.Write([]byte(fmt.Sprintf("Bad Request, %s in %v\n", err, raw)))
 			return
 		}
 
