@@ -61,11 +61,11 @@ func (p *PeckTask) IsStop() bool {
 	return p.Stat.Stop
 }
 
-func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]string {
+func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{} {
 	if len(p.Config.Fields) == 0 {
-		return map[string]string{"Log": content}
+		return map[string]interface{}{"Log": content}
 	}
-	fields := make(map[string]string)
+	fields := make(map[string]interface{})
 	arr := SplitString(content, p.Config.Delimiters)
 	for _, field := range p.Config.Fields {
 		if field.Value[0] != '$' {
@@ -83,15 +83,15 @@ func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]string {
 	return fields
 }
 
-func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]string {
-	fields := make(map[string]string)
+func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} {
+	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
-		return map[string]string{"Log": content, "Exception": err.Error()}
+		return map[string]interface{}{"Log": content, "Exception": err.Error()}
 	}
 	mContent, mErr := jContent.Map()
 	if mErr != nil {
-		return map[string]string{"Log": content, "Exception": mErr.Error()}
+		return map[string]interface{}{"Log": content, "Exception": mErr.Error()}
 	}
 	if len(p.Config.Fields) == 0 {
 		for k, v := range mContent {
@@ -104,7 +104,7 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]string {
 	return fields
 }
 
-func (p *PeckTask) ExtractFields(content string) map[string]string {
+func (p *PeckTask) ExtractFields(content string) map[string]interface{} {
 	if p.Config.LogFormat == "json" {
 		return p.ExtractFieldsFromJson(content)
 	} else {

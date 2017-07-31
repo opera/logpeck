@@ -66,8 +66,8 @@ func InitElasticSearchMapping(config *PeckTaskConfig) error {
 	return nil
 }
 
-func SendToElasticSearch(config *ElasticSearchConfig, fields map[string]string) {
-	data := map[string]string{
+func SendToElasticSearch(config *ElasticSearchConfig, fields map[string]interface{}) {
+	data := map[string]interface{}{
 		"Host":      GetHost(),
 		"Timestamp": strconv.FormatInt(time.Now().UnixNano()/1000000, 10),
 	}
