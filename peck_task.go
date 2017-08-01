@@ -13,6 +13,7 @@ type PeckTask struct {
 
 	filter PeckFilter
 	fields map[string]bool
+	sender ElasticSearchSender
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
@@ -37,12 +38,14 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		fields[v.Name] = true
 	}
 	filter := NewPeckFilter(config.FilterExpr)
-	InitElasticSearchMapping(config)
+	sender := NewElasticSearchSender(&c.ESConfig)
+	sender.Init(c)
 
 	task := &PeckTask{
 		Config: *config,
 		Stat:   *stat,
 		filter: *filter,
+		sender: *sender,
 	}
 	log.Printf("[PeckTask] NewPeckTask %+v", task)
 	return task, nil
@@ -61,11 +64,11 @@ func (p *PeckTask) IsStop() bool {
 	return p.Stat.Stop
 }
 
-func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]string {
+func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{} {
 	if len(p.Config.Fields) == 0 {
-		return map[string]string{"Log": content}
+		return map[string]interface{}{"Log": content}
 	}
-	fields := make(map[string]string)
+	fields := make(map[string]interface{})
 	arr := SplitString(content, p.Config.Delimiters)
 	for _, field := range p.Config.Fields {
 		if field.Value[0] != '$' {
@@ -83,28 +86,45 @@ func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]string {
 	return fields
 }
 
-func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]string {
-	fields := make(map[string]string)
+func FormatJsonValue(iValue interface{}) interface{} {
+	if value, ok := iValue.([]*sjson.Json); ok {
+		var valueArray []interface{}
+		for _, e := range value {
+			valueArray = append(valueArray, FormatJsonValue(e))
+		}
+		return valueArray
+	} else if value, ok := iValue.(*sjson.Json); ok {
+		m, _ := value.Map()
+		ret := sjson.New()
+		for k, v := range m {
+			ret.Set(k, fmt.Sprint("%v", v))
+		}
+		return ret
+	} else {
+		return iValue
+	}
+}
+
+func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} {
+	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
-		return map[string]string{"Log": content, "Exception": err.Error()}
+		return map[string]interface{}{"Log": content, "Exception": err.Error()}
 	}
 	mContent, mErr := jContent.Map()
 	if mErr != nil {
-		return map[string]string{"Log": content, "Exception": mErr.Error()}
+		return map[string]interface{}{"Log": content, "Exception": mErr.Error()}
 	}
 	if len(p.Config.Fields) == 0 {
-		for k, v := range mContent {
-			fields[k] = fmt.Sprintf("%v", v)
-		}
+		return mContent
 	}
 	for _, field := range p.Config.Fields {
-		fields[field.Name] = fmt.Sprintf("%v", mContent[field.Name])
+		fields[field.Name] = mContent[field.Name]
 	}
 	return fields
 }
 
-func (p *PeckTask) ExtractFields(content string) map[string]string {
+func (p *PeckTask) ExtractFields(content string) map[string]interface{} {
 	if p.Config.LogFormat == "json" {
 		return p.ExtractFieldsFromJson(content)
 	} else {
@@ -120,5 +140,5 @@ func (p *PeckTask) Process(content string) {
 		return
 	}
 	fields := p.ExtractFields(content)
-	SendToElasticSearch(&p.Config.ESConfig, fields)
+	p.sender.Send(fields)
 }

@@ -1,7 +1,9 @@
 package logpeck
 
 import (
+	"errors"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -18,6 +20,15 @@ func GetHost() string {
 		panic(err)
 	}
 	return host
+}
+
+func SelectRandom(candidates []string) (string, error) {
+	candi_len := len(candidates)
+	if candi_len <= 0 {
+		return "", errors.New("none candidates")
+	}
+	ret := candidates[rand.Intn(candi_len)]
+	return ret, nil
 }
 
 func SplitString(content, delims string) []string {
