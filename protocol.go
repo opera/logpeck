@@ -19,7 +19,7 @@ type PeckField struct {
 }
 
 type ElasticSearchConfig struct {
-	URL   string
+	Hosts []string
 	Index string
 	Type  string
 }

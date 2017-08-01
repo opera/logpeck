@@ -47,7 +47,11 @@ func HttpCall(method, url string, bodyString string) {
 func InitElasticSearchMapping(config *PeckTaskConfig) error {
 	// Try init index mapping
 	indexMapping := `{"mappings":{}}`
-	uri := config.ESConfig.URL + "/" + config.ESConfig.Index
+	host, err := SelectRandom(config.ESConfig.Hosts)
+	if err != nil {
+		return err
+	}
+	uri := "http://" + host + "/" + config.ESConfig.Index
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", indexMapping)
 	HttpCall(http.MethodPut, uri, indexMapping)
 
@@ -79,7 +83,12 @@ func SendToElasticSearch(config *ElasticSearchConfig, fields map[string]interfac
 	if err != nil {
 		panic(err)
 	}
-	uri := config.URL + "/" + config.Index + "/" + config.Type
+	host, err := SelectRandom(config.Hosts)
+	if err != nil {
+		log.Printf("[Sender] ElasticSearch Host error [%v] ", err)
+		return
+	}
+	uri := "http://" + host + "/" + config.Index + "/" + config.Type
 	log.Printf("[Sender] Post ElasticSearch %s content [%s] ", uri, raw_data)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	resp, err := http.Post(uri, "application/json", body)
