@@ -62,7 +62,7 @@ func (p *ElasticSearchSender) Init(taskConfig *PeckTaskConfig) error {
 	if err != nil {
 		return err
 	}
-	uri := "http://" + host + "/" + p.config.Index
+	uri := "http://" + host + "/" + GetIndexName(p.config.Index)
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", indexMapping)
 	HttpCall(http.MethodPut, uri, indexMapping)
 
