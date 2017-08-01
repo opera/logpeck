@@ -1,8 +1,27 @@
 package logpeck
 
 import (
+	"fmt"
 	"testing"
 )
+
+func TestGetIndexName(*testing.T) {
+	{
+		proto := "logpeck"
+		if proto != GetIndexName(proto) {
+			panic(proto)
+		}
+	}
+
+	{
+		proto := "logpeck-%{+2006.01.02}"
+		indexName := GetIndexName(proto)
+		fmt.Printf("proto: %s, indexName: %s\n", proto, indexName)
+		if len(indexName) != 18 {
+			panic(indexName)
+		}
+	}
+}
 
 func TestSendToElasticSearch(*testing.T) {
 	//config := &ElasticSearchConfig{

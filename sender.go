@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -38,6 +39,20 @@ func HttpCall(method, url string, bodyString string) {
 		resp_str, _ := httputil.DumpResponse(resp, true)
 		log.Printf("[Sender] Response %s", resp_str)
 	}
+}
+
+func GetIndexName(prototype string) string {
+	l, r := "%{+", "}"
+	if !strings.Contains(prototype, l) || !strings.Contains(prototype, r) {
+		return prototype
+	}
+	indexName := ""
+	lIndex := strings.Index(prototype, l)
+	rIndex := strings.Index(prototype, r)
+	format := prototype[lIndex+len(l) : rIndex]
+	timeStr := time.Now().Format(format)
+
+	return indexName + prototype[:lIndex] + timeStr + prototype[rIndex+1:]
 }
 
 func (p *ElasticSearchSender) Init(taskConfig *PeckTaskConfig) error {
@@ -84,7 +99,7 @@ func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 		log.Printf("[Sender] ElasticSearch Host error [%v] ", err)
 		return
 	}
-	uri := "http://" + host + "/" + p.config.Index + "/" + p.config.Type
+	uri := "http://" + host + "/" + GetIndexName(p.config.Index) + "/" + p.config.Type
 	log.Printf("[Sender] Post ElasticSearch %s content [%s] ", uri, raw_data)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	resp, err := http.Post(uri, "application/json", body)
