@@ -83,6 +83,25 @@ func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{}
 	return fields
 }
 
+func FormatJsonValue(iValue interface{}) interface{} {
+	if value, ok := iValue.([]*sjson.Json); ok {
+		var valueArray []interface{}
+		for _, e := range value {
+			valueArray = append(valueArray, FormatJsonValue(e))
+		}
+		return valueArray
+	} else if value, ok := iValue.(*sjson.Json); ok {
+		m, _ := value.Map()
+		ret := sjson.New()
+		for k, v := range m {
+			ret.Set(k, fmt.Sprint("%v", v))
+		}
+		return ret
+	} else {
+		return iValue
+	}
+}
+
 func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} {
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
@@ -95,11 +114,11 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 	}
 	if len(p.Config.Fields) == 0 {
 		for k, v := range mContent {
-			fields[k] = fmt.Sprintf("%v", v)
+			fields[k] = FormatJsonValue(v)
 		}
 	}
 	for _, field := range p.Config.Fields {
-		fields[field.Name] = fmt.Sprintf("%v", mContent[field.Name])
+		fields[field.Name] = FormatJsonValue(mContent[field.Name])
 	}
 	return fields
 }
