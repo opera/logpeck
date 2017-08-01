@@ -113,12 +113,10 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 		return map[string]interface{}{"Log": content, "Exception": mErr.Error()}
 	}
 	if len(p.Config.Fields) == 0 {
-		for k, v := range mContent {
-			fields[k] = FormatJsonValue(v)
-		}
+		return mContent
 	}
 	for _, field := range p.Config.Fields {
-		fields[field.Name] = FormatJsonValue(mContent[field.Name])
+		fields[field.Name] = mContent[field.Name]
 	}
 	return fields
 }
