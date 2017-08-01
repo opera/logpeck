@@ -13,6 +13,7 @@ type PeckTask struct {
 
 	filter PeckFilter
 	fields map[string]bool
+	sender ElasticSearchSender
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
@@ -37,12 +38,14 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		fields[v.Name] = true
 	}
 	filter := NewPeckFilter(config.FilterExpr)
-	InitElasticSearchMapping(config)
+	sender := NewElasticSearchSender(&c.ESConfig)
+	sender.Init(c)
 
 	task := &PeckTask{
 		Config: *config,
 		Stat:   *stat,
 		filter: *filter,
+		sender: *sender,
 	}
 	log.Printf("[PeckTask] NewPeckTask %+v", task)
 	return task, nil
@@ -137,5 +140,5 @@ func (p *PeckTask) Process(content string) {
 		return
 	}
 	fields := p.ExtractFields(content)
-	SendToElasticSearch(&p.Config.ESConfig, fields)
+	p.sender.Send(fields)
 }
