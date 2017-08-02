@@ -19,7 +19,7 @@ Logpeck is an interactive log collector.
 
 #### Requirements
 
-Logpeck will post log data into an elasticsearch service, so there should be an elasticsearch service first. See [here] for more information.
+Logpeck will post log data into an elasticsearch service, so there should be an elasticsearch service first. See [here](https://github.com/elastic/elasticsearch) for more information.
 
 #### Launch logpeck service
  
