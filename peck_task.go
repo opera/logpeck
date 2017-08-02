@@ -38,8 +38,7 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		fields[v.Name] = true
 	}
 	filter := NewPeckFilter(config.FilterExpr)
-	sender := NewElasticSearchSender(&c.ESConfig)
-	sender.Init(c)
+	sender := NewElasticSearchSender(&c.ESConfig, c.Fields)
 
 	task := &PeckTask{
 		Config: *config,

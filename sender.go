@@ -9,16 +9,21 @@ import (
 	"net/http/httputil"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 type ElasticSearchSender struct {
-	config ElasticSearchConfig
+	config        ElasticSearchConfig
+	fields        []PeckField
+	mu            sync.Mutex
+	lastIndexName string
 }
 
-func NewElasticSearchSender(config *ElasticSearchConfig) *ElasticSearchSender {
+func NewElasticSearchSender(config *ElasticSearchConfig, fields []PeckField) *ElasticSearchSender {
 	return &ElasticSearchSender{
 		config: *config,
+		fields: fields,
 	}
 }
 
@@ -41,28 +46,37 @@ func HttpCall(method, url string, bodyString string) {
 	}
 }
 
-func GetIndexName(prototype string) string {
+func (p *ElasticSearchSender) GetIndexName() (indexName string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	prototype := p.config.Index
 	l, r := "%{+", "}"
 	if !strings.Contains(prototype, l) || !strings.Contains(prototype, r) {
-		return prototype
+		indexName = prototype
+	} else {
+		lIndex := strings.Index(prototype, l)
+		rIndex := strings.Index(prototype, r)
+		format := prototype[lIndex+len(l) : rIndex]
+		timeStr := time.Now().Format(format)
+		indexName = prototype[:lIndex] + timeStr + prototype[rIndex+1:]
 	}
-	indexName := ""
-	lIndex := strings.Index(prototype, l)
-	rIndex := strings.Index(prototype, r)
-	format := prototype[lIndex+len(l) : rIndex]
-	timeStr := time.Now().Format(format)
 
-	return indexName + prototype[:lIndex] + timeStr + prototype[rIndex+1:]
+	if indexName != p.lastIndexName {
+		p.lastIndexName = indexName
+		p.InitMapping()
+	}
+
+	return indexName
 }
 
-func (p *ElasticSearchSender) Init(taskConfig *PeckTaskConfig) error {
+func (p *ElasticSearchSender) InitMapping() error {
 	// Try init index mapping
 	indexMapping := `{"mappings":{}}`
 	host, err := SelectRandom(p.config.Hosts)
 	if err != nil {
 		return err
 	}
-	uri := "http://" + host + "/" + GetIndexName(p.config.Index)
+	uri := "http://" + host + "/" + p.lastIndexName
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", indexMapping)
 	HttpCall(http.MethodPut, uri, indexMapping)
 
@@ -73,7 +87,7 @@ func (p *ElasticSearchSender) Init(taskConfig *PeckTaskConfig) error {
 	HttpCall(http.MethodPut, uri, propString)
 
 	// Try init user fields type
-	for _, v := range taskConfig.Fields {
+	for _, v := range p.fields {
 		propS := `{"properties":{"` + v.Name + `":{"type":"` + v.Type + `"}}}`
 		log.Printf("[Sender] Init ElasticSearch mapping %s ", propS)
 		HttpCall(http.MethodPut, uri, propS)
@@ -99,7 +113,7 @@ func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 		log.Printf("[Sender] ElasticSearch Host error [%v] ", err)
 		return
 	}
-	uri := "http://" + host + "/" + GetIndexName(p.config.Index) + "/" + p.config.Type
+	uri := "http://" + host + "/" + p.GetIndexName() + "/" + p.config.Type
 	log.Printf("[Sender] Post ElasticSearch %s content [%s] ", uri, raw_data)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	resp, err := http.Post(uri, "application/json", body)
