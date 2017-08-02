@@ -6,17 +6,73 @@ Logpeck is an interactive log collector.
  * Support plain text and json format log.
  * Full control with HTTP API.
  * Add/Remove/Start/Stop collection task freely.
- * Cooperate with ElasticSearch/Kibana deeply.
+ * Cooperate with [ElasticSearch](https://github.com/elastic/elasticsearch)/[Kibana](https://github.com/elastic/kibana) deeply.
  * Collection speed control.
  * Get collection status freely.
  * Web show/control conveniently([logpeck-web](https://github.com/opera/logpeck-web)).
  
-## Build & Start
+## Build
 
 `go build cmd/logpeckd/logpeckd.go`
 
-`./logpeckd -config logpeckd.conf`
+## Getting Started
+
+#### Requirements
+
+Logpeck will post log data into an elasticsearch service, so there should be an elasticsearch service first. See [here] for more information.
+
+#### Launch logpeck service
  
-## Scenarios
- * Interactive analysis/debug
- * Visualized presentation
+`./logpeckd -config logpeckd.conf`
+
+We can also use `supervisor` or other service management software to manage logpeck process.
+
+#### Try collect a log
+
+1. Add a new task first.
+
+```
+curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
+  "Name":"SystemLog",
+	"LogPath":"/var/log/syslog",
+	"ESConfig":{
+	  "Hosts":["127.0.0.1:9200"],
+		"Index":"syslog",
+		"Type":"raw"
+	}
+}
+```
+```
+Add Success
+```
+
+2. Start peck task.
+
+```
+curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
+  "Name":"SystemLog"
+}
+```
+```
+Start Success
+```
+
+3. Stop peck task
+
+```
+curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
+  "Name":"SystemLog"
+}
+```
+
+4. Remove peck task
+
+```
+curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
+  "Name":"SystemLog"
+}
+```
+
+## Peck task configuration
+
+## Http API
