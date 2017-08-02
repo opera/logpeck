@@ -33,10 +33,10 @@ We can also use `supervisor` or other service management software to manage logp
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
-  "Name":"SystemLog",
+  	"Name":"SystemLog",
 	"LogPath":"/var/log/syslog",
 	"ESConfig":{
-	  "Hosts":["127.0.0.1:9200"],
+	  	"Hosts":["127.0.0.1:9200"],
 		"Index":"syslog",
 		"Type":"raw"
 	}
@@ -50,7 +50,7 @@ Add Success
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
-  "Name":"SystemLog"
+  	"Name":"SystemLog"
 }
 ```
 ```
@@ -61,7 +61,7 @@ Start Success
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
-  "Name":"SystemLog"
+  	"Name":"SystemLog"
 }
 ```
 
@@ -69,7 +69,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
-  "Name":"SystemLog"
+  	"Name":"SystemLog"
 }
 ```
 
