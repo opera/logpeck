@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - 1.x
+  
+go_import_path: github.com/opera/logpeck
+
+script: 
+  - go test
+  - go build cmd/logpeckd/logpeckd.go 
