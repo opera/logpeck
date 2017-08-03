@@ -17,6 +17,8 @@
 
 ## 快速使用
 
+以系统syslog为例进行日志采集。
+
 #### 环境要求
 
 Logpeck需要利用ElasticSearch进行数据存储和检索，使用Logpeck前，先保证有一个可用的ElasticSearch服务，详情[参见](https://github.com/elastic/elasticsearch)。
@@ -27,7 +29,7 @@ Logpeck需要利用ElasticSearch进行数据存储和检索，使用Logpeck前�
 
 也可以使用`supervisor`或其它管理软件对Logpeck进程进行管理。
 
-#### 开始日志采集
+#### 日志采集
 
 1. 新增采集任务
 
@@ -57,7 +59,9 @@ curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
 Start Success
 ```
 
-3. Stop peck task
+此时应该已经可以将`/var/log/syslog`中新增的日志写入配置好的ElasticSearch中。
+
+3. 暂停采集
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
@@ -65,7 +69,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
 }
 ```
 
-4. Remove peck task
+4. 删除任务
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
@@ -73,7 +77,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
 }
 ```
 
-5. List peck tasks
+5. 列出所有采集任务
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/list
