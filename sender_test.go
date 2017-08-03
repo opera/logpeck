@@ -7,16 +7,27 @@ import (
 
 func TestGetIndexName(*testing.T) {
 	{
+		config := ElasticSearchConfig{
+			Hosts: []string{"127.0.0.1:9200"},
+			Index: "logpeck",
+			Type:  "hello",
+		}
+		sender := NewElasticSearchSender(&config, nil)
 		proto := "logpeck"
-		if proto != GetIndexName(proto) {
+		if proto != sender.GetIndexName() {
 			panic(proto)
 		}
 	}
 
 	{
-		proto := "logpeck-%{+2006.01.02}"
-		indexName := GetIndexName(proto)
-		fmt.Printf("proto: %s, indexName: %s\n", proto, indexName)
+		config := ElasticSearchConfig{
+			Hosts: []string{"127.0.0.1:9200"},
+			Index: "logpeck-%{+2006.01.02}",
+			Type:  "hello",
+		}
+		sender := NewElasticSearchSender(&config, nil)
+		indexName := sender.GetIndexName()
+		fmt.Printf("proto: %s, indexName: %s\n", config.Index, indexName)
 		if len(indexName) != 18 {
 			panic(indexName)
 		}
