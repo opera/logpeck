@@ -1,6 +1,6 @@
-# Logpeck
+# Logpeck - An Interactive Log Collector
 
-Logpeck is an interactive log collector.
+[![Documentation Status](https://img.shields.io/badge/中文文档-最新-brightgreen.svg)](README-cn.md)
 
 ## Features
  * Support plain text and json format log.
@@ -71,6 +71,12 @@ curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
 curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
   	"Name":"SystemLog"
 }
+```
+
+5. List peck tasks
+
+```
+curl -XPOST http://127.0.0.1:7117/peck_task/list
 ```
 
 ## Peck task configuration
