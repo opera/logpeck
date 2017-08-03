@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -98,7 +97,7 @@ func (p *ElasticSearchSender) InitMapping() error {
 func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 	data := map[string]interface{}{
 		"Host":      GetHost(),
-		"Timestamp": strconv.FormatInt(time.Now().UnixNano()/1000000, 10),
+		"Timestamp": time.Now().UnixNano() / 1000000,
 	}
 	for k, v := range fields {
 		data[k] = v
