@@ -1,5 +1,6 @@
 # Logpeck - An Interactive Log Collector
 
+[![Build Status](https://travis-ci.org/opera/logpeck.svg?branch=master)](https://travis-ci.org/opera/logpeck)
 [![Documentation Status](https://img.shields.io/badge/中文文档-最新-brightgreen.svg)](README-cn.md)
 
 ## Features
