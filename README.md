@@ -30,7 +30,7 @@ We can also use `supervisor` or other service management software to manage logp
 
 #### Try collect a log
 
-1. Add a new task first.
+1. Add a new task first. (Want more task config, filter, json, long, etc.? see [here](doc/task_config.md).)
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
@@ -79,7 +79,3 @@ curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/list
 ```
-
-## Peck task configuration
-
-## Http API
