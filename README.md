@@ -79,3 +79,8 @@ curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/list
 ```
+
+## Documentation
+
+ * [Peck Task Configuration](doc/task_config.md)
+ * [Frequently Asked Questions](doc/FAQ.md)
