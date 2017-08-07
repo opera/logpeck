@@ -12,16 +12,15 @@ type PeckTaskConfig struct {
 }
 
 type PeckField struct {
-	Name   string
-	Value  string
-	Type   string
-	ESType string
+	Name  string
+	Value string
 }
 
 type ElasticSearchConfig struct {
-	Hosts []string
-	Index string
-	Type  string
+	Hosts   []string
+	Index   string
+	Type    string
+	Mapping string
 }
 
 type PeckTaskStat struct {

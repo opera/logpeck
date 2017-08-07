@@ -70,7 +70,12 @@ func (p *ElasticSearchSender) GetIndexName() (indexName string) {
 
 func (p *ElasticSearchSender) InitMapping() error {
 	// Try init index mapping
-	indexMapping := `{"mappings":{}}`
+	indexMapping := ""
+	if p.config.Mapping != "" {
+		indexMapping = p.config.Mapping
+	} else {
+		indexMapping = `{"mappings":{}}`
+	}
 	host, err := SelectRandom(p.config.Hosts)
 	if err != nil {
 		return err
@@ -85,12 +90,6 @@ func (p *ElasticSearchSender) InitMapping() error {
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", propString)
 	HttpCall(http.MethodPut, uri, propString)
 
-	// Try init user fields type
-	for _, v := range p.fields {
-		propS := `{"properties":{"` + v.Name + `":{"type":"` + v.Type + `"}}}`
-		log.Printf("[Sender] Init ElasticSearch mapping %s ", propS)
-		HttpCall(http.MethodPut, uri, propS)
-	}
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package logpeck
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -32,6 +33,24 @@ func TestGetIndexName(*testing.T) {
 			panic(indexName)
 		}
 	}
+}
+
+func TestMappingUnmarshal(*testing.T) {
+	raw := `{
+		"Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
+		"Index":"mocklog10",
+		"Type":"Mocks",
+		"Mapping": \{
+			\"my_type\": \"properties\"
+		\}
+	}`
+	///"my_type/": /"properties/"
+	var config ElasticSearchConfig
+	err := json.Unmarshal([]byte(raw), &config)
+	if err != nil {
+		panic(err)
+	}
+	panic(config.Mapping)
 }
 
 func TestSendToElasticSearch(*testing.T) {
