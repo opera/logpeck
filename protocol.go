@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"errors"
+	"fmt"
 	sjson "github.com/bitly/go-simplejson"
 )
 
@@ -147,10 +148,23 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 		return e
 	}
 	// Parse "Fields", optional
-	if i := j.Get("Fields").Interface(); i != nil {
-		var ok bool
-		if p.Fields, ok = i.([]PeckField); !ok {
-			return errors.New("Fields format error")
+	if fields, e := j.Get("Fields").Array(); e == nil {
+		fmt.Println(len(fields))
+		for _, field := range fields {
+			var f PeckField
+			if name, ok := field.(map[string]interface{})["Name"]; ok {
+				if f.Name, ok = name.(string); !ok {
+					return errors.New("Fields format error: Name must be a string")
+				}
+			} else {
+				return errors.New("Fields error: need Name")
+			}
+			if val, ok := field.(map[string]interface{})["Value"]; ok {
+				if f.Value, ok = val.(string); !ok {
+					return errors.New("Fields format error: Value must be a string")
+				}
+			}
+			p.Fields = append(p.Fields, f)
 		}
 	}
 

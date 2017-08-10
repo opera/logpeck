@@ -99,7 +99,7 @@ func TestPeckTaskConfigUnmarshal(*testing.T) {
 		"LogFormat": "json"
 	}`
 	if e := config.Unmarshal([]byte(configStr)); e != nil {
-		//		panic(e)
+		panic(e)
 	}
 	fmt.Println(config)
 }
