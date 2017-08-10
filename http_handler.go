@@ -21,7 +21,7 @@ func NewAddTaskHandler(pecker *Pecker) http.HandlerFunc {
 
 		var config PeckTaskConfig
 		raw, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(raw, &config)
+		err := config.Unmarshal(raw)
 		if err != nil {
 			log.Printf("[Handler] Parse PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -51,7 +51,7 @@ func NewUpdateTaskHandler(pecker *Pecker) http.HandlerFunc {
 
 		var config PeckTaskConfig
 		raw, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(raw, &config)
+		err := config.Unmarshal(raw)
 		if err != nil {
 			log.Printf("[Handler] Parse PeckTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -85,7 +85,7 @@ func NewStartTaskHandler(pecker *Pecker) http.HandlerFunc {
 
 		var config PeckTaskConfig
 		raw, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(raw, &config)
+		err := config.Unmarshal(raw)
 		if err != nil {
 			log.Printf("[Handler] Start PeckTask error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -112,7 +112,7 @@ func NewStopTaskHandler(pecker *Pecker) http.HandlerFunc {
 
 		var config PeckTaskConfig
 		raw, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(raw, &config)
+		err := config.Unmarshal(raw)
 		if err != nil {
 			log.Printf("[Handler] Stop PeckTask error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -139,7 +139,7 @@ func NewRemoveTaskHandler(pecker *Pecker) http.HandlerFunc {
 
 		var config PeckTaskConfig
 		raw, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(raw, &config)
+		err := config.Unmarshal(raw)
 		if err != nil {
 			log.Printf("[Handler] Remove PeckTask error, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
