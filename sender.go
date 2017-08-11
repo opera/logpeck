@@ -26,8 +26,6 @@ func NewElasticSearchSender(config *ElasticSearchConfig, fields []PeckField) *El
 	}
 }
 
-const ESTimestampProp string = "\"Timestamp\": { \"type\": \"date\", \"format\": \"epoch_millis\" }"
-
 func HttpCall(method, url string, bodyString string) {
 	body := ioutil.NopCloser(bytes.NewBuffer([]byte(bodyString)))
 
@@ -69,26 +67,26 @@ func (p *ElasticSearchSender) GetIndexName() (indexName string) {
 }
 
 func (p *ElasticSearchSender) InitMapping() error {
-	// Try init index mapping
-	indexMapping := ""
-	if p.config.Mapping != "" {
-		indexMapping = p.config.Mapping
-	} else {
-		indexMapping = `{"mappings":{}}`
-	}
 	host, err := SelectRandom(p.config.Hosts)
 	if err != nil {
 		return err
 	}
 	uri := "http://" + host + "/" + p.lastIndexName
-	log.Printf("[Sender] Init ElasticSearch mapping %s ", indexMapping)
-	HttpCall(http.MethodPut, uri, indexMapping)
+	typeUri := uri + "/_mappings/" + p.config.Type
 
-	// Try init Timestamp Field type
+	// Try init index mapping
+	// indexMapping := `{"mappings":` + p.config.Mapping + `}`
+	indexMapping := map[string]interface{}{
+		"mappings": p.config.Mapping,
+	}
+	raw_data, err := json.Marshal(indexMapping)
+	log.Printf("[Sender] Init ElasticSearch mapping %s ", string(raw_data[:]))
+	HttpCall(http.MethodPut, uri, string(raw_data[:]))
+
+	// Try init Timestamp Field mapping
 	propString := `{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`
-	uri = uri + "/_mappings/" + p.config.Type
 	log.Printf("[Sender] Init ElasticSearch mapping %s ", propString)
-	HttpCall(http.MethodPut, uri, propString)
+	HttpCall(http.MethodPut, typeUri, propString)
 
 	return nil
 }
