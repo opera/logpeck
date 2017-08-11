@@ -2,7 +2,7 @@ package logpeck
 
 import (
 	"errors"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"sync"
 	"time"
 )
@@ -36,7 +36,7 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 	for i, config := range configs {
 		stat, _ := p.db.GetStat(config.LogPath, config.Name)
 		p.AddPeckTask(&config, stat)
-		log.Printf("[Pecker] Restore PeckTask[%d] : %s", i, config)
+		log.Infof("[Pecker] Restore PeckTask[%d] : %s", i, config)
 	}
 	return nil
 }
@@ -44,7 +44,7 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log.Printf("[Pecker] AddPeckTask %s", *config)
+	log.Infof("[Pecker] AddPeckTask %s", *config)
 	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
@@ -79,7 +79,7 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log.Printf("[Pecker] UpdatePeckTask %s", *config)
+	log.Infof("[Pecker] UpdatePeckTask %s", *config)
 	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
@@ -119,7 +119,7 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	}
 
 	{
-		log.Printf("[Pecker] Remove PeckTask try clean db: %s", config)
+		log.Infof("[Pecker] Remove PeckTask try clean db: %s", config)
 		err1 := db.RemoveConfig(config.LogPath, config.Name)
 		err2 := db.RemoveStat(config.LogPath, config.Name)
 		if err1 != nil || err2 != nil {
@@ -132,7 +132,7 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		log_task.Close()
 		delete(p.logTasks, log_path)
 	}
-	log.Printf("[Pecker] Remove PeckTask finish: %s", config)
+	log.Infof("[Pecker] Remove PeckTask finish: %s", config)
 	return nil
 }
 
@@ -206,7 +206,7 @@ func (p *Pecker) Start() error {
 		return errors.New("Pecker already started")
 	}
 	for path, logTask := range p.logTasks {
-		log.Printf("[Pecker] Start LogTask %s", path)
+		log.Infof("[Pecker] Start LogTask %s", path)
 		logTask.Start()
 	}
 	return nil

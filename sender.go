@@ -3,8 +3,8 @@ package logpeck
 import (
 	"bytes"
 	"encoding/json"
+	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -31,15 +31,15 @@ func HttpCall(method, url string, bodyString string) {
 
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
-		log.Printf("[Sender] New request error, err[%s]", err)
+		log.Infof("[Sender] New request error, err[%s]", err)
 	}
 	client := &http.Client{Timeout: time.Duration(500) * time.Millisecond}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("[Sender] Put error, err[%s]", err)
+		log.Infof("[Sender] Put error, err[%s]", err)
 	} else {
 		resp_str, _ := httputil.DumpResponse(resp, true)
-		log.Printf("[Sender] Response %s", resp_str)
+		log.Infof("[Sender] Response %s", resp_str)
 	}
 }
 
@@ -80,12 +80,12 @@ func (p *ElasticSearchSender) InitMapping() error {
 		"mappings": p.config.Mapping,
 	}
 	raw_data, err := json.Marshal(indexMapping)
-	log.Printf("[Sender] Init ElasticSearch mapping %s ", string(raw_data[:]))
+	log.Infof("[Sender] Init ElasticSearch mapping %s ", string(raw_data[:]))
 	HttpCall(http.MethodPut, uri, string(raw_data[:]))
 
 	// Try init Timestamp Field mapping
 	propString := `{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`
-	log.Printf("[Sender] Init ElasticSearch mapping %s ", propString)
+	log.Infof("[Sender] Init ElasticSearch mapping %s ", propString)
 	HttpCall(http.MethodPut, typeUri, propString)
 
 	return nil
@@ -99,24 +99,23 @@ func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 	for k, v := range fields {
 		data[k] = v
 	}
-	log.Println(data)
 	raw_data, err := json.Marshal(data)
 	if err != nil {
 		panic(err)
 	}
 	host, err := SelectRandom(p.config.Hosts)
 	if err != nil {
-		log.Printf("[Sender] ElasticSearch Host error [%v] ", err)
+		log.Debugf("[Sender] ElasticSearch Host error [%v] ", err)
 		return
 	}
 	uri := "http://" + host + "/" + p.GetIndexName() + "/" + p.config.Type
-	log.Printf("[Sender] Post ElasticSearch %s content [%s] ", uri, raw_data)
+	log.Debugf("[Sender] Post ElasticSearch %s content [%s] ", uri, raw_data)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
-		log.Printf("[Sender] Post error, err[%s]", err)
+		log.Infof("[Sender] Post error, err[%s]", err)
 	} else {
 		resp_str, _ := httputil.DumpResponse(resp, true)
-		log.Printf("[Sender] Response %s", resp_str)
+		log.Debugf("[Sender] Response %s", resp_str)
 	}
 }

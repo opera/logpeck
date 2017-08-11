@@ -2,8 +2,8 @@ package logpeck
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
-	"log"
 	"strconv"
 )
 
@@ -19,7 +19,7 @@ type PeckTask struct {
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	err := c.Check()
 	if err != nil {
-		log.Printf("[PeckTask] config check failed: %s", err)
+		log.Infof("[PeckTask] config check failed: %s", err)
 		return nil, err
 	}
 	var config *PeckTaskConfig = c
@@ -46,12 +46,11 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		filter: *filter,
 		sender: *sender,
 	}
-	log.Printf("[PeckTask] NewPeckTask %+v", task)
+	log.Infof("[PeckTask] NewPeckTask %+v", task)
 	return task, nil
 }
 
 func (p *PeckTask) Start() {
-	log.Printf("[PeckTask] Start")
 	p.Stat.Stop = false
 }
 

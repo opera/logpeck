@@ -1,8 +1,8 @@
 package logpeck
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/hpcloud/tail"
-	"log"
 	"testing"
 	"time"
 )
@@ -26,7 +26,7 @@ func TestTailLog(*testing.T) {
 	t, _ := tail.TailFile(logName, conf)
 	cnt := 0
 	for line := range t.Lines {
-		log.Println("[" + line.Text + "]")
+		log.Infof("[" + line.Text + "]")
 		if cnt > 5 {
 			break
 		}

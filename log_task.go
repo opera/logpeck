@@ -2,8 +2,8 @@ package logpeck
 
 import (
 	"errors"
+	log "github.com/Sirupsen/logrus"
 	"github.com/hpcloud/tail"
-	"log"
 	"time"
 )
 
@@ -80,11 +80,11 @@ func (p *LogTask) Empty() bool {
 }
 
 func peckLogBG(p *LogTask) {
-	log.Printf("[LogTask %s] Start peck log", p.LogPath)
+	log.Infof("[LogTask %s] Start peck log", p.LogPath)
 	for content := range p.tail.Lines {
 		for name, task := range p.peckTasks {
 			// process log
-			log.Printf("[LogTask %s] %s content[%s]", p.LogPath, name, content.Text)
+			log.Debugf("[LogTask %s] %s content[%s]", p.LogPath, name, content.Text)
 			task.Process(content.Text)
 		}
 		if p.stop {
@@ -98,7 +98,7 @@ func (p *LogTask) Start() error {
 	if !p.stop {
 		return errors.New("LogTask already started")
 	}
-	log.Printf("[LogTask %s] Start LogTask", p.LogPath)
+	log.Infof("[LogTask %s] Start LogTask", p.LogPath)
 	if p.tail == nil {
 		tailConf := tail.Config{
 			ReOpen: true,
@@ -121,7 +121,7 @@ func (p *LogTask) Stop() error {
 	if p.stop {
 		return errors.New("LogTask already stopped")
 	}
-	log.Printf(" [LogTask %s] Stop LogTask", p.LogPath)
+	log.Infof(" [LogTask %s] Stop LogTask", p.LogPath)
 	p.stop = true
 	p.tail.Stop()
 	p.tail = nil
