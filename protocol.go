@@ -26,7 +26,7 @@ type ElasticSearchConfig struct {
 	Hosts   []string
 	Index   string
 	Type    string
-	Mapping string
+	Mapping map[string]interface{}
 }
 
 type PeckTaskStat struct {
@@ -104,8 +104,7 @@ func ParseESConfig(j *sjson.Json) (config ElasticSearchConfig, e error) {
 	}
 
 	// Parse "ESConfig.Mapping", optional
-	mapping, _ := cJson.Get("Mapping").Encode()
-	config.Mapping = string(mapping[:])
+	config.Mapping, _ = cJson.Get("Mapping").Map()
 	return config, nil
 }
 

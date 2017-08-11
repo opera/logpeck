@@ -76,7 +76,7 @@ func (p *DB) GetConfig(logPath, name string) (*PeckTaskConfig, error) {
 	}
 	//	fmt.Println(rawKV)
 	var result PeckTaskConfig
-	err := json.Unmarshal([]byte(rawValue), &result)
+	err := result.Unmarshal([]byte(rawValue))
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 	//	fmt.Println(rawKV)
 	for _, v := range rawKV {
 		config := &PeckTaskConfig{}
-		err = json.Unmarshal([]byte(v), config)
+		err = config.Unmarshal([]byte(v))
 		if err != nil {
 			panic(fmt.Errorf("raw[%s], err[%s]", string(v[:]), err))
 		}

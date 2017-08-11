@@ -111,11 +111,17 @@ func TestConfigsAccess(*testing.T) {
 	name := "test_peck_task"
 	logPath := "./test.log"
 	filterExpr := "panic"
+	esconfig := ElasticSearchConfig{
+		Hosts: []string{"127.0.0.1:9200"},
+		Index: "test",
+		Type:  "testType",
+	}
 
 	config := PeckTaskConfig{
 		Name:       name,
 		LogPath:    logPath,
 		FilterExpr: filterExpr,
+		ESConfig:   esconfig,
 	}
 
 	defer LogExecTime(time.Now(), "config access")

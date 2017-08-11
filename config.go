@@ -8,6 +8,7 @@ import (
 
 type LogPeckConfig struct {
 	Port          int32         `toml:"port"`
+	LogLevel      string        `toml:"log_level"`
 	MaxTaskNum    int32         `toml:"max_task_num"`
 	DatabaseFile  string        `toml:"database_file"`
 	PeckTaskLimit PeckTaskLimit `toml:"peck_task_limit"`
