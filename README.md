@@ -1,26 +1,16 @@
-# Logpeck - An Interactive Log Collector
+# Logpeck - A Simple, RESTful Log Collector
 
 [![Build Status](https://travis-ci.org/opera/logpeck.svg?branch=master)](https://travis-ci.org/opera/logpeck)
 [![Documentation Status](https://img.shields.io/badge/中文文档-最新-brightgreen.svg)](README-cn.md)
 
-## Features
- * Support plain text and json format log.
- * Full control with HTTP API.
- * Add/Remove/Start/Stop collection task freely.
- * Cooperate with [ElasticSearch](https://github.com/elastic/elasticsearch)/[Kibana](https://github.com/elastic/kibana) deeply.
- * Collection speed control.
- * Get collection status freely.
- * Web show/control conveniently([logpeck-web](https://github.com/opera/logpeck-web)).
- 
+## Objectives
+Logpeck aims to be an easy-to-use module that collecting contents from log file and posting into [ElasticSearch](https://github.com/elastic/elasticsearch). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
+
 ## Build
 
 `go build cmd/logpeckd/logpeckd.go`
 
 ## Getting Started
-
-#### Requirements
-
-Logpeck will post log data into an elasticsearch service, so there should be an elasticsearch service first. See [here](https://github.com/elastic/elasticsearch) for more information.
 
 #### Launch logpeck service
  
@@ -47,7 +37,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
 Add Success
 ```
 
-2. Start peck task.
+2. Start task.
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
@@ -58,7 +48,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
 Start Success
 ```
 
-3. Stop peck task
+3. Stop task
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
@@ -66,7 +56,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
 }
 ```
 
-4. Remove peck task
+4. Remove task
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
@@ -74,7 +64,7 @@ curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
 }
 ```
 
-5. List peck tasks
+5. List tasks
 
 ```
 curl -XPOST http://127.0.0.1:7117/peck_task/list
