@@ -4,7 +4,6 @@ import (
 	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/hpcloud/tail"
-	"time"
 )
 
 type LogTask struct {
@@ -90,7 +89,6 @@ func peckLogBG(p *LogTask) {
 		if p.stop {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -102,7 +100,7 @@ func (p *LogTask) Start() error {
 	if p.tail == nil {
 		tailConf := tail.Config{
 			ReOpen: true,
-			Poll:   true,
+			//Poll:   true,
 			Follow: true,
 			Location: &tail.SeekInfo{
 				Offset: 0,
