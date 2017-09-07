@@ -80,6 +80,9 @@ func (p *ElasticSearchSender) InitMapping() error {
 		"mappings": p.config.Mapping,
 	}
 	raw_data, err := json.Marshal(indexMapping)
+	if p.config.Mapping == nil {
+		raw_data = []byte(`{"mappings":{}}`)
+	}
 	log.Infof("[Sender] Init ElasticSearch mapping %s ", string(raw_data[:]))
 	HttpCall(http.MethodPut, uri, string(raw_data[:]))
 
