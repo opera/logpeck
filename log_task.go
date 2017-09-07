@@ -4,7 +4,6 @@ import (
 	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/hpcloud/tail"
-	"time"
 )
 
 type LogTask struct {
@@ -90,7 +89,6 @@ func peckLogBG(p *LogTask) {
 		if p.stop {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
 	}
 }
 

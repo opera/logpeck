@@ -95,6 +95,7 @@ func (p *ElasticSearchSender) InitMapping() error {
 }
 
 func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
+	defer LogExecTime(time.Now(), "Sender")
 	data := map[string]interface{}{
 		"Host":      GetHost(),
 		"Timestamp": time.Now().UnixNano() / 1000000,
