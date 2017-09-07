@@ -102,7 +102,7 @@ func (p *LogTask) Start() error {
 	if p.tail == nil {
 		tailConf := tail.Config{
 			ReOpen: true,
-			Poll:   true,
+			//Poll:   true,
 			Follow: true,
 			Location: &tail.SeekInfo{
 				Offset: 0,
