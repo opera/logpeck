@@ -8,19 +8,19 @@ import (
 )
 
 type Pecker struct {
-	logTasks map[string]*LogTask
-	nametopath map[string] string
-	mu       sync.Mutex
-	db       *DB
-	stop     bool
+	logTasks   map[string]*LogTask
+	nameToPath map[string]string
+	mu         sync.Mutex
+	db         *DB
+	stop       bool
 }
 
 func NewPecker(db *DB) (*Pecker, error) {
 	pecker := &Pecker{
-		logTasks: make(map[string]*LogTask),
-		nametopath :make(map[string] string),
-		db:       db,
-		stop:     true,
+		logTasks:   make(map[string]*LogTask),
+		nameToPath: make(map[string]string),
+		db:         db,
+		stop:       true,
 	}
 	err := pecker.restorePeckTasks(db)
 	if err != nil {
@@ -50,14 +50,14 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	log_path := config.LogPath
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
-		if _, ok2 := p.nametopath[config.Name];ok2{
+		if _, ok2 := p.nameToPath[config.Name]; ok2 {
 			return errors.New("Peck task name already exist")
-		} else{
-		    log_task = NewLogTask(log_path)
-		    p.logTasks[log_path] = log_task
-		    p.nametopath[config.Name]=log_path
+		} else {
+			log_task = NewLogTask(log_path)
+			p.logTasks[log_path] = log_task
+			p.nameToPath[config.Name] = log_path
 		}
- 	}
+	}
 
 	if log_task.Exist(config) {
 		return errors.New("Peck task already exist")
@@ -87,10 +87,10 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	log.Infof("[Pecker] UpdatePeckTask %s", *config)
-	if _, ok := p.nametopath[config.Name];!ok{
+	if _, ok := p.nameToPath[config.Name]; !ok {
 		return errors.New("Peck task name not exist")
 	}
-	log_path := p.nametopath[config.Name]
+	log_path := p.nameToPath[config.Name]
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return errors.New("Peck task not exist")
@@ -122,10 +122,10 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if _, ok := p.nametopath[config.Name];!ok{
+	if _, ok := p.nameToPath[config.Name]; !ok {
 		return errors.New("Peck task name not exist")
 	}
-	log_path := p.nametopath[config.Name]
+	log_path := p.nameToPath[config.Name]
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return errors.New("Task not exist")
@@ -141,7 +141,7 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	}
 
 	log_task.RemovePeckTask(config)
-	delete(p.nametopath,config.Name)
+	delete(p.nameToPath, config.Name)
 	if log_task.Empty() {
 		log_task.Close()
 		delete(p.logTasks, log_path)
@@ -163,7 +163,7 @@ func (p *Pecker) ListPeckTask() ([]PeckTaskConfig, error) {
 func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path := p.nametopath[config.Name]
+	log_path := p.nameToPath[config.Name]
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
 		return errors.New("Task not exist")
@@ -180,7 +180,7 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 			return errors.New("Task already started")
 		}
 		stat.Stop = false
-		err = db .SaveStat(stat)
+		err = db.SaveStat(stat)
 	}
 	if log_task.IsStop() {
 		log_task.Start()
@@ -192,13 +192,13 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if _, ok := p.nametopath[config.Name];!ok{
+	if _, ok := p.nameToPath[config.Name]; !ok {
 		return errors.New("Peck task name not exist")
 	}
-	log_path := p.nametopath[config.Name]
+	log_path := p.nameToPath[config.Name]
 	log_task, ok := p.logTasks[log_path]
 	if !ok {
-			return errors.New("Task not exist")
+		return errors.New("Task not exist")
 	}
 
 	{
@@ -235,4 +235,3 @@ func (p *Pecker) GetStat() *PeckerStat {
 	defer p.mu.Unlock()
 	return nil
 }
-
