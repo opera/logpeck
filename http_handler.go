@@ -72,6 +72,7 @@ func NewUpdateTaskHandler(pecker *Pecker) http.HandlerFunc {
 			w.Write([]byte(err.Error() + "\n"))
 			return
 		}
+		log.Infof("[Handler] Update Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Update Success\n"))
@@ -99,6 +100,7 @@ func NewStartTaskHandler(pecker *Pecker) http.HandlerFunc {
 			w.Write([]byte("Start failed, " + err.Error() + "\n"))
 			return
 		}
+		log.Infof("[Handler] Start Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Start Success\n"))
@@ -126,6 +128,7 @@ func NewStopTaskHandler(pecker *Pecker) http.HandlerFunc {
 			w.Write([]byte("Stop PeckTask failed, " + err.Error() + "\n"))
 			return
 		}
+		log.Infof("[Handler] Stop Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Stop Success\n"))
@@ -153,6 +156,7 @@ func NewRemoveTaskHandler(pecker *Pecker) http.HandlerFunc {
 			w.Write([]byte("Remove PeckTask failed, " + err.Error() + "\n"))
 			return
 		}
+		log.Infof("[Handler] Remove Success: %s", raw)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Remove Success\n"))
@@ -174,6 +178,7 @@ func NewListTaskHandler(pecker *Pecker) http.HandlerFunc {
 		if jErr != nil {
 			panic(jErr)
 		}
+		log.Infof("[Handler] List Success: %s", jsonStr)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonStr))
