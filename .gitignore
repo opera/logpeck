@@ -4,6 +4,7 @@ logpeck.db
 logpeckd
 logmocker
 logpeckd.log
+.idea/workspace.xml
 
 .DS_store
 */.DS_store
