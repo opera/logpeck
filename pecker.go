@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"errors"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"sync"
 	"time"
@@ -71,7 +72,7 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 		return err
 	}
 
-	p.record(config, stat)
+	p.record(config, &task.Stat)
 
 	// AddPeckTask must be successful
 	p.logTasks[p.nameToPath[config.Name]].AddPeckTask(task)
@@ -94,7 +95,7 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 		return err
 	}
 
-	p.record(config, nil)
+	p.record(config, &task.Stat)
 
 	// UpdatePeckTask must be successful
 	p.logTasks[p.nameToPath[config.Name]].UpdatePeckTask(task)
@@ -143,13 +144,23 @@ func (p *Pecker) ListPeckTask() ([]PeckTaskConfig, error) {
 	}
 	return configs, nil
 }
+func (p *Pecker) ListTaskStats() ([]PeckTaskStat, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	stats, err := p.db.GetAllStats()
+	if err != nil {
+		return nil, err
+	}
+	return stats, nil
+}
 
 func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	log_path, ok := p.nameToPath[config.Name]
 	if !ok {
-		return errors.New("Task not exist")
+		log.Infof("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
+		return fmt.Errorf("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
 	}
 
 	log_task := p.logTasks[log_path]
@@ -177,9 +188,11 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	log.Infof("[Pecker]Try stop task, Name: %s, Exist: %v", config.Name, p.nameToPath)
 	log_path, ok := p.nameToPath[config.Name]
 	if !ok {
-		return errors.New("Task not exist")
+		log.Infof("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
+		return fmt.Errorf("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
 	}
 
 	log_task := p.logTasks[log_path]
