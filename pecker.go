@@ -90,7 +90,8 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 		return errors.New("Peck task name not exist")
 	}
 
-	task, err := NewPeckTask(config, nil)
+	stat, err := db.GetStat(p.nameToPath[config.Name], config.Name)
+	task, err := NewPeckTask(config, stat)
 	if err != nil {
 		return err
 	}

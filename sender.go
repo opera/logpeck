@@ -83,12 +83,12 @@ func (p *ElasticSearchSender) InitMapping() error {
 	if p.config.Mapping == nil {
 		raw_data = []byte(`{"mappings":{}}`)
 	}
-	log.Infof("[Sender] Init ElasticSearch mapping %s ", string(raw_data[:]))
+	log.Infof("[Sender] Init ElasticSearch mapping %s %s ", uri, string(raw_data[:]))
 	HttpCall(http.MethodPut, uri, string(raw_data[:]))
 
 	// Try init Timestamp Field mapping
 	propString := `{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`
-	log.Infof("[Sender] Init ElasticSearch mapping %s ", propString)
+	log.Infof("[Sender] Init ElasticSearch mapping %s %s ", uri, propString)
 	HttpCall(http.MethodPut, typeUri, propString)
 
 	return nil
