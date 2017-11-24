@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/go-zoo/bone"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -203,6 +204,42 @@ func NewListStatsHandler(pecker *Pecker) http.HandlerFunc {
 			panic(jErr)
 		}
 		log.Infof("[Handler] List Success: %s", jsonStr)
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(jsonStr))
+	}
+}
+
+func NewListDirHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logRequest(r, "ListDirHandler")
+
+		dir := ""
+		if dir_arr := bone.GetQuery(r, "dir"); len(dir_arr) > 0 {
+			dir = dir_arr[0]
+		} else {
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte("Need directory"))
+			return
+		}
+
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		var names []string
+		for _, file := range files {
+			names = append(names, file.Name())
+		}
+
+		jsonStr, err := json.Marshal(names)
+		if err != nil {
+			panic(err)
+		}
+		log.Infof("[Handler] List directory Success: %s", jsonStr)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonStr))
