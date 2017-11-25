@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 )
 
 func logRequest(r *http.Request, prefix string) {
@@ -210,18 +211,26 @@ func NewListStatsHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
-func NewListDirHandler() http.HandlerFunc {
+func NewListPathHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logRequest(r, "ListDirHandler")
+		logRequest(r, "ListPathHandler")
 
-		dir := ""
-		if dir_arr := bone.GetQuery(r, "dir"); len(dir_arr) > 0 {
-			dir = dir_arr[0]
+		path := ""
+		if path_arr := bone.GetQuery(r, "path"); len(path_arr) > 0 {
+			path = path_arr[0]
 		} else {
 			w.WriteHeader(http.StatusNotAcceptable)
-			w.Write([]byte("Need directory"))
+			w.Write([]byte("Need path"))
 			return
 		}
+
+		index := strings.LastIndex(path, "/")
+		if index == -1 {
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte("Path should be absolute"))
+		}
+		dir := path[0 : index+1]
+		file_prefix := path[index+1:]
 
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
@@ -232,14 +241,19 @@ func NewListDirHandler() http.HandlerFunc {
 
 		var names []string
 		for _, file := range files {
-			names = append(names, file.Name())
+			if name := file.Name(); strings.HasPrefix(name, file_prefix) {
+				names = append(names, strings.TrimPrefix(name, file_prefix))
+				if len(names) >= 20 {
+					break
+				}
+			}
 		}
 
 		jsonStr, err := json.Marshal(names)
 		if err != nil {
 			panic(err)
 		}
-		log.Infof("[Handler] List directory Success: %s", jsonStr)
+		log.Infof("[Handler] List path Success: %s", jsonStr)
 
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonStr))
