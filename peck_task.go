@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
 	"strconv"
+	"errors"
 )
 
 type PeckTask struct {
@@ -139,4 +140,14 @@ func (p *PeckTask) Process(content string) {
 	}
 	fields := p.ExtractFields(content)
 	p.sender.Send(fields)
+}
+
+func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
+	if p.filter.Drop(content) {
+		var err error = errors.New("[peck_task]The line doesn't exist the selected field  ")
+		s:= make(map[string]interface{})
+		return s,err
+	}
+	fields := p.ExtractFields(content)
+	return fields,nil
 }

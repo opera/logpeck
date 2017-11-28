@@ -8,12 +8,12 @@ import (
 //   "Value": "$num"
 func (p *PeckField) Check() error {
 	if len(p.Value) < 2 || p.Value[0] != '$' {
-		return errors.New("Value format error, start with '$': " + p.Value + "\n")
+		return errors.New("Value format error, start with '$': " + p.Value)
 	}
 
 	for _, c := range p.Value[1:] {
 		if c > '9' || c < '0' {
-			return errors.New("Value format error: " + p.Value + "\n")
+			return errors.New("Value format error: " + p.Value )
 		}
 	}
 	return nil

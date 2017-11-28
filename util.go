@@ -11,7 +11,7 @@ import (
 
 func LogExecTime(start time.Time, prefix string) {
 	elapsed_ms := time.Since(start) / time.Millisecond
-	log.Debugf("Performance: %s cost %d ms.\n", prefix, elapsed_ms)
+	log.Debugf("Performance: %s cost %d ms.", prefix, elapsed_ms)
 }
 
 func GetHost() string {

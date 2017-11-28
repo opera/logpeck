@@ -52,6 +52,7 @@ func main() {
 	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker))
 	mux.Post("/peck_task/list", logpeck.NewListTaskHandler(pecker))
 	mux.Post("/peck_task/liststats", logpeck.NewListStatsHandler(pecker))
+	mux.Post("/peck_task/test", logpeck.NewTestTaskHandler())
 	mux.Post("/listpath", logpeck.NewListPathHandler())
 
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
@@ -62,7 +63,7 @@ func main() {
 		Addr:         address,
 		Handler:      mux,
 		ReadTimeout:  2 * time.Second,
-		WriteTimeout: 2 * time.Second,
+		WriteTimeout: 3 * time.Second,
 	}
 	s.ListenAndServe()
 }

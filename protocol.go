@@ -15,6 +15,7 @@ type PeckTaskConfig struct {
 	FilterExpr string
 	Fields     []PeckField
 	Delimiters string
+	TestNum       int
 }
 
 type PeckField struct {
@@ -141,11 +142,20 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	if e != nil {
 		return e
 	}
+
 	// Parse "Delimiters", optional
 	p.Delimiters, e = GetString(j, "Delimiters", false)
 	if e != nil {
 		return e
 	}
+
+	// Parse "TestNum", optional
+	val, e := j.Get("TestNum").Int()
+	if e != nil {
+		p.TestNum = 0;
+	}
+	p.TestNum = val
+
 	// Parse "Fields", optional
 	if fields, e := j.Get("Fields").Array(); e == nil {
 		fmt.Println(len(fields))
