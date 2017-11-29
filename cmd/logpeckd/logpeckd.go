@@ -54,6 +54,7 @@ func main() {
 	mux.Post("/peck_task/liststats", logpeck.NewListStatsHandler(pecker))
 	mux.Post("/peck_task/test", logpeck.NewTestTaskHandler())
 	mux.Post("/listpath", logpeck.NewListPathHandler())
+	mux.Post("/version", logpeck.NewVersionHandler())
 
 	//	mux.Get("/pecker_stat", http.HandlerFunc(handler.Get))
 

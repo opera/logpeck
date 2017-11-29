@@ -291,3 +291,11 @@ func NewListPathHandler() http.HandlerFunc {
 		w.Write([]byte(jsonStr))
 	}
 }
+
+func NewVersionHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logRequest(r, "VersionHandler")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(VersionString))
+	}
+}
