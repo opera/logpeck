@@ -258,19 +258,14 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 	var res []map[string]interface{}
 	select {
 	case <-ch:
-		l := len(resultsCh)
-		for i := 0; i < l; i++ {
-			res = append(res, <-resultsCh)
-		}
-		return res, nil
 	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
 		close = true
-		l := len(resultsCh)
-		for i := 0; i < l; i++ {
-			res = append(res, <-resultsCh)
-		}
-		return res, nil
 	}
+	l := len(resultsCh)
+	for i := 0; i < l; i++ {
+		res = append(res, <-resultsCh)
+	}
+	return res, nil
 }
 
 func (p *Pecker) Start() error {
