@@ -1,6 +1,7 @@
 package logpeck
 
 import (
+	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
@@ -139,4 +140,14 @@ func (p *PeckTask) Process(content string) {
 	}
 	fields := p.ExtractFields(content)
 	p.sender.Send(fields)
+}
+
+func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
+	if p.filter.Drop(content) {
+		var err error = errors.New("[peck_task]The line does not meet the rules ")
+		s := make(map[string]interface{})
+		return s, err
+	}
+	fields := p.ExtractFields(content)
+	return fields, nil
 }

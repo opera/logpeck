@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/hpcloud/tail"
 	"sync"
 	"time"
 )
@@ -212,6 +213,59 @@ func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 	}
 
 	return log_task.StopPeckTask(config)
+}
+
+func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
+	task, err := NewPeckTask(config, nil)
+	if err != nil {
+		return []map[string]interface{}{}, err
+	}
+	tailConf := tail.Config{
+		MustExist: true,
+		ReOpen:    true,
+		Poll:      true,
+		Follow:    true,
+		Location: &tail.SeekInfo{
+			Offset: 0,
+			Whence: 2,
+		},
+	}
+	ch := make(chan bool, 1)
+	resultsCh := make(chan map[string]interface{}, config.Test.TestNum)
+	id := 0
+	close := false
+	tail, err := tail.TailFile(config.LogPath, tailConf)
+	if err != nil {
+		return []map[string]interface{}{}, err
+	}
+	go func() {
+		for content := range tail.Lines {
+			if close == true {
+				break
+			}
+			fields, err := task.ProcessTest(content.Text)
+			if err != nil {
+				continue
+			}
+			resultsCh <- fields
+			id++
+			if id >= config.Test.TestNum {
+				break
+			}
+		}
+		ch <- true
+	}()
+	var res []map[string]interface{}
+	select {
+	case <-ch:
+	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
+		close = true
+	}
+	l := len(resultsCh)
+	for i := 0; i < l; i++ {
+		res = append(res, <-resultsCh)
+	}
+	return res, nil
 }
 
 func (p *Pecker) Start() error {

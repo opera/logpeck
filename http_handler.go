@@ -205,9 +205,41 @@ func NewListStatsHandler(pecker *Pecker) http.HandlerFunc {
 			panic(jErr)
 		}
 		log.Infof("[Handler] List Success: %s", jsonStr)
-
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonStr))
+	}
+}
+
+func NewTestTaskHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logRequest(r, "TestTaskHandler")
+		defer r.Body.Close()
+
+		var config PeckTaskConfig
+		raw, _ := ioutil.ReadAll(r.Body)
+		err := config.Unmarshal(raw)
+		if err != nil {
+			log.Infof("[Handler] Parse PeckTaskConfig error, %s", err)
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("Bad Request, %s in %v", err, string(raw[:]))))
+			return
+		}
+
+		results, err := TestPeckTask(&config)
+		if err != nil {
+			log.Infof("[Handler] TestTaskConfig error, %s", err)
+			w.WriteHeader(http.StatusNotAcceptable)
+			w.Write([]byte("test failed, " + err.Error()))
+			return
+		}
+		jsonStr, jErr := json.Marshal(results)
+		if jErr != nil {
+			panic(jErr)
+		}
+		log.Infof("[Handler] Test Success: %s", jsonStr)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonStr)
+		return
 	}
 }
 
