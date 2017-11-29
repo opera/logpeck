@@ -231,8 +231,7 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 		},
 	}
 	ch := make(chan bool, 1)
-	resultsCh := make(chan []map[string]interface{}, 1)
-	var results []map[string]interface{}
+	resultsCh := make(chan map[string]interface{}, config.Test.TestNum)
 	id := 0
 	close := false
 	tail, err := tail.TailFile(config.LogPath, tailConf)
@@ -248,22 +247,28 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 			if err != nil {
 				continue
 			}
-			results = append(results, fields)
+			resultsCh <- fields
 			id++
 			if id >= config.Test.TestNum {
 				break
 			}
 		}
 		ch <- true
-		resultsCh <- results
 	}()
+	var res []map[string]interface{}
 	select {
 	case <-ch:
-		res := <-resultsCh
+		l := len(resultsCh)
+		for i := 0; i < l; i++ {
+			res = append(res, <-resultsCh)
+		}
 		return res, nil
 	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
 		close = true
-		res := <-resultsCh
+		l := len(resultsCh)
+		for i := 0; i < l; i++ {
+			res = append(res, <-resultsCh)
+		}
 		return res, nil
 	}
 }
