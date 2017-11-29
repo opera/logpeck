@@ -230,11 +230,11 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 			Whence: 2,
 		},
 	}
-	ch := make(chan []map[string]interface{}, 1)
+	ch := make(chan bool, 1)
+	resultsCh := make(chan []map[string]interface{}, 1)
 	var results []map[string]interface{}
 	id := 0
 	close := false
-	sure := false
 	tail, err := tail.TailFile(config.LogPath, tailConf)
 	if err != nil {
 		return []map[string]interface{}{}, err
@@ -242,7 +242,6 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 	go func() {
 		for content := range tail.Lines {
 			if close == true {
-				sure = true
 				break
 			}
 			fields, err := task.ProcessTest(content.Text)
@@ -252,24 +251,20 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 			results = append(results, fields)
 			id++
 			if id >= config.Test.TestNum {
-				ch <- results
 				break
 			}
 		}
-		sure = true
-		ch <- results
+		ch <- true
+		resultsCh <- results
 	}()
 	select {
-	case res := <-ch:
+	case <-ch:
+		res := <-resultsCh
 		return res, nil
 	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
 		close = true
-		for {
-			if sure == true {
-				break
-			}
-		}
-		return results, nil
+		res := <-resultsCh
+		return res, nil
 	}
 }
 
