@@ -225,19 +225,18 @@ func NewTestTaskHandler() http.HandlerFunc {
 			return
 		}
 
-		Log, err := TestPeckTask(&config)
+		results, err := TestPeckTask(&config)
 		if err != nil {
 			log.Infof("[Handler] TestTaskConfig error, %s", err)
 			w.WriteHeader(http.StatusNotAcceptable)
 			w.Write([]byte("test failed, " + err.Error()))
 			return
 		}
-		jsonStr, jErr := json.Marshal(Log)
+		jsonStr, jErr := json.Marshal(results)
 		if jErr != nil {
 			panic(jErr)
 		}
 		log.Infof("[Handler] Test Success: %s", jsonStr)
-		log.Infof("[Handler] Test Success: %s", []byte(jsonStr))
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonStr)
 		return

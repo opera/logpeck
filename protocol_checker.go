@@ -13,7 +13,7 @@ func (p *PeckField) Check() error {
 
 	for _, c := range p.Value[1:] {
 		if c > '9' || c < '0' {
-			return errors.New("Value format error: " + p.Value )
+			return errors.New("Value format error: " + p.Value)
 		}
 	}
 	return nil

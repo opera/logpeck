@@ -15,7 +15,7 @@ type PeckTaskConfig struct {
 	FilterExpr string
 	Fields     []PeckField
 	Delimiters string
-	TestNum       int
+	Test       TestModule
 }
 
 type PeckField struct {
@@ -58,6 +58,11 @@ type PeckerStat struct {
 	Name     string
 	Stat     Stat
 	LogStats []LogStat
+}
+
+type TestModule struct {
+	TestNum int
+	Timeout int
 }
 
 func GetString(j *sjson.Json, key string, required bool) (string, error) {
@@ -149,12 +154,24 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 		return e
 	}
 
-	// Parse "TestNum", optional
-	val, e := j.Get("TestNum").Int()
+	testJ := j.Get("Test")
 	if e != nil {
-		p.TestNum = 0;
+		p.Test.TestNum = 1
+		p.Test.Timeout = 1
 	}
-	p.TestNum = val
+	// Parse "TestNum", optional
+	val, e := testJ.Get("TestNum").Int()
+	if e != nil {
+		p.Test.TestNum = 1
+	}
+	p.Test.TestNum = val
+
+	// Parse "Time", optional
+	time, e := testJ.Get("Timeout").Int()
+	if e != nil {
+		p.Test.Timeout = 1
+	}
+	p.Test.Timeout = time
 
 	// Parse "Fields", optional
 	if fields, e := j.Get("Fields").Array(); e == nil {

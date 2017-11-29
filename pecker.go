@@ -221,43 +221,55 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 		return []map[string]interface{}{}, err
 	}
 	tailConf := tail.Config{
-		ReOpen: true,
-		Poll:   true,
-		Follow: true,
+		MustExist: true,
+		ReOpen:    true,
+		Poll:      true,
+		Follow:    true,
 		Location: &tail.SeekInfo{
 			Offset: 0,
 			Whence: 2,
 		},
 	}
 	ch := make(chan []map[string]interface{}, 1)
-	tail, _ := tail.TailFile(config.LogPath, tailConf)
-	var Log []map[string]interface{}
+	var results []map[string]interface{}
 	id := 0
 	close := false
+	sure := false
+	tail, err := tail.TailFile(config.LogPath, tailConf)
+	if err != nil {
+		return []map[string]interface{}{}, err
+	}
 	go func() {
 		for content := range tail.Lines {
 			if close == true {
+				sure = true
 				break
 			}
 			fields, err := task.ProcessTest(content.Text)
 			if err != nil {
 				continue
 			}
-			Log=append(Log,fields)
+			results = append(results, fields)
 			id++
-			if id >= config.TestNum {
-				ch <- Log
+			if id >= config.Test.TestNum {
+				ch <- results
 				break
 			}
 		}
-		ch <- Log
+		sure = true
+		ch <- results
 	}()
 	select {
 	case res := <-ch:
 		return res, nil
-	case <-time.After(time.Second * 1):
+	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
 		close = true
-		return Log, nil
+		for {
+			if sure == true {
+				break
+			}
+		}
+		return results, nil
 	}
 }
 
