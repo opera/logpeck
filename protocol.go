@@ -7,9 +7,9 @@ import (
 )
 
 type PeckTaskConfig struct {
-	Name     string
-	LogPath  string
-	ESConfig ElasticSearchConfig
+	Name    string
+	LogPath string
+	OutPut  OutPutConfig
 
 	LogFormat  string
 	FilterExpr string
@@ -23,11 +23,9 @@ type PeckField struct {
 	Value string
 }
 
-type ElasticSearchConfig struct {
-	Hosts   []string
-	Index   string
-	Type    string
-	Mapping map[string]interface{}
+type OutPutConfig struct {
+	Name   string
+	Config interface{}
 }
 
 type PeckTaskStat struct {
@@ -87,31 +85,41 @@ func GetStringArray(j *sjson.Json, key string) ([]string, error) {
 	return valJson.StringArray()
 }
 
-func ParseESConfig(j *sjson.Json) (config ElasticSearchConfig, e error) {
-	cJson := j.Get("ESConfig")
+func ParseESConfig(j *sjson.Json) (output OutPutConfig, e error) {
+	cJson := j.Get("OutPut")
 	if cJson.Interface() == nil {
-		return config, nil
+		return output, nil
 	}
+	output.Name, e = cJson.Get("Name").String()
+	if e != nil {
+		return
+	}
+	elasticSearchConfig := ElasticSearchConfig{}
+	if output.Name == "ElasticSearchConfig" {
+		cJson := cJson.Get("ESConfig")
+		if cJson.Interface() == nil {
+			return output, nil
+		}
+		elasticSearchConfig.Hosts, e = GetStringArray(cJson, "Hosts")
+		if e != nil {
+			return
+		}
+		// Parse "ESConfig.Index", required
+		elasticSearchConfig.Index, e = GetString(cJson, "Index", true)
+		if e != nil {
+			return
+		}
+		// Parse "ESConfig.Type", required
+		elasticSearchConfig.Type, e = GetString(cJson, "Type", true)
+		if e != nil {
+			return
+		}
 
-	// Parse "ESConfig.Hosts", required
-	config.Hosts, e = GetStringArray(cJson, "Hosts")
-	if e != nil {
-		return
+		// Parse "ESConfig.Mapping", optional
+		elasticSearchConfig.Mapping, _ = cJson.Get("Mapping").Map()
 	}
-	// Parse "ESConfig.Index", required
-	config.Index, e = GetString(cJson, "Index", true)
-	if e != nil {
-		return
-	}
-	// Parse "ESConfig.Type", required
-	config.Type, e = GetString(cJson, "Type", true)
-	if e != nil {
-		return
-	}
-
-	// Parse "ESConfig.Mapping", optional
-	config.Mapping, _ = cJson.Get("Mapping").Map()
-	return config, nil
+	output.Config = elasticSearchConfig
+	return output, nil
 }
 
 func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
@@ -131,7 +139,7 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 		return e
 	}
 	// Parse "ESConfig", optional
-	p.ESConfig, e = ParseESConfig(j)
+	p.OutPut, e = ParseESConfig(j)
 	if e != nil {
 		return e
 	}

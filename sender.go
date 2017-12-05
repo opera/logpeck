@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+type ElasticSearchConfig struct {
+	Hosts   []string
+	Index   string
+	Type    string
+	Mapping map[string]interface{}
+}
+
 type ElasticSearchSender struct {
 	config        ElasticSearchConfig
 	fields        []PeckField
@@ -19,11 +26,15 @@ type ElasticSearchSender struct {
 	lastIndexName string
 }
 
-func NewElasticSearchSender(config *ElasticSearchConfig, fields []PeckField) *ElasticSearchSender {
-	return &ElasticSearchSender{
-		config: *config,
+func NewElasticSearchSender(output *OutPutConfig, fields []PeckField) *Sender {
+	sender := Sender{}
+	sender.name = output.Name
+	config := output.Config.(ElasticSearchConfig)
+	sender.sender = ElasticSearchSender{
+		config: config,
 		fields: fields,
 	}
+	return &sender
 }
 
 func HttpCall(method, url string, bodyString string) {
