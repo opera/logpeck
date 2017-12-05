@@ -160,13 +160,3 @@ func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 	fields := p.ExtractFields(content)
 	return fields, nil
 }
-
-func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
-	if p.filter.Drop(content) {
-		var err error = errors.New("[peck_task]The line does not meet the rules ")
-		s := make(map[string]interface{})
-		return s, err
-	}
-	fields := p.ExtractFields(content)
-	return fields, nil
-}
