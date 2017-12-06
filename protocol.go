@@ -5,6 +5,7 @@ import (
 	"fmt"
 	sjson "github.com/bitly/go-simplejson"
 	"github.com/pquerna/ffjson/ffjson"
+	log "github.com/Sirupsen/logrus"
 )
 
 type PeckTaskConfig struct {
@@ -93,6 +94,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 	}
 	senderConfig.Name, e = cJson.Get("Name").String()
 	if e != nil {
+		log.Infof("[ParseESConfig]err: %v",e)
 		return
 	}
 	if senderConfig.Name == "ElasticSearchConfig" {
@@ -122,12 +124,12 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 	}
 	if senderConfig.Name == "InfluxDbConfig" {
 		influxDbConfig := InfluxDbConfig{}
-		cJson := cJson.Get("InfluxDbConfig")
+		cJson := cJson.Get("Config")
 		if cJson.Interface() == nil {
 			return senderConfig, nil
 		}
 
-		jbyte,err:=cJson.Bytes()
+		jbyte,err:=cJson.MarshalJSON()
 		if err != nil {
 			return
 		}
@@ -135,6 +137,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		if err != nil {
 			return
 		}
+		log.Infof("[ParseESConfig]influxDbConfig: %v",influxDbConfig)
 		senderConfig.Config = influxDbConfig
 	}
 	return senderConfig, nil
