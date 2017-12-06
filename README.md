@@ -6,14 +6,9 @@
 ## Objectives
 Logpeck aims to be an easy-to-use module that parsing and collecting contents from log file and posting into [ElasticSearch](https://github.com/elastic/elasticsearch). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
 
-We highly recommend to install [**logpeck-kibana-plugin**](https://github.com/opera/logpeck-kibana-plugin) into [Kibana](https://github.com/elastic/kibana). With this plugin, we can control all machines and collection tasks conveniently. At the same time, we can take advantage of powerful searching and visualization features of Kibana.
+## Getting Started
 
-<p float="left">
-  <img src="https://github.com/opera/resources/blob/master/logpeck/1.png" width="400" />
-  <img src="https://github.com/opera/resources/blob/master/logpeck/2.png" width="400" /> 
-</p>
-
-## Build & Launch
+### Build & Launch
 
 `go build cmd/logpeckd/logpeckd.go`
 
@@ -21,57 +16,18 @@ We highly recommend to install [**logpeck-kibana-plugin**](https://github.com/op
 
 We can also use `supervisor` or other service management software to manage logpeck process.
 
-## Try RESTful API
+### Web UI
 
-1. Add a new task first. (Want more task config, filter, json, long, etc.? see [here](doc/task_config.md).)
+We highly recommend to install [**logpeck-kibana-plugin**](https://github.com/opera/logpeck-kibana-plugin) into [Kibana](https://github.com/elastic/kibana). With this plugin, we can control all machines and collection tasks conveniently. At the same time, we can take advantage of powerful searching and visualization features of Kibana.
 
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
-  	"Name":"SystemLog",
-	"LogPath":"/var/log/syslog",
-	"ESConfig":{
-	  	"Hosts":["127.0.0.1:9200"],
-		"Index":"syslog",
-		"Type":"raw"
-	}
-}
-```
-```
-Add Success
-```
+<p float="left">
+  <img src="https://github.com/opera/resources/blob/master/logpeck/1.png" width="400" />
+  <img src="https://github.com/opera/resources/blob/master/logpeck/2.png" width="400" /> 
+</p>
 
-2. Start task.
+### RESTful API
 
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
-  	"Name":"SystemLog"
-}
-```
-```
-Start Success
-```
-
-3. Stop task
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
-  	"Name":"SystemLog"
-}
-```
-
-4. Remove task
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
-  	"Name":"SystemLog"
-}
-```
-
-5. List tasks
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/list
-```
+We can also control collection tasks with RESTful API. [See more](doc/restful.md)
 
 ## Documentation
 
