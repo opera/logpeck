@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	sjson "github.com/bitly/go-simplejson"
+	"github.com/pquerna/ffjson/ffjson"
 )
 
 type PeckTaskConfig struct {
 	Name    string
 	LogPath string
-	OutPut  OutPutConfig
+	SenderConfig  SenderConfig
 
 	LogFormat  string
 	FilterExpr string
@@ -23,7 +24,7 @@ type PeckField struct {
 	Value string
 }
 
-type OutPutConfig struct {
+type SenderConfig struct {
 	Name   string
 	Config interface{}
 }
@@ -85,20 +86,20 @@ func GetStringArray(j *sjson.Json, key string) ([]string, error) {
 	return valJson.StringArray()
 }
 
-func ParseESConfig(j *sjson.Json) (output OutPutConfig, e error) {
-	cJson := j.Get("OutPut")
+func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
+	cJson := j.Get("SenderConfig")
 	if cJson.Interface() == nil {
-		return output, nil
+		return senderConfig, nil
 	}
-	output.Name, e = cJson.Get("Name").String()
+	senderConfig.Name, e = cJson.Get("Name").String()
 	if e != nil {
 		return
 	}
-	elasticSearchConfig := ElasticSearchConfig{}
-	if output.Name == "ElasticSearchConfig" {
+	if senderConfig.Name == "ElasticSearchConfig" {
+		elasticSearchConfig := ElasticSearchConfig{}
 		cJson := cJson.Get("ESConfig")
 		if cJson.Interface() == nil {
-			return output, nil
+			return senderConfig, nil
 		}
 		elasticSearchConfig.Hosts, e = GetStringArray(cJson, "Hosts")
 		if e != nil {
@@ -117,9 +118,26 @@ func ParseESConfig(j *sjson.Json) (output OutPutConfig, e error) {
 
 		// Parse "ESConfig.Mapping", optional
 		elasticSearchConfig.Mapping, _ = cJson.Get("Mapping").Map()
+		senderConfig.Config = elasticSearchConfig
 	}
-	output.Config = elasticSearchConfig
-	return output, nil
+	if senderConfig.Name == "InfluxDbConfig" {
+		influxDbConfig := InfluxDbConfig{}
+		cJson := cJson.Get("InfluxDbConfig")
+		if cJson.Interface() == nil {
+			return senderConfig, nil
+		}
+
+		jbyte,err:=cJson.Bytes()
+		if err != nil {
+			return
+		}
+		err = ffjson.Unmarshal(jbyte, &influxDbConfig)
+		if err != nil {
+			return
+		}
+		senderConfig.Config = influxDbConfig
+	}
+	return senderConfig, nil
 }
 
 func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
@@ -139,7 +157,7 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 		return e
 	}
 	// Parse "ESConfig", optional
-	p.OutPut, e = ParseESConfig(j)
+	p.SenderConfig, e = ParseESConfig(j)
 	if e != nil {
 		return e
 	}

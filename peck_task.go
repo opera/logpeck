@@ -19,7 +19,7 @@ type PeckTask struct {
 
 type Sender struct {
 	name   string
-	sender interface{}
+	senders interface{}
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
@@ -46,7 +46,11 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	filter := NewPeckFilter(config.FilterExpr)
 	sender := &Sender{}
 	if c.Name == "ElasticSearchConfig" {
-		sender = NewElasticSearchSender(&c.OutPut, c.Fields)
+		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
+	}
+
+	if c.Name == "InfluxDbConfig" {
+		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
 	}
 
 	task := &PeckTask{
@@ -71,7 +75,7 @@ func (p *PeckTask) IsStop() bool {
 	return p.Stat.Stop
 }
 
-func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{} {
+func (p *PeckTask) ExtractElasticSearchFieldsFromPlain(content string) map[string]interface{} {
 	if len(p.Config.Fields) == 0 {
 		return map[string]interface{}{"Log": content}
 	}
@@ -93,6 +97,78 @@ func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{}
 	return fields
 }
 
+func (p *PeckTask) ExtractInfluxDbFieldsFromPlain(content string)  {
+	influxDbConfig :=p.Config.SenderConfig.Config.(InfluxDbConfig)
+	if influxDbConfig.FieldName[0] != '$'{
+		panic(influxDbConfig.FieldName)
+	}
+	arr := SplitString(content, p.Config.Delimiters)
+	pos, err := strconv.Atoi(influxDbConfig.FieldName[1:])
+	if err != nil {
+		panic(influxDbConfig.FieldName)
+	}
+	if len(arr) < pos {
+
+	}
+	filename := arr[pos-1]                                       //the column of measurement
+	measurement := influxDbConfig.Tables[filename].Measurement   //the value of measurement
+	tags := influxDbConfig.Tables[filename].Tags                 //the value of tags
+	aggregations := influxDbConfig.Tables[filename].Aggregations             //the value of fields
+	s := measurement
+	for i := 0; i < len(tags); i++ {
+		pos, err := strconv.Atoi(tags[i].Column[1:])
+		if err != nil {
+			panic(influxDbConfig.FieldName)
+		}
+		if len(arr) < pos {
+
+		}
+		tagValue := arr[pos-1]
+		s+=","+tags[i].TagName+"="+tagValue
+	}
+	sender := p.sender.senders.(InfluxDbSender)
+	for i := 0; i < len(aggregations) ; i++ {
+		aggName := aggregations[i].AggName.TagName
+		pos, err := strconv.Atoi(aggregations[i].AggName.Column[1:])
+		if err != nil {
+			panic(influxDbConfig.FieldName)
+		}
+		if len(arr) < pos {
+
+		}
+		aggValue,err:=strconv.Atoi(arr[pos-1])
+		if aggregations[i].Cnt == true {
+			sender.buckets[s][aggName]=append(sender.buckets[s][aggName],1)
+		} else{
+		sender.buckets[s][aggName]=append(sender.buckets[s][aggName],aggValue)
+		}
+	}
+	//time := influxDbConfig.Tables[filename].Time
+
+
+	/*
+	if len(p.Config.Fields) == 0 {
+		return map[string]interface{}{"Log": content}
+	}
+	fields := make(map[string]interface{})
+	arr := SplitString(content, p.Config.Delimiters)
+	for _, field := range p.Config.Fields {
+		if field.Value[0] != '$' {
+			panic(field)
+		}
+		pos, err := strconv.Atoi(field.Value[1:])
+		if err != nil {
+			panic(field)
+		}
+		if len(arr) < pos {
+			continue
+		}
+		fields[field.Name] = arr[pos-1]
+	}
+	return fields
+	*/
+}
+
 func FormatJsonValue(iValue interface{}) interface{} {
 	if value, ok := iValue.([]*sjson.Json); ok {
 		var valueArray []interface{}
@@ -112,7 +188,7 @@ func FormatJsonValue(iValue interface{}) interface{} {
 	}
 }
 
-func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} {
+func (p *PeckTask) ExtractElasticSearchFieldsFromJson(content string) map[string]interface{} {
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
@@ -131,13 +207,22 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 	return fields
 }
 
-func (p *PeckTask) ExtractFields(content string) map[string]interface{} {
+func (p *PeckTask) ExtractElasticSearchFields(content string) map[string]interface{} {
 	if p.Config.LogFormat == "json" {
-		return p.ExtractFieldsFromJson(content)
+		return p.ExtractElasticSearchFieldsFromJson(content)
 	} else {
-		return p.ExtractFieldsFromPlain(content)
+		return p.ExtractElasticSearchFieldsFromPlain(content)
 	}
 }
+
+func (p *PeckTask) ExtractInfluxDbFields(content string) {
+	if p.Config.LogFormat == "json" {
+		 p.ExtractInfluxDbFieldsFromPlain(content)
+	} else {
+		 p.ExtractInfluxDbFieldsFromPlain(content)
+	}
+}
+
 
 func (p *PeckTask) Process(content string) {
 	if p.Stat.Stop {
@@ -146,9 +231,16 @@ func (p *PeckTask) Process(content string) {
 	if p.filter.Drop(content) {
 		return
 	}
-	fields := p.ExtractFields(content)
-	sender := p.sender.sender.(ElasticSearchSender)
-	sender.Send(fields)
+	if p.sender.name == "ElasticSearchConfig" {
+		fields := p.ExtractElasticSearchFields(content)
+		sender := p.sender.senders.(ElasticSearchSender)
+		sender.Send(fields)
+	}
+	if p.sender.name == "InfluxDbConfig" {
+		p.ExtractInfluxDbFields(content)
+		sender := p.sender.senders.(InfluxDbSender)
+		sender.Send()
+	}
 }
 
 func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
@@ -157,6 +249,6 @@ func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 		s := make(map[string]interface{})
 		return s, err
 	}
-	fields := p.ExtractFields(content)
+	fields := p.ExtractElasticSearchFields(content)
 	return fields, nil
 }
