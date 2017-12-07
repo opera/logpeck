@@ -18,7 +18,7 @@ type PeckTask struct {
 }
 
 type Sender struct {
-	name   string
+	name    string
 	senders interface{}
 }
 
@@ -74,11 +74,11 @@ func (p *PeckTask) IsStop() bool {
 	return p.Stat.Stop
 }
 
-func getSampleTime(ts int,interval int64) int64 {
-	return int64(ts)/interval
+func getSampleTime(ts int, interval int64) int64 {
+	return int64(ts) / interval
 }
 
-func (p *PeckTask) ExtractElasticSearchFieldsFromPlain(content string) map[string]interface{} {
+func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{} {
 	if len(p.Config.Fields) == 0 {
 		return map[string]interface{}{"Log": content}
 	}
@@ -100,88 +100,58 @@ func (p *PeckTask) ExtractElasticSearchFieldsFromPlain(content string) map[strin
 	return fields
 }
 
-func (p *PeckTask) ExtractInfluxDbFieldsFromPlain(content string)  {
-
-	influxDbConfig :=p.Config.SenderConfig.Config.(InfluxDbConfig)
-	if influxDbConfig.FieldName[0] != '$'{
-		panic(influxDbConfig.FieldName)
-	}
-	arr := SplitString(content, p.Config.Delimiters)
-	pos, err := strconv.Atoi(influxDbConfig.FieldName[1:])
-	if err != nil {
-		panic(influxDbConfig.FieldName)
-	}
-	log.Infof("pos:%v",pos)
-	if len(arr) < pos {
-
-	}
-	filename := arr[pos-1]                                       //the column of measurement
-	measurement := influxDbConfig.Tables[filename].Measurement   //the value of measurement
-	tags := influxDbConfig.Tables[filename].Tags                 //the value of tags
-	aggregations := influxDbConfig.Tables[filename].Aggregations //the value of fields
-	s := measurement
+func (p *PeckTask) ExtractInfluxDbFieldsFromPlain(fields map[string]interface{}) {
+	//get sender
+	influxDbConfig := p.Config.SenderConfig.Config.(InfluxDbConfig)
+	s := fields[influxDbConfig.Name].(string)
+	measurement := influxDbConfig.Measurments[s]
+	tags := measurement.Tags
+	aggregations := measurement.Aggregations
+	target := measurement.Target
+	time := measurement.Time
 	for i := 0; i < len(tags); i++ {
-		if tags[i].Column[0] != '$'{
-			panic(tags[i].Column)
-		}
-		pos, err := strconv.Atoi(tags[i].Column[1:])
-		if err != nil {
-			panic(influxDbConfig.FieldName)
-		}
-		if len(arr) < pos {
-
-		}
-		tagValue := arr[pos-1]
-		s+=","+tags[i].TagName+"="+tagValue
+		s += "," + tags[i] + "=" + fields[tags[i]].(string)
 	}
 	sender := p.sender.senders.(InfluxDbSender)
-	for i := 0; i < len(aggregations) ; i++ {
-		if aggregations[i].AggName.Column[0] != '$'{
-			panic(aggregations[i].AggName.Column)
+	int_bool := false
+	for i := 0; i < len(aggregations); i++ {
+		if aggregations[i] != "cnt" {
+			int_bool = true
 		}
-		aggName := aggregations[i].AggName.TagName
-		pos, err := strconv.Atoi(aggregations[i].AggName.Column[1:])
-		if err != nil {
-			panic(influxDbConfig.FieldName)
-		}
-		if len(arr) < pos {
+	}
+	aggValue := fields[target].(string)
 
+	if _, ok := sender.buckets[s]; !ok {
+		sender.buckets[s] = make(map[string][]int)
+	}
+	if _, ok := sender.buckets[s][target]; !ok {
+		//sender.buckets[s][aggName]=[]int{}
+	}
+	if int_bool == false {
+		sender.buckets[s][target] = append(sender.buckets[s][target], 1)
+	} else {
+		aggValue, err := strconv.Atoi(aggValue)
+		if err != nil {
+			panic(aggValue)
 		}
-		aggValue,err:=strconv.ParseFloat(arr[pos-1],32/64)
-		if _,ok:=sender.buckets[s];!ok{
-			sender.buckets[s]=make(map[string][]float64)
-		}
-		if _,ok:=sender.buckets[s][aggName];!ok{
-			//sender.buckets[s][aggName]=[]int{}
-		}
-		if aggregations[i].Cnt == true {
-			sender.buckets[s][aggName]=append(sender.buckets[s][aggName],1)
-		} else{
-		sender.buckets[s][aggName]=append(sender.buckets[s][aggName],aggValue)
-		}
+		sender.buckets[s][target] = append(sender.buckets[s][target], aggValue)
 	}
 	p.sender.senders = sender
 
+	//get time
 	interval := influxDbConfig.Interval
-	if influxDbConfig.Tables[filename].Time[0] != '$'{
-		panic(influxDbConfig.FieldName)
-	}
-	pos, err = strconv.Atoi(influxDbConfig.Tables[filename].Time[1:])
+	now, err := strconv.Atoi(fields[time].(string))
 	if err != nil {
-		panic(influxDbConfig.Tables[filename].Time)
+		panic(fields)
 	}
-	if len(arr) < pos {
-
-	}
-	now,err:=strconv.Atoi(arr[pos-1])
-	nowTime := getSampleTime(now,interval)
-
+	nowTime := getSampleTime(now, interval)
 	if sender.postTime != nowTime {
-		sender.Send(now)
+		sender.Send(now, aggregations)
 		sender.postTime = nowTime
-		sender.buckets=map[string]map[string][]float64{}
+		sender.buckets = map[string]map[string][]int{}
 		p.sender.senders = sender
 	}
+
 }
 
 func FormatJsonValue(iValue interface{}) interface{} {
@@ -203,7 +173,7 @@ func FormatJsonValue(iValue interface{}) interface{} {
 	}
 }
 
-func (p *PeckTask) ExtractElasticSearchFieldsFromJson(content string) map[string]interface{} {
+func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} {
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
@@ -224,24 +194,24 @@ func (p *PeckTask) ExtractElasticSearchFieldsFromJson(content string) map[string
 
 func (p *PeckTask) ExtractElasticSearchFields(content string) map[string]interface{} {
 	if p.Config.LogFormat == "json" {
-		return p.ExtractElasticSearchFieldsFromJson(content)
+		return p.ExtractFieldsFromJson(content)
 	} else {
-		return p.ExtractElasticSearchFieldsFromPlain(content)
+		return p.ExtractFieldsFromPlain(content)
 	}
 }
 
 func (p *PeckTask) ExtractInfluxDbFields(content string) {
+	fields := map[string]interface{}{}
 	if p.Config.LogFormat == "json" {
-		 p.ExtractInfluxDbFieldsFromPlain(content)
+		fields = p.ExtractFieldsFromJson(content)
 	} else {
-		 p.ExtractInfluxDbFieldsFromPlain(content)
+		fields = p.ExtractFieldsFromPlain(content)
 	}
+	p.ExtractInfluxDbFieldsFromPlain(fields)
 }
 
-
 func (p *PeckTask) Process(content string) {
-	log.Infof("Process-----------")
-	log.Infof("sender%v",p.sender)
+	//log.Infof("sender%v",p.sender)
 	if p.Stat.Stop {
 		return
 	}

@@ -81,7 +81,6 @@ func (p *LogTask) Empty() bool {
 func peckLogBG(p *LogTask) {
 	log.Infof("[LogTask %s] Start peck log", p.LogPath)
 	for content := range p.tail.Lines {
-		log.Infof("+++++")
 		for name, task := range p.peckTasks {
 			// process log
 			log.Debugf("[LogTask %s] %s content[%s]", p.LogPath, name, content.Text)

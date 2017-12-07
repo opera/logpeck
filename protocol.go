@@ -3,15 +3,15 @@ package logpeck
 import (
 	"errors"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
 	"github.com/pquerna/ffjson/ffjson"
-	log "github.com/Sirupsen/logrus"
 )
 
 type PeckTaskConfig struct {
-	Name    string
-	LogPath string
-	SenderConfig  SenderConfig
+	Name         string
+	LogPath      string
+	SenderConfig SenderConfig
 
 	LogFormat  string
 	FilterExpr string
@@ -94,7 +94,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 	}
 	senderConfig.Name, e = cJson.Get("Name").String()
 	if e != nil {
-		log.Infof("[ParseESConfig]err: %v",e)
+		log.Infof("[ParseESConfig]err: %v", e)
 		return
 	}
 	if senderConfig.Name == "ElasticSearchConfig" {
@@ -129,7 +129,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 			return senderConfig, nil
 		}
 
-		jbyte,err:=cJson.MarshalJSON()
+		jbyte, err := cJson.MarshalJSON()
 		if err != nil {
 			return
 		}
@@ -137,7 +137,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		if err != nil {
 			return
 		}
-		log.Infof("[ParseESConfig]influxDbConfig: %v",influxDbConfig)
+		log.Infof("[ParseESConfig]influxDbConfig: %v", influxDbConfig)
 		senderConfig.Config = influxDbConfig
 	}
 	return senderConfig, nil
