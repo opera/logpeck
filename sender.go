@@ -26,11 +26,9 @@ type ElasticSearchSender struct {
 	lastIndexName string
 }
 
-func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) *Sender {
-	sender := Sender{}
-	sender.name = senderConfig.Name
+func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) *ElasticSearchSender {
 	config := senderConfig.Config.(ElasticSearchConfig)
-	sender.senders = ElasticSearchSender{
+	sender := ElasticSearchSender{
 		config: config,
 		fields: fields,
 	}
