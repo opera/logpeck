@@ -39,7 +39,6 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 		return err
 	}
 	for i, config := range configs {
-		log.Infof("restore+++++++++++%v", config.SenderConfig)
 		stat, _ := p.db.GetStat(config.LogPath, config.Name)
 		p.AddPeckTask(&config, stat)
 		log.Infof("[Pecker] Restore PeckTask[%d] : %s", i, config)

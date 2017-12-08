@@ -14,8 +14,12 @@ type PeckTask struct {
 
 	filter     PeckFilter
 	fields     map[string]bool
-	sender     interface{}
-	measurment interface{}
+	sender     Sender
+	aggregator *Aggregator
+}
+
+type Sender interface {
+	Send(map[string]interface{})
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
@@ -40,16 +44,18 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		fields[v.Name] = true
 	}
 	filter := NewPeckFilter(config.FilterExpr)
-	var sender interface{}
-	var measurment interface{}
+	var sender Sender
+	aggregator := &Aggregator{}
 	if c.SenderConfig.Name == "ElasticSearchConfig" {
 		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
-		measurment = &Measurment{}
 	}
 
 	if c.SenderConfig.Name == "InfluxDbConfig" {
 		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
-		measurment = NewMeasurment(&c.SenderConfig)
+		interval := c.SenderConfig.Config.(InfluxDbConfig).Interval
+		name := c.SenderConfig.Config.(InfluxDbConfig).Name
+		aggregators := c.SenderConfig.Config.(InfluxDbConfig).Aggregators
+		aggregator = NewAggregator(interval, name, &aggregators)
 	}
 
 	task := &PeckTask{
@@ -57,7 +63,7 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		Stat:       *stat,
 		filter:     *filter,
 		sender:     sender,
-		measurment: measurment,
+		aggregator: aggregator,
 	}
 	return task, nil
 }
@@ -134,22 +140,12 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 	return fields
 }
 
-func (p *PeckTask) ExtractElasticSearchFields(content string) map[string]interface{} {
+func (p *PeckTask) ExtractFields(content string) map[string]interface{} {
 	if p.Config.LogFormat == "json" {
 		return p.ExtractFieldsFromJson(content)
 	} else {
 		return p.ExtractFieldsFromPlain(content)
 	}
-}
-
-func (p *PeckTask) ExtractInfluxDbFields(content string) map[string]interface{} {
-	fields := map[string]interface{}{}
-	if p.Config.LogFormat == "json" {
-		fields = p.ExtractFieldsFromJson(content)
-	} else {
-		fields = p.ExtractFieldsFromPlain(content)
-	}
-	return fields
 }
 
 func (p *PeckTask) Process(content string) {
@@ -161,21 +157,18 @@ func (p *PeckTask) Process(content string) {
 		return
 	}
 	if p.Config.SenderConfig.Name == "ElasticSearchConfig" {
-		fields := p.ExtractElasticSearchFields(content)
-		sender := p.sender.(ElasticSearchSender)
-		sender.Send(fields)
+		fields := p.ExtractFields(content)
+		p.sender.Send(fields)
 	}
 	if p.Config.SenderConfig.Name == "InfluxDbConfig" {
-		fields := p.ExtractInfluxDbFields(content)
-		measurment := p.measurment.(*Measurment)
-		time := measurment.Recall(fields)
-		send, nowTime := measurment.startSend(time)
+		fields := p.ExtractFields(content)
+		timeStamp := p.aggregator.Record(fields)
+		send, nowTime := p.aggregator.StartSend(timeStamp)
 		if send {
-			output := measurment.Output(time)
-			sender := p.sender.(*InfluxDbSender)
-			sender.Send(output)
-			measurment.postTime = nowTime
-			measurment.buckets = map[string]map[string][]int{}
+			dump := p.aggregator.Dump(timeStamp)
+			p.sender.Send(dump)
+			p.aggregator.postTime = nowTime
+			p.aggregator.buckets = map[string]map[string][]int{}
 		}
 	}
 }
@@ -186,6 +179,6 @@ func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 		s := make(map[string]interface{})
 		return s, err
 	}
-	fields := p.ExtractElasticSearchFields(content)
+	fields := p.ExtractFields(content)
 	return fields, nil
 }

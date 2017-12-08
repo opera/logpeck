@@ -5,35 +5,37 @@ import (
 	"strconv"
 )
 
-type MeasurmentConfig struct {
+type AggregatorConfig struct {
 	Tags         []string `json:"tags"`
 	Aggregations []string `json:"aggregations"`
 	Target       string   `json:"target"`
 	Time         string   `json:"time"`
 }
 
-type Measurment struct {
-	config   InfluxDbConfig
-	buckets  map[string]map[string][]int
-	postTime int64
+type Aggregator struct {
+	interval          int64
+	name              string
+	aggregatorConfigs map[string]AggregatorConfig
+	buckets           map[string]map[string][]int
+	postTime          int64
 }
 
-func NewMeasurment(senderConfig *SenderConfig) *Measurment {
-	config := senderConfig.Config.(InfluxDbConfig)
-	//measurments := make(map[string]*Measurment)
-	measurments := &Measurment{
-		config:   config,
-		buckets:  make(map[string]map[string][]int),
-		postTime: 0,
+func NewAggregator(interval int64, name string, aggregators *map[string]AggregatorConfig) *Aggregator {
+	aggregator := &Aggregator{
+		interval:          interval,
+		name:              name,
+		aggregatorConfigs: *aggregators,
+		buckets:           make(map[string]map[string][]int),
+		postTime:          0,
 	}
-	return measurments
+	return aggregator
 }
 
 func getSampleTime(ts int64, interval int64) int64 {
 	return ts / interval
 }
-func (p *Measurment) startSend(time int64) (bool, int64) {
-	interval := p.config.Interval
+func (p *Aggregator) StartSend(time int64) (bool, int64) {
+	interval := p.interval
 	nowTime := getSampleTime(time, interval)
 	if p.postTime != nowTime {
 		return true, nowTime
@@ -41,16 +43,16 @@ func (p *Measurment) startSend(time int64) (bool, int64) {
 	return false, nowTime
 }
 
-func (p *Measurment) Recall(fields map[string]interface{}) int64 {
+func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	//get sender
 	//influxDbConfig := p.Config.SenderConfig.Config.(InfluxDbConfig)
-	bucketName := fields[p.config.Name].(string)
+	bucketName := fields[p.name].(string)
 	bucketTag := ""
-	measurement := p.config.Measurments[bucketName]
-	tags := measurement.Tags
-	aggregations := measurement.Aggregations
-	target := measurement.Target
-	time := measurement.Time
+	aggregatorConfig := p.aggregatorConfigs[bucketName]
+	tags := aggregatorConfig.Tags
+	aggregations := aggregatorConfig.Aggregations
+	target := aggregatorConfig.Target
+	time := aggregatorConfig.Time
 	for i := 0; i < len(tags); i++ {
 		bucketTag += "," + tags[i] + "=" + fields[tags[i]].(string)
 	}
@@ -83,7 +85,7 @@ func (p *Measurment) Recall(fields map[string]interface{}) int64 {
 	return now
 }
 
-func GetAggregation(v2 []int, aggregations []string) string {
+func getAggregation(v2 []int, aggregations []string) string {
 	aggregation := ""
 	cnt := len(v2)
 	avg := 0
@@ -119,14 +121,14 @@ func GetAggregation(v2 []int, aggregations []string) string {
 	return aggregation
 }
 
-func (p *Measurment) Output(now int64) string {
-	measurment := ""
-	for bucketName, fields := range p.buckets {
-		for bucketTag, value := range fields {
-			aggregation := GetAggregation(value, p.config.Measurments[bucketName].Aggregations)
+func (p *Aggregator) Dump(now int64) map[string]interface{} {
+	fields := map[string]interface{}{}
+	for bucketName, bucketTag_value := range p.buckets {
+		for bucketTag, value := range bucketTag_value {
+			aggregation := getAggregation(value, p.aggregatorConfigs[bucketName].Aggregations)
 			now := strconv.FormatInt(now, 10)
-			measurment += bucketName + bucketTag + " " + aggregation + " " + now + "\n"
+			fields[bucketName] = bucketName + bucketTag + " " + aggregation + " " + now
 		}
 	}
-	return measurment
+	return fields
 }

@@ -1,11 +1,11 @@
 package logpeck
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
-	"github.com/pquerna/ffjson/ffjson"
 )
 
 type PeckTaskConfig struct {
@@ -133,7 +133,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		if err != nil {
 			return
 		}
-		err = ffjson.Unmarshal(jbyte, &influxDbConfig)
+		err = json.Unmarshal(jbyte, &influxDbConfig)
 		if err != nil {
 			return
 		}
