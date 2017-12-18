@@ -163,12 +163,10 @@ func (p *PeckTask) Process(content string) {
 	if p.Config.SenderConfig.Name == "InfluxDbConfig" {
 		fields := p.ExtractFields(content)
 		timeStamp := p.aggregator.Record(fields)
-		send, nowTime := p.aggregator.StartSend(timeStamp)
+		send, _ := p.aggregator.StartSend(timeStamp)
 		if send {
 			dump := p.aggregator.Dump(timeStamp)
 			p.sender.Send(dump)
-			p.aggregator.postTime = nowTime
-			p.aggregator.buckets = map[string]map[string][]int{}
 		}
 	}
 }

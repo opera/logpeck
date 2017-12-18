@@ -121,14 +121,16 @@ func getAggregation(v2 []int, aggregations []string) string {
 	return aggregation
 }
 
-func (p *Aggregator) Dump(now int64) map[string]interface{} {
+func (p *Aggregator) Dump(timeStamp int64) map[string]interface{} {
 	fields := map[string]interface{}{}
 	for bucketName, bucketTag_value := range p.buckets {
 		for bucketTag, value := range bucketTag_value {
 			aggregation := getAggregation(value, p.aggregatorConfigs[bucketName].Aggregations)
-			now := strconv.FormatInt(now, 10)
+			now := strconv.FormatInt(timeStamp, 10)
 			fields[bucketName] = bucketName + bucketTag + " " + aggregation + " " + now
 		}
 	}
+	p.postTime = getSampleTime(timeStamp, p.interval)
+	p.buckets = map[string]map[string][]int{}
 	return fields
 }
