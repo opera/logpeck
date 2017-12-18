@@ -99,7 +99,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 	}
 	if senderConfig.Name == "ElasticSearchConfig" {
 		elasticSearchConfig := ElasticSearchConfig{}
-		cJson := cJson.Get("ESConfig")
+		cJson := cJson.Get("Config")
 		if cJson.Interface() == nil {
 			return senderConfig, nil
 		}
