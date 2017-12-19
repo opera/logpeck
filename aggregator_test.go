@@ -81,12 +81,12 @@ func TestDump(*testing.T) {
 	fields["upstream"] = "127.0.0.1"
 	fields["cost"] = "0"
 	fields["time"] = "15"
-	for i := 0; i < 10; i++ {
+	for i := 9; i >= 0; i-- {
 		fields["cost"] = strconv.Itoa(i)
 		aggregator.Record(fields)
 	}
 	dump := aggregator.Dump(int64(30))
-	a := dump["getTest,upstream=127.0.0.1"].(map[string]int)
+	a := dump["getTest,upstream=127.0.0.1"].(map[string]int64)
 	if a["cnt"] != 10 {
 		panic(a)
 	}

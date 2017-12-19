@@ -48,10 +48,10 @@ func toInfluxdbLine(fields map[string]interface{}) string {
 		if k == "timestamp" {
 			continue
 		}
-		aggregationResults := v.(map[string]int)
+		aggregationResults := v.(map[string]int64)
 		lines = k + " "
 		for aggregation, result := range aggregationResults {
-			lines += aggregation + "=" + strconv.Itoa(result) + ","
+			lines += aggregation + "=" + strconv.FormatInt(result, 10) + ","
 
 		}
 		length := len(lines)
