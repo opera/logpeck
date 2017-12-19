@@ -87,14 +87,14 @@ func GetStringArray(j *sjson.Json, key string) ([]string, error) {
 	return valJson.StringArray()
 }
 
-func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
+func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 	cJson := j.Get("SenderConfig")
 	if cJson.Interface() == nil {
 		return senderConfig, nil
 	}
 	senderConfig.Name, e = cJson.Get("Name").String()
 	if e != nil {
-		log.Infof("[ParseESConfig]err: %v", e)
+		log.Infof("[ParseConfig]err: %v", e)
 		return
 	}
 	if senderConfig.Name == "ElasticSearchConfig" {
@@ -103,23 +103,16 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		if cJson.Interface() == nil {
 			return senderConfig, nil
 		}
-		elasticSearchConfig.Hosts, e = GetStringArray(cJson, "Hosts")
-		if e != nil {
-			return
-		}
-		// Parse "ESConfig.Index", required
-		elasticSearchConfig.Index, e = GetString(cJson, "Index", true)
-		if e != nil {
-			return
-		}
-		// Parse "ESConfig.Type", required
-		elasticSearchConfig.Type, e = GetString(cJson, "Type", true)
-		if e != nil {
-			return
-		}
 
-		// Parse "ESConfig.Mapping", optional
-		elasticSearchConfig.Mapping, _ = cJson.Get("Mapping").Map()
+		jbyte, err := cJson.MarshalJSON()
+		if err != nil {
+			return
+		}
+		err = json.Unmarshal(jbyte, &elasticSearchConfig)
+		if err != nil {
+			return
+		}
+		log.Infof("[ParseConfig]influxDbConfig: %v", elasticSearchConfig)
 		senderConfig.Config = elasticSearchConfig
 	}
 	if senderConfig.Name == "InfluxDbConfig" {
@@ -137,7 +130,7 @@ func ParseESConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		if err != nil {
 			return
 		}
-		log.Infof("[ParseESConfig]influxDbConfig: %v", influxDbConfig)
+		log.Infof("[ParseConfig]influxDbConfig: %v", influxDbConfig)
 		senderConfig.Config = influxDbConfig
 	}
 	return senderConfig, nil
@@ -160,7 +153,7 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 		return e
 	}
 	// Parse "ESConfig", optional
-	p.SenderConfig, e = ParseESConfig(j)
+	p.SenderConfig, e = ParseConfig(j)
 	if e != nil {
 		return e
 	}

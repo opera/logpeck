@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"strconv"
 	"sync"
 )
 
@@ -40,8 +41,27 @@ func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDb
 	return &sender
 }
 
-func (p *InfluxDbSender) Send(fields map[string]interface{}) {
-	log.Infof("%s", fields)
-	//p.measurments.MeasurmentRecall(fields)
+func toInfluxdbLine(fields map[string]interface{}) string {
+	lines := ""
+	timestamp := fields["timestamp"].(int64)
+	for k, v := range fields {
+		if k == "timestamp" {
+			continue
+		}
+		aggregationResults := v.(map[string]int)
+		lines = k + " "
+		for aggregation, result := range aggregationResults {
+			lines += aggregation + "=" + strconv.Itoa(result) + ","
 
+		}
+		length := len(lines)
+		lines = lines[0:length-1] + " " + strconv.FormatInt(timestamp, 10) + "\n"
+	}
+	return lines
+}
+
+func (p *InfluxDbSender) Send(fields map[string]interface{}) {
+	lines := toInfluxdbLine(fields)
+	log.Infof("%s", lines)
+	//p.measurments.MeasurmentRecall(fields)
 }

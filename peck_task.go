@@ -159,14 +159,13 @@ func (p *PeckTask) Process(content string) {
 	if p.Config.SenderConfig.Name == "ElasticSearchConfig" {
 		fields := p.ExtractFields(content)
 		p.sender.Send(fields)
-	}
-	if p.Config.SenderConfig.Name == "InfluxDbConfig" {
+	} else if p.Config.SenderConfig.Name == "InfluxDbConfig" {
 		fields := p.ExtractFields(content)
-		timeStamp := p.aggregator.Record(fields)
-		send, _ := p.aggregator.StartSend(timeStamp)
-		if send {
-			dump := p.aggregator.Dump(timeStamp)
-			p.sender.Send(dump)
+		timestamp := p.aggregator.Record(fields)
+		deadline := p.aggregator.IsDeadline(timestamp)
+		if deadline {
+			aggregationResults := p.aggregator.Dump(timestamp)
+			p.sender.Send(aggregationResults)
 		}
 	}
 }
