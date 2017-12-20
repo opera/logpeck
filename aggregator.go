@@ -76,7 +76,12 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		p.buckets[bucketName] = make(map[string][]int64)
 	}
 	if int_bool == false {
-		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
+		aggValue, err := strconv.ParseInt(aggValue, 10, 64)
+		if err != nil {
+			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
+		}else {
+			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValue)
+		}
 	} else {
 		aggValue, err := strconv.ParseInt(aggValue, 10, 64)
 		if err != nil {
