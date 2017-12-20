@@ -76,12 +76,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		p.buckets[bucketName] = make(map[string][]int64)
 	}
 	if int_bool == false {
-		aggValue, err := strconv.ParseInt(aggValue, 10, 64)
-		if err != nil {
 			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
-		}else {
-			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValue)
-		}
 	} else {
 		aggValue, err := strconv.ParseInt(aggValue, 10, 64)
 		if err != nil {
@@ -142,6 +137,8 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 		switch aggregations[i] {
 		case "cnt":
 			aggregationResults["cnt"] = int64(len(targetValue))
+		case "sum":
+			aggregationResults["sum"] = sum
 		case "avg":
 			aggregationResults["avg"] = avg
 		default:
