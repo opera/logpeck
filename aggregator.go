@@ -1,7 +1,6 @@
 package logpeck
 
 import (
-	"github.com/Sirupsen/logrus"
 	log "github.com/Sirupsen/logrus"
 	"strconv"
 	"time"
@@ -52,7 +51,6 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	bucketTag := ""
 	aggregatorConfig := p.AggregatorConfigs[bucketName]
 	tags := aggregatorConfig.Tags
-	aggregations := aggregatorConfig.Aggregations
 	target := aggregatorConfig.Target
 	timestamp := aggregatorConfig.Timestamp
 	preFields := aggregatorConfig.PreFields
@@ -67,36 +65,25 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	} else {
 		bucketTag += " " + fields[preFields].(string) + "_"
 	}
-	int_bool := false
-	for i := 0; i < len(aggregations); i++ {
-		if aggregations[i] != "cnt" {
-			int_bool = true
-		}
-	}
-
 	aggValue := fields[target].(string)
 
 	//get time
 	now, err := strconv.ParseInt(fields[timestamp].(string), 10, 64)
 	if err != nil {
-		logrus.Infof("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
+		log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
 		now = time.Now().Unix()
 	}
 
 	if _, ok := p.buckets[bucketName]; !ok {
 		p.buckets[bucketName] = make(map[string][]int64)
 	}
-	if int_bool == false {
+	aggValueInt, err := strconv.ParseInt(aggValue, 10, 64)
+	if err != nil {
+		log.Infof("[Record] target:%v can't use strconv.ParseInt", aggValue)
 		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
 	} else {
-		aggValue, err := strconv.ParseInt(aggValue, 10, 64)
-		if err != nil {
-			logrus.Infof("[Record] target:%v can't use strconv.ParseInt", aggValue)
-			return now
-		}
-		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValue)
+		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueInt)
 	}
-
 	return now
 }
 
@@ -131,6 +118,7 @@ func quickSort(values []int64, left, right int64) {
 }
 
 func getAggregation(targetValue []int64, aggregations []string) map[string]int64 {
+	log.Infof("[getAggregation] targetValue is : %v", targetValue)
 	aggregationResults := map[string]int64{}
 	cnt := int64(len(targetValue))
 	avg := int64(0)
@@ -170,7 +158,11 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 				if err != nil {
 					panic(aggregations[i])
 				}
-				percentile := targetValue[cnt*proportion/100-1]
+				index := cnt*proportion/100 - 1
+				if cnt*proportion/100-1 < 0 {
+					index = 0
+				}
+				percentile := targetValue[index]
 				aggregationResults[aggregations[i]] = percentile
 			}
 		}
@@ -180,6 +172,7 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 
 func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	fields := map[string]interface{}{}
+	log.Infof("[Dump] bucket is : %v", p.buckets)
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
 		for bucketTag, targetValue := range bucketTag_value {
