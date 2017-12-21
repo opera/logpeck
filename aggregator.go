@@ -11,6 +11,7 @@ type AggregatorConfig struct {
 	Tags         []string `json:"Tags"`
 	Aggregations []string `json:"Aggregations"`
 	Target       string   `json:"Target"`
+	PreFields    string   `json:"PreFields"`
 	Timestamp    string   `json:"Timestamp"`
 }
 
@@ -54,11 +55,17 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	aggregations := aggregatorConfig.Aggregations
 	target := aggregatorConfig.Target
 	timestamp := aggregatorConfig.Timestamp
+	preFields := aggregatorConfig.PreFields
 	if target == "" {
 		return time.Now().Unix()
 	}
 	for i := 0; i < len(tags); i++ {
 		bucketTag += "," + tags[i] + "=" + fields[tags[i]].(string)
+	}
+	if preFields == "" {
+		bucketTag += " "
+	} else {
+		bucketTag += " " + fields[preFields].(string) + "_"
 	}
 	int_bool := false
 	for i := 0; i < len(aggregations); i++ {
@@ -128,9 +135,21 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 	cnt := int64(len(targetValue))
 	avg := int64(0)
 	sum := int64(0)
+	min := int64(0)
+	max := int64(0)
+	if cnt > 0 {
+		min = targetValue[0]
+		max = targetValue[0]
+	}
 	quickSort(targetValue, int64(0), int64(len(targetValue)-1))
 	for _, value := range targetValue {
 		sum += value
+		if value > max {
+			max = value
+		}
+		if value < min {
+			min = value
+		}
 	}
 	avg = sum / cnt
 	for i := 0; i < len(aggregations); i++ {
@@ -141,6 +160,10 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 			aggregationResults["sum"] = sum
 		case "avg":
 			aggregationResults["avg"] = avg
+		case "min":
+			aggregationResults["min"] = min
+		case "max":
+			aggregationResults["max"] = max
 		default:
 			if aggregations[i][0] == 'p' {
 				proportion, err := strconv.ParseInt(aggregations[i][1:], 10, 64)

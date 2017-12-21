@@ -16,6 +16,7 @@ func TestStartSend(*testing.T) {
 		Tags:         []string{"cost"},
 		Aggregations: []string{"cnt"},
 		Target:       "cost",
+		PreFields:    "",
 		Timestamp:    "time",
 	}
 	aggregators["test"] = test
@@ -39,6 +40,7 @@ func TestRecord(*testing.T) {
 		Tags:         []string{"upstream"},
 		Aggregations: []string{"cnt,avg"},
 		Target:       "cost",
+		PreFields:    "",
 		Timestamp:    "time",
 	}
 	aggregators["getTest"] = test
@@ -52,13 +54,13 @@ func TestRecord(*testing.T) {
 	if aggregator.Record(fields) != int64(15) {
 		panic(fields)
 	}
-	if aggregator.buckets["getTest"][",upstream=127.0.0.1"][0] != 2 {
+	if aggregator.buckets["getTest"][",upstream=127.0.0.1 "][0] != 2 {
 		panic(aggregator)
 	}
 	if aggregator.Record(fields) != int64(15) {
 		panic(fields)
 	}
-	if aggregator.buckets["getTest"][",upstream=127.0.0.1"][0]+aggregator.buckets["getTest"][",upstream=127.0.0.1"][1] != 4 {
+	if aggregator.buckets["getTest"][",upstream=127.0.0.1 "][0]+aggregator.buckets["getTest"][",upstream=127.0.0.1 "][1] != 4 {
 		panic(aggregator)
 	}
 }
@@ -71,6 +73,7 @@ func TestDump(*testing.T) {
 		Tags:         []string{"upstream"},
 		Aggregations: []string{"cnt", "avg", "p99", "p50"},
 		Target:       "cost",
+		PreFields:    "",
 		Timestamp:    "time",
 	}
 	aggregators["getTest"] = test
@@ -86,7 +89,7 @@ func TestDump(*testing.T) {
 		aggregator.Record(fields)
 	}
 	dump := aggregator.Dump(int64(30))
-	a := dump["getTest,upstream=127.0.0.1"].(map[string]int64)
+	a := dump["getTest,upstream=127.0.0.1 "].(map[string]int64)
 	if a["cnt"] != 10 {
 		panic(a)
 	}

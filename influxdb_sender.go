@@ -57,10 +57,10 @@ func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
 			continue
 		}
 		aggregationResults := v.(map[string]int64)
-		lines += taskName + "_" + k + ",host=" + host + " "
+		key := strings.Split(k, " ")
+		lines += taskName + "_" + key[0] + ",host=" + host + " "
 		for aggregation, result := range aggregationResults {
-			lines += aggregation + "=" + strconv.FormatInt(result, 10) + ","
-
+			lines += key[1] + aggregation + "=" + strconv.FormatInt(result, 10) + ","
 		}
 		length := len(lines)
 		lines = lines[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"

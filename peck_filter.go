@@ -47,5 +47,6 @@ func (p *PeckFilter) Drop(str string) bool {
 			return true
 		}
 	}
+	SplitString("", "")
 	return false
 }
