@@ -57,8 +57,7 @@ func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
 			continue
 		}
 		aggregationResults := v.(map[string]int64)
-		log.Infof("")
-		lines = taskName + "_" + k + ",host=" + host + " "
+		lines += taskName + "_" + k + ",host=" + host + " "
 		for aggregation, result := range aggregationResults {
 			lines += aggregation + "=" + strconv.FormatInt(result, 10) + ","
 
@@ -71,8 +70,8 @@ func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
 
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
 	lines := toInfluxdbLine(fields, p.taskName)
-	log.Infof("%v", time.Now())
-	log.Infof("%s", lines)
+	log.Infof("[InfluxDbSender.Sender] timestamp is %v", time.Now())
+	log.Infof("[InfluxDbSender.Sender] lines is %s", lines)
 	raw_data := []byte(lines)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.DBName

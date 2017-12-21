@@ -47,9 +47,6 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 }
 
 func (p *Aggregator) Record(fields map[string]interface{}) int64 {
-	//get sender
-	//influxDbConfig := p.Config.SenderConfig.Config.(InfluxDbConfig)
-	log.Infof("[Record]fields is %v", fields)
 	bucketName := fields[p.FieldsKey].(string)
 	bucketTag := ""
 	aggregatorConfig := p.AggregatorConfigs[bucketName]
@@ -150,8 +147,6 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 				if err != nil {
 					panic(aggregations[i])
 				}
-				log.Infof("[getAggregation] targetValue length is :%v", cnt)
-				log.Infof("[getAggregation] index is:%v", cnt*proportion/100-1)
 				percentile := targetValue[cnt*proportion/100-1]
 				aggregationResults[aggregations[i]] = percentile
 			}
