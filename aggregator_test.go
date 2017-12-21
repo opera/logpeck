@@ -16,7 +16,7 @@ func TestStartSend(*testing.T) {
 		Tags:         []string{"cost"},
 		Aggregations: []string{"cnt"},
 		Target:       "cost",
-		Time:         "time",
+		Timestamp:    "time",
 	}
 	aggregators["test"] = test
 	aggregator := NewAggregator(interval, name, &aggregators)
@@ -39,7 +39,7 @@ func TestRecord(*testing.T) {
 		Tags:         []string{"upstream"},
 		Aggregations: []string{"cnt,avg"},
 		Target:       "cost",
-		Time:         "time",
+		Timestamp:    "time",
 	}
 	aggregators["getTest"] = test
 	aggregator := NewAggregator(interval, name, &aggregators)
@@ -71,7 +71,7 @@ func TestDump(*testing.T) {
 		Tags:         []string{"upstream"},
 		Aggregations: []string{"cnt", "avg", "p99", "p50"},
 		Target:       "cost",
-		Time:         "time",
+		Timestamp:    "time",
 	}
 	aggregators["getTest"] = test
 	aggregator := NewAggregator(interval, name, &aggregators)

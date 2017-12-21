@@ -2,29 +2,31 @@ package logpeck
 
 import (
 	"github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"strconv"
+	"time"
 )
 
 type AggregatorConfig struct {
-	Tags         []string `json:"tags"`
-	Aggregations []string `json:"aggregations"`
-	Target       string   `json:"target"`
-	Time         string   `json:"time"`
+	Tags         []string `json:"Tags"`
+	Aggregations []string `json:"Aggregations"`
+	Target       string   `json:"Target"`
+	Timestamp    string   `json:"Timestamp"`
 }
 
 type Aggregator struct {
-	interval          int64
-	name              string
-	aggregatorConfigs map[string]AggregatorConfig
+	Interval          int64
+	FieldsKey         string
+	AggregatorConfigs map[string]AggregatorConfig
 	buckets           map[string]map[string][]int64
 	postTime          int64
 }
 
-func NewAggregator(interval int64, name string, aggregators *map[string]AggregatorConfig) *Aggregator {
+func NewAggregator(interval int64, fieldsKey string, aggregators *map[string]AggregatorConfig) *Aggregator {
 	aggregator := &Aggregator{
-		interval:          interval,
-		name:              name,
-		aggregatorConfigs: *aggregators,
+		Interval:          interval,
+		FieldsKey:         fieldsKey,
+		AggregatorConfigs: *aggregators,
 		buckets:           make(map[string]map[string][]int64),
 		postTime:          0,
 	}
@@ -36,7 +38,7 @@ func getSampleTime(ts int64, interval int64) int64 {
 }
 
 func (p *Aggregator) IsDeadline(timestamp int64) bool {
-	interval := p.interval
+	interval := p.Interval
 	nowTime := getSampleTime(timestamp, interval)
 	if p.postTime != nowTime {
 		return true
@@ -47,13 +49,17 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	//get sender
 	//influxDbConfig := p.Config.SenderConfig.Config.(InfluxDbConfig)
-	bucketName := fields[p.name].(string)
+	log.Infof("[Record]fields is %v", fields)
+	bucketName := fields[p.FieldsKey].(string)
 	bucketTag := ""
-	aggregatorConfig := p.aggregatorConfigs[bucketName]
+	aggregatorConfig := p.AggregatorConfigs[bucketName]
 	tags := aggregatorConfig.Tags
 	aggregations := aggregatorConfig.Aggregations
 	target := aggregatorConfig.Target
-	time := aggregatorConfig.Time
+	timestamp := aggregatorConfig.Timestamp
+	if target == "" {
+		return time.Now().Unix()
+	}
 	for i := 0; i < len(tags); i++ {
 		bucketTag += "," + tags[i] + "=" + fields[tags[i]].(string)
 	}
@@ -63,37 +69,37 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			int_bool = true
 		}
 	}
+
 	aggValue := fields[target].(string)
 
 	//get time
-	now, err := strconv.ParseInt(fields[time].(string), 10, 64)
+	now, err := strconv.ParseInt(fields[timestamp].(string), 10, 64)
 	if err != nil {
-		logrus.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[time].(string))
-		return now
+		logrus.Infof("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
+		now = time.Now().Unix()
 	}
 
 	if _, ok := p.buckets[bucketName]; !ok {
 		p.buckets[bucketName] = make(map[string][]int64)
 	}
 	if int_bool == false {
-			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
+		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
 	} else {
 		aggValue, err := strconv.ParseInt(aggValue, 10, 64)
 		if err != nil {
-			logrus.Debug("[Record] target:%v can't use strconv.ParseInt", aggValue)
+			logrus.Infof("[Record] target:%v can't use strconv.ParseInt", aggValue)
 			return now
 		}
 		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValue)
 	}
+
 	return now
 }
 
-func quickSort(values []int64, left, right int) {
-
+func quickSort(values []int64, left, right int64) {
 	temp := values[left]
 	p := left
 	i, j := left, right
-
 	for i <= j {
 		for j >= p && values[j] >= temp {
 			j--
@@ -102,7 +108,6 @@ func quickSort(values []int64, left, right int) {
 			values[p] = values[j]
 			p = j
 		}
-
 		for i <= p && values[i] <= temp {
 			i++
 		}
@@ -110,9 +115,7 @@ func quickSort(values []int64, left, right int) {
 			values[p] = values[i]
 			p = i
 		}
-
 	}
-
 	values[p] = temp
 
 	if p-left > 1 {
@@ -128,7 +131,7 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 	cnt := int64(len(targetValue))
 	avg := int64(0)
 	sum := int64(0)
-	quickSort(targetValue, 0, len(targetValue)-1)
+	quickSort(targetValue, int64(0), int64(len(targetValue)-1))
 	for _, value := range targetValue {
 		sum += value
 	}
@@ -147,6 +150,8 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 				if err != nil {
 					panic(aggregations[i])
 				}
+				log.Infof("[getAggregation] targetValue length is :%v", cnt)
+				log.Infof("[getAggregation] index is:%v", cnt*proportion/100-1)
 				percentile := targetValue[cnt*proportion/100-1]
 				aggregationResults[aggregations[i]] = percentile
 			}
@@ -160,12 +165,13 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
 		for bucketTag, targetValue := range bucketTag_value {
-			aggregations := p.aggregatorConfigs[bucketName].Aggregations
+			aggregations := p.AggregatorConfigs[bucketName].Aggregations
 			fields[bucketName+bucketTag] = getAggregation(targetValue, aggregations)
 		}
 	}
 	fields["timestamp"] = timestamp
-	p.postTime = getSampleTime(timestamp, p.interval)
+	p.postTime = getSampleTime(timestamp, p.Interval)
 	p.buckets = map[string]map[string][]int64{}
+	log.Infof("[Dump] fields is : %v", fields)
 	return fields
 }

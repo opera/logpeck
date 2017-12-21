@@ -11,45 +11,36 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
-/*
-[{
-"name":"module",
-"tags":[
-	"upstream",
-	"downstream"
-],
-"aggr":["cnt","p99","avg"],
-"target":"cost"
-}]
-*/
-
 type InfluxDbConfig struct {
-	Hosts       string                      `json:"hosts"`
-	Interval    int64                       `json:"interval"`
-	Name        string                      `json:"name"`
-	DbName      string                      `json:"dbName"`
-	Aggregators map[string]AggregatorConfig `json:"aggregators"`
+	Hosts       string                      `json:"Hosts"`
+	Interval    int64                       `json:"Interval"`
+	FieldsKey   string                      `json:"FieldsKey"`
+	DBName      string                      `json:"DBName"`
+	Aggregators map[string]AggregatorConfig `json:"Aggregators"`
 }
 
 type InfluxDbSender struct {
 	config        InfluxDbConfig
 	fields        []PeckField
+	taskName      string
 	mu            sync.Mutex
 	lastIndexName string
 }
 
-func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDbSender {
+func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField, taskName string) *InfluxDbSender {
 	config := senderConfig.Config.(InfluxDbConfig)
 	sender := InfluxDbSender{
-		config: config,
-		fields: fields,
+		config:   config,
+		fields:   fields,
+		taskName: taskName,
 	}
 	return &sender
 }
 
-func toInfluxdbLine(fields map[string]interface{}) string {
+func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
 	lines := ""
 	timestamp := fields["timestamp"].(int64)
 	host := ""
@@ -66,29 +57,31 @@ func toInfluxdbLine(fields map[string]interface{}) string {
 			continue
 		}
 		aggregationResults := v.(map[string]int64)
-		lines = k + ",host=" + host + " "
+		log.Infof("")
+		lines = taskName + "_" + k + ",host=" + host + " "
 		for aggregation, result := range aggregationResults {
 			lines += aggregation + "=" + strconv.FormatInt(result, 10) + ","
 
 		}
 		length := len(lines)
-		lines = lines[0:length-1] + " " + strconv.FormatInt(timestamp, 10) + "\n"
+		lines = lines[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
 	}
 	return lines
 }
 
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
-	lines := toInfluxdbLine(fields)
+	lines := toInfluxdbLine(fields, p.taskName)
+	log.Infof("%v", time.Now())
 	log.Infof("%s", lines)
 	raw_data := []byte(lines)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
-	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.DbName
+	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.DBName
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
 		log.Infof("[InfluxDbSender.Sender] Post error, err[%s]", err)
 	} else {
 		resp_str, _ := httputil.DumpResponse(resp, true)
-		log.Debugf("[InfluxDbSender.Sender] Response %s", resp_str)
+		log.Infof("[InfluxDbSender.Sender] Response %s", resp_str)
 	}
 	//p.measurments.MeasurmentRecall(fields)
 }

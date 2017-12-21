@@ -43,17 +43,17 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	for _, v := range config.Fields {
 		fields[v.Name] = true
 	}
-	filter := NewPeckFilter(config.FilterExpr)
+	filter := NewPeckFilter(config.Keywords)
 	var sender Sender
 	aggregator := &Aggregator{}
-	if c.SenderConfig.Name == "ElasticSearchConfig" {
-		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
+	if c.SenderConfig.SenderName == "ElasticSearchConfig" {
+		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields, c.Name)
 	}
 
-	if c.SenderConfig.Name == "InfluxDbConfig" {
-		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
+	if c.SenderConfig.SenderName == "InfluxDbConfig" {
+		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields, c.Name)
 		interval := c.SenderConfig.Config.(InfluxDbConfig).Interval
-		name := c.SenderConfig.Config.(InfluxDbConfig).Name
+		name := c.SenderConfig.Config.(InfluxDbConfig).FieldsKey
 		aggregators := c.SenderConfig.Config.(InfluxDbConfig).Aggregators
 		aggregator = NewAggregator(interval, name, &aggregators)
 	}
@@ -135,7 +135,18 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 		return mContent
 	}
 	for _, field := range p.Config.Fields {
-		fields[field.Name] = mContent[field.Name]
+		key := SplitString(field.Name, ".")
+		value := ""
+		length := len(key)
+		tmp := mContent
+		for i := 0; i < length; i++ {
+			if i == length-1 {
+				value = tmp[key[i]].(string)
+				break
+			}
+			tmp = tmp[key[i]].(map[string]interface{})
+		}
+		fields[field.Name] = value
 	}
 	return fields
 }
@@ -156,10 +167,10 @@ func (p *PeckTask) Process(content string) {
 	if p.filter.Drop(content) {
 		return
 	}
-	if p.Config.SenderConfig.Name == "ElasticSearchConfig" {
+	if p.Config.SenderConfig.SenderName == "ElasticSearchConfig" {
 		fields := p.ExtractFields(content)
 		p.sender.Send(fields)
-	} else if p.Config.SenderConfig.Name == "InfluxDbConfig" {
+	} else if p.Config.SenderConfig.SenderName == "InfluxDbConfig" {
 		fields := p.ExtractFields(content)
 		timestamp := p.aggregator.Record(fields)
 		deadline := p.aggregator.IsDeadline(timestamp)

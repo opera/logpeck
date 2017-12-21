@@ -14,7 +14,7 @@ type PeckTaskConfig struct {
 	SenderConfig SenderConfig
 
 	LogFormat  string
-	FilterExpr string
+	Keywords   string
 	Fields     []PeckField
 	Delimiters string
 	Test       TestModule
@@ -26,8 +26,8 @@ type PeckField struct {
 }
 
 type SenderConfig struct {
-	Name   string
-	Config interface{}
+	SenderName string
+	Config     interface{}
 }
 
 type PeckTaskStat struct {
@@ -92,12 +92,12 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 	if cJson.Interface() == nil {
 		return senderConfig, nil
 	}
-	senderConfig.Name, e = cJson.Get("Name").String()
+	senderConfig.SenderName, e = cJson.Get("SenderName").String()
 	if e != nil {
 		log.Infof("[ParseConfig]err: %v", e)
 		return
 	}
-	if senderConfig.Name == "ElasticSearchConfig" {
+	if senderConfig.SenderName == "ElasticSearchConfig" {
 		elasticSearchConfig := ElasticSearchConfig{}
 		cJson := cJson.Get("Config")
 		if cJson.Interface() == nil {
@@ -115,7 +115,7 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		log.Infof("[ParseConfig]influxDbConfig: %v", elasticSearchConfig)
 		senderConfig.Config = elasticSearchConfig
 	}
-	if senderConfig.Name == "InfluxDbConfig" {
+	if senderConfig.SenderName == "InfluxDbConfig" {
 		influxDbConfig := InfluxDbConfig{}
 		cJson := cJson.Get("Config")
 		if cJson.Interface() == nil {
@@ -147,12 +147,14 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	if e != nil {
 		return e
 	}
+
 	// Parse "LogPath", optional
 	p.LogPath, e = GetString(j, "LogPath", false)
 	if e != nil {
 		return e
 	}
-	// Parse "ESConfig", optional
+
+	// Parse "SenderConfig", optional
 	p.SenderConfig, e = ParseConfig(j)
 	if e != nil {
 		return e
@@ -165,7 +167,7 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	}
 
 	// Parse "FilterExpr", optional
-	p.FilterExpr, e = GetString(j, "FilterExpr", false)
+	p.Keywords, e = GetString(j, "Keywords", false)
 	if e != nil {
 		return e
 	}

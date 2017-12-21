@@ -25,15 +25,17 @@ type ElasticSearchConfig struct {
 type ElasticSearchSender struct {
 	config        ElasticSearchConfig
 	fields        []PeckField
+	taskName      string
 	mu            sync.Mutex
 	lastIndexName string
 }
 
-func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) *ElasticSearchSender {
+func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField, taskName string) *ElasticSearchSender {
 	config := senderConfig.Config.(ElasticSearchConfig)
 	sender := ElasticSearchSender{
-		config: config,
-		fields: fields,
+		config:   config,
+		fields:   fields,
+		taskName: taskName,
 	}
 	return &sender
 }
