@@ -6,6 +6,25 @@ import (
 	"time"
 )
 
+var FormatTime map[string]string = map[string]string{
+	"ANSIC":       "Mon Jan _2 15:04:05 2006",
+	"UnixDate":    "Mon Jan _2 15:04:05 MST 2006",
+	"RubyDate":    "Mon Jan 02 15:04:05 -0700 2006",
+	"RFC822":      "02 Jan 06 15:04 MST",
+	"RFC822Z":     "02 Jan 06 15:04 -0700", // RFC822 with numeric zone
+	"RFC850":      "Monday, 02-Jan-06 15:04:05 MST",
+	"RFC1123":     "Mon, 02 Jan 2006 15:04:05 MST",
+	"RFC1123Z":    "Mon, 02 Jan 2006 15:04:05 -0700", // RFC1123 with numeric zone
+	"RFC3339":     "2006-01-02T15:04:05Z07:00",
+	"RFC3339Nano": "2006-01-02T15:04:05.999999999Z07:00",
+	"Kitchen":     "3:04PM",
+	// Handy time stamps.
+	"Stamp":      "Jan _2 15:04:05",
+	"StampMilli": "Jan _2 15:04:05.000",
+	"StampMicro": "Jan _2 15:04:05.000000",
+	"StampNano":  "Jan _2 15:04:05.000000000",
+}
+
 type AggregatorConfig struct {
 	Tags         []string `json:"Tags"`
 	Aggregations []string `json:"Aggregations"`
@@ -54,6 +73,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	target := aggregatorConfig.Target
 	timestamp := aggregatorConfig.Timestamp
 	preFields := aggregatorConfig.PreFields
+
 	if target == "" {
 		return time.Now().Unix()
 	}
@@ -68,11 +88,30 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	aggValue := fields[target].(string)
 
 	//get time
-	now, err := strconv.ParseInt(fields[timestamp].(string), 10, 64)
+	var now int64
+	var err error
+	now, err = strconv.ParseInt(fields[timestamp].(string), 10, 64)
 	if err != nil {
 		log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
 		now = time.Now().Unix()
 	}
+	/*
+		if p.timeParse == "Unix" {
+			now, err = strconv.ParseInt(fields[timestamp].(string), 10, 64)
+			if err != nil {
+				log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
+				now = time.Now().Unix()
+			}
+		} else {
+			nowTime, err := time.Parse(FormatTime[timeParse], fields[timestamp].(string))
+			if err != nil {
+				log.Debug("[Record] timestamp:%v can't use time.Parse", fields[timestamp].(string))
+				now = time.Now().Unix()
+			} else {
+				now = nowTime.Unix()
+			}
+		}
+	*/
 
 	if _, ok := p.buckets[bucketName]; !ok {
 		p.buckets[bucketName] = make(map[string][]int64)
