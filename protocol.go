@@ -112,7 +112,7 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		if err != nil {
 			return
 		}
-		log.Infof("[ParseConfig]influxDbConfig: %v", elasticSearchConfig)
+		log.Infof("[ParseConfig]ElasticSearchConfig: %v", elasticSearchConfig)
 		senderConfig.Config = elasticSearchConfig
 	}
 	if senderConfig.SenderName == "InfluxDbConfig" {

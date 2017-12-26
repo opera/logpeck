@@ -16,9 +16,9 @@ import (
 
 type InfluxDbConfig struct {
 	Hosts       string                      `json:"Hosts"`
+	DBName      string                      `json:"DBName"`
 	Interval    int64                       `json:"Interval"`
 	FieldsKey   string                      `json:"FieldsKey"`
-	DBName      string                      `json:"DBName"`
 	Aggregators map[string]AggregatorConfig `json:"Aggregators"`
 }
 

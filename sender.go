@@ -13,13 +13,13 @@ import (
 )
 
 type ElasticSearchConfig struct {
-	Hosts       []string                    `json:"hosts"`
-	Index       string                      `json:"index"`
-	Type        string                      `json:"type"`
-	Mapping     map[string]interface{}      `json:"mapping"`
-	Interval    int64                       `json:"interval"`
-	Name        string                      `json:"name"`
-	Aggregators map[string]AggregatorConfig `json:"aggregators"`
+	Hosts       []string                    `json:"Hosts"`
+	Index       string                      `json:"Index"`
+	Type        string                      `json:"Type"`
+	Mapping     map[string]interface{}      `json:"Mapping"`
+	Interval    int64                       `json:"Interval"`
+	FieldsKey   string                      `json:"FieldsKey"`
+	Aggregators map[string]AggregatorConfig `json:"Aggregators"`
 }
 
 type ElasticSearchSender struct {

@@ -112,7 +112,6 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			}
 		}
 	*/
-
 	if _, ok := p.buckets[bucketName]; !ok {
 		p.buckets[bucketName] = make(map[string][]int64)
 	}
