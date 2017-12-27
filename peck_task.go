@@ -47,15 +47,14 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	var sender Sender
 	aggregator := &Aggregator{}
 	if c.SenderConfig.SenderName == "ElasticSearchConfig" {
-		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields, c.Name)
+		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
 	}
 
 	if c.SenderConfig.SenderName == "InfluxDbConfig" {
-		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields, c.Name)
+		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
 		interval := c.SenderConfig.Config.(InfluxDbConfig).Interval
-		name := c.SenderConfig.Config.(InfluxDbConfig).FieldsKey
-		aggregators := c.SenderConfig.Config.(InfluxDbConfig).Aggregators
-		aggregator = NewAggregator(interval, name, &aggregators)
+		aggregatorConfigs := c.SenderConfig.Config.(InfluxDbConfig).AggregatorConfigs
+		aggregator = NewAggregator(interval, &aggregatorConfigs)
 	}
 
 	task := &PeckTask{

@@ -15,32 +15,29 @@ import (
 )
 
 type InfluxDbConfig struct {
-	Hosts       string                      `json:"Hosts"`
-	DBName      string                      `json:"DBName"`
-	Interval    int64                       `json:"Interval"`
-	FieldsKey   string                      `json:"FieldsKey"`
-	Aggregators map[string]AggregatorConfig `json:"Aggregators"`
+	Hosts             string           `json:"Hosts"`
+	DBName            string           `json:"DBName"`
+	Interval          int64            `json:"Interval"`
+	AggregatorConfigs AggregatorConfig `json:"AggregatorConfigs"`
 }
 
 type InfluxDbSender struct {
 	config        InfluxDbConfig
 	fields        []PeckField
-	taskName      string
 	mu            sync.Mutex
 	lastIndexName string
 }
 
-func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField, taskName string) *InfluxDbSender {
+func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDbSender {
 	config := senderConfig.Config.(InfluxDbConfig)
 	sender := InfluxDbSender{
-		config:   config,
-		fields:   fields,
-		taskName: taskName,
+		config: config,
+		fields: fields,
 	}
 	return &sender
 }
 
-func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
+func toInfluxdbLine(fields map[string]interface{}, preMeasurment string) string {
 	lines := ""
 	timestamp := fields["timestamp"].(int64)
 	host := ""
@@ -57,10 +54,9 @@ func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
 			continue
 		}
 		aggregationResults := v.(map[string]int64)
-		key := strings.Split(k, " ")
-		lines += taskName + "_" + key[0] + ",host=" + host + " "
+		lines += preMeasurment + "_" + k + ",host=" + host + " "
 		for aggregation, result := range aggregationResults {
-			lines += key[1] + aggregation + "=" + strconv.FormatInt(result, 10) + ","
+			lines += aggregation + "=" + strconv.FormatInt(result, 10) + ","
 		}
 		length := len(lines)
 		lines = lines[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
@@ -69,7 +65,7 @@ func toInfluxdbLine(fields map[string]interface{}, taskName string) string {
 }
 
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
-	lines := toInfluxdbLine(fields, p.taskName)
+	lines := toInfluxdbLine(fields, p.config.AggregatorConfigs.PreMeasurment)
 	log.Infof("[InfluxDbSender.Sender] timestamp is %v", time.Now())
 	log.Infof("[InfluxDbSender.Sender] lines is %s", lines)
 	raw_data := []byte(lines)

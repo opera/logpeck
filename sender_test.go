@@ -17,7 +17,7 @@ func TestGetIndexName(*testing.T) {
 			Config:     ESConfig,
 		}
 
-		sender := NewElasticSearchSender(&config, nil, "taskName")
+		sender := NewElasticSearchSender(&config, nil)
 		proto := "logpeck"
 		if proto != sender.GetIndexName() {
 			//panic(proto)
@@ -34,7 +34,7 @@ func TestGetIndexName(*testing.T) {
 			SenderName: "ElasticsearchConfig",
 			Config:     ESConfig,
 		}
-		sender := NewElasticSearchSender(&config, nil, "taskName")
+		sender := NewElasticSearchSender(&config, nil)
 		indexName := sender.GetIndexName()
 		fmt.Printf("proto: %s, indexName: %s\n", config.Config.(ElasticSearchConfig).Index, indexName)
 		if len(indexName) != 18 {

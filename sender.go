@@ -13,29 +13,26 @@ import (
 )
 
 type ElasticSearchConfig struct {
-	Hosts       []string                    `json:"Hosts"`
-	Index       string                      `json:"Index"`
-	Type        string                      `json:"Type"`
-	Mapping     map[string]interface{}      `json:"Mapping"`
-	Interval    int64                       `json:"Interval"`
-	FieldsKey   string                      `json:"FieldsKey"`
-	Aggregators map[string]AggregatorConfig `json:"Aggregators"`
+	Hosts             []string               `json:"Hosts"`
+	Index             string                 `json:"Index"`
+	Type              string                 `json:"Type"`
+	Mapping           map[string]interface{} `json:"Mapping"`
+	Interval          int64                  `json:"Interval"`
+	AggregatorConfigs AggregatorConfig       `json:"AggregatorConfigs"`
 }
 
 type ElasticSearchSender struct {
 	config        ElasticSearchConfig
 	fields        []PeckField
-	taskName      string
 	mu            sync.Mutex
 	lastIndexName string
 }
 
-func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField, taskName string) *ElasticSearchSender {
+func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) *ElasticSearchSender {
 	config := senderConfig.Config.(ElasticSearchConfig)
 	sender := ElasticSearchSender{
-		config:   config,
-		fields:   fields,
-		taskName: taskName,
+		config: config,
+		fields: fields,
 	}
 	return &sender
 }
