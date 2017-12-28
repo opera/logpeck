@@ -23,10 +23,12 @@ type Sender interface {
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
-	err := c.Check()
-	if err != nil {
-		log.Infof("[PeckTask] config check failed: %s", err)
-		return nil, err
+	if c.LogFormat == "text" {
+		err := c.Check()
+		if err != nil {
+			log.Infof("[PeckTask] config check failed: %s", err)
+			return nil, err
+		}
 	}
 	var config *PeckTaskConfig = c
 	var stat *PeckTaskStat
@@ -81,7 +83,7 @@ func (p *PeckTask) IsStop() bool {
 
 func (p *PeckTask) ExtractFieldsFromPlain(content string) map[string]interface{} {
 	if len(p.Config.Fields) == 0 {
-		return map[string]interface{}{"Log": content}
+		return map[string]interface{}{"_Log": content}
 	}
 	fields := make(map[string]interface{})
 	arr := SplitString(content, p.Config.Delimiters)
@@ -124,14 +126,14 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
-		return map[string]interface{}{"Log": content, "Exception": err.Error()}
+		return map[string]interface{}{"_Log": content, "_Exception": err.Error()}
 	}
 	mContent, mErr := jContent.Map()
 	if mErr != nil {
-		return map[string]interface{}{"Log": content, "Exception": mErr.Error()}
+		return map[string]interface{}{"_Log": content, "_Exception": mErr.Error()}
 	}
 	if len(p.Config.Fields) == 0 {
-		return mContent
+		return map[string]interface{}{"_Log": content}
 	}
 	for _, field := range p.Config.Fields {
 		key := SplitString(field.Name, ".")

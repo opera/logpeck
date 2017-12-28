@@ -247,7 +247,14 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 			if err != nil {
 				continue
 			}
-			resultsCh <- fields
+			Log := make(map[string]interface{})
+			if _, ok := fields["_Log"]; !ok {
+				Log["_Log"] = content.Text
+				Log["_Fields"] = fields
+			} else {
+				Log = fields
+			}
+			resultsCh <- Log
 			id++
 			if id >= config.Test.TestNum {
 				break

@@ -28,20 +28,20 @@ var FormatTime map[string]string = map[string]string{
 type AggregatorConfig struct {
 	PreMeasurment string   `json:"PreMeasurment"`
 	Measurment    string   `json:"Measurment"`
+	Target        string   `json:"Target"`
 	Tags          []string `json:"Tags"`
 	Aggregations  []string `json:"Aggregations"`
-	Target        string   `json:"Target"`
 	Timestamp     string   `json:"Timestamp"`
 }
 
 type Aggregator struct {
 	Interval          int64
-	AggregatorConfigs AggregatorConfig
+	AggregatorConfigs []AggregatorConfig
 	buckets           map[string]map[string][]int64
 	postTime          int64
 }
 
-func NewAggregator(interval int64, aggregatorConfigs *AggregatorConfig) *Aggregator {
+func NewAggregator(interval int64, aggregatorConfigs *[]AggregatorConfig) *Aggregator {
 	aggregator := &Aggregator{
 		Interval:          interval,
 		AggregatorConfigs: *aggregatorConfigs,
@@ -65,76 +65,77 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 }
 
 func (p *Aggregator) Record(fields map[string]interface{}) int64 {
-	bucketName, ok := fields[p.AggregatorConfigs.Measurment].(string)
-	if !ok {
-		log.Infof("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
-		return time.Now().Unix()
-	}
-	bucketTag := ""
-	tags := p.AggregatorConfigs.Tags
-	target := p.AggregatorConfigs.Target
-	timestamp := p.AggregatorConfigs.Timestamp
-
-	//get time
 	var now int64
-	var err error
-	if !ok {
-		log.Infof("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
-	}
-	timestamp_tmp, ok := fields[timestamp].(string)
-	if !ok {
-		now = time.Now().Unix()
-	} else {
-		now, err = strconv.ParseInt(timestamp_tmp, 10, 64)
-		if err != nil {
-			log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", timestamp_tmp)
-			now = time.Now().Unix()
-		}
-	}
-
-	if target == "" {
-		return time.Now().Unix()
-	}
-	for i := 0; i < len(tags); i++ {
-		tags_tmp, ok := fields[tags[i]].(string)
+	for i := 0; i < len(p.AggregatorConfigs); i++ {
+		measurment, ok := fields[p.AggregatorConfigs[i].Measurment].(string)
 		if !ok {
-			log.Infof("[Record] Fields[tag] format error: Fields[tag] must be a string")
-		} else {
-			bucketTag += "," + tags[i] + "=" + tags_tmp
+			log.Infof("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
+			now = time.Now().Unix()
+			continue
 		}
-	}
+		bucketName := p.AggregatorConfigs[i].PreMeasurment + "," + p.AggregatorConfigs[i].Measurment
+		bucketTag := measurment
+		tags := p.AggregatorConfigs[i].Tags
+		target := p.AggregatorConfigs[i].Target
+		timestamp := p.AggregatorConfigs[i].Timestamp
 
-	/*
-		if p.timeParse == "Unix" {
-			now, err = strconv.ParseInt(fields[timestamp].(string), 10, 64)
-			if err != nil {
-				log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
-				now = time.Now().Unix()
-			}
+		//get time
+		var err error
+		timestamp_tmp, ok := fields[timestamp].(string)
+		if !ok {
+			now = time.Now().Unix()
 		} else {
-			nowTime, err := time.Parse(FormatTime[timeParse], fields[timestamp].(string))
+			now, err = strconv.ParseInt(timestamp_tmp, 10, 64)
 			if err != nil {
-				log.Debug("[Record] timestamp:%v can't use time.Parse", fields[timestamp].(string))
+				log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", timestamp_tmp)
 				now = time.Now().Unix()
-			} else {
-				now = nowTime.Unix()
 			}
 		}
-	*/
-	aggValue, ok := fields[target].(string)
-	if !ok {
-		log.Infof("[Record] Fields[aggValue] format error: Fields[aggValue] must be a string")
-		return now
-	}
-	if _, ok := p.buckets[bucketName]; !ok {
-		p.buckets[bucketName] = make(map[string][]int64)
-	}
-	aggValueInt, err := strconv.ParseInt(aggValue, 10, 64)
-	if err != nil {
-		log.Infof("[Record] target:%v can't use strconv.ParseInt", aggValue)
-		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
-	} else {
-		p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueInt)
+
+		if target == "" {
+			return time.Now().Unix()
+		}
+		for i := 0; i < len(tags); i++ {
+			tags_tmp, ok := fields[tags[i]].(string)
+			if !ok {
+				log.Infof("[Record] Fields[tag] format error: Fields[tag] must be a string")
+			} else {
+				bucketTag += "," + tags[i] + "=" + tags_tmp
+			}
+		}
+
+		/*
+			if p.timeParse == "Unix" {
+				now, err = strconv.ParseInt(fields[timestamp].(string), 10, 64)
+				if err != nil {
+					log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
+					now = time.Now().Unix()
+				}
+			} else {
+				nowTime, err := time.Parse(FormatTime[timeParse], fields[timestamp].(string))
+				if err != nil {
+					log.Debug("[Record] timestamp:%v can't use time.Parse", fields[timestamp].(string))
+					now = time.Now().Unix()
+				} else {
+					now = nowTime.Unix()
+				}
+			}
+		*/
+		aggValue, ok := fields[target].(string)
+		if !ok {
+			log.Infof("[Record] Fields[aggValue] format error: Fields[aggValue] must be a string")
+			return now
+		}
+		if _, ok := p.buckets[bucketName]; !ok {
+			p.buckets[bucketName] = make(map[string][]int64)
+		}
+		aggValueInt, err := strconv.ParseInt(aggValue, 10, 64)
+		if err != nil {
+			log.Infof("[Record] target:%v can't use strconv.ParseInt", aggValue)
+			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
+		} else {
+			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueInt)
+		}
 	}
 	return now
 }
@@ -170,7 +171,6 @@ func quickSort(values []int64, left, right int64) {
 }
 
 func getAggregation(targetValue []int64, aggregations []string) map[string]int64 {
-	log.Infof("[getAggregation] targetValue is : %v", targetValue)
 	aggregationResults := map[string]int64{}
 	cnt := int64(len(targetValue))
 	avg := int64(0)
@@ -228,8 +228,16 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
 		for bucketTag, targetValue := range bucketTag_value {
-			aggregations := p.AggregatorConfigs.Aggregations
-			fields[bucketName+bucketTag] = getAggregation(targetValue, aggregations)
+			for i := 0; i < len(p.AggregatorConfigs); i++ {
+				if p.AggregatorConfigs[i].PreMeasurment+","+p.AggregatorConfigs[i].Measurment == bucketName {
+					aggregations := p.AggregatorConfigs[i].Aggregations
+					preMeasurment := p.AggregatorConfigs[i].PreMeasurment
+					if preMeasurment != "" {
+						preMeasurment += "_"
+					}
+					fields[preMeasurment+bucketTag] = getAggregation(targetValue, aggregations)
+				}
+			}
 		}
 	}
 	fields["timestamp"] = timestamp

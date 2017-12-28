@@ -15,10 +15,10 @@ import (
 )
 
 type InfluxDbConfig struct {
-	Hosts             string           `json:"Hosts"`
-	DBName            string           `json:"DBName"`
-	Interval          int64            `json:"Interval"`
-	AggregatorConfigs AggregatorConfig `json:"AggregatorConfigs"`
+	Hosts             string             `json:"Hosts"`
+	DBName            string             `json:"DBName"`
+	Interval          int64              `json:"Interval"`
+	AggregatorConfigs []AggregatorConfig `json:"AggregatorConfigs"`
 }
 
 type InfluxDbSender struct {
@@ -37,7 +37,7 @@ func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDb
 	return &sender
 }
 
-func toInfluxdbLine(fields map[string]interface{}, preMeasurment string) string {
+func toInfluxdbLine(fields map[string]interface{}) string {
 	lines := ""
 	timestamp := fields["timestamp"].(int64)
 	host := ""
@@ -54,20 +54,21 @@ func toInfluxdbLine(fields map[string]interface{}, preMeasurment string) string 
 			continue
 		}
 		aggregationResults := v.(map[string]int64)
-		lines += preMeasurment + "_" + k + ",host=" + host + " "
+		line := k + ",host=" + host + " "
 		for aggregation, result := range aggregationResults {
-			lines += aggregation + "=" + strconv.FormatInt(result, 10) + ","
+			line += aggregation + "=" + strconv.FormatInt(result, 10) + ","
 		}
-		length := len(lines)
-		lines = lines[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
+		length := len(line)
+		line = line[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
+		lines += line
+		log.Infof("[toInfluxdbLine] line is %s",line)
 	}
 	return lines
 }
 
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
-	lines := toInfluxdbLine(fields, p.config.AggregatorConfigs.PreMeasurment)
+	lines := toInfluxdbLine(fields)
 	log.Infof("[InfluxDbSender.Sender] timestamp is %v", time.Now())
-	log.Infof("[InfluxDbSender.Sender] lines is %s", lines)
 	raw_data := []byte(lines)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.DBName

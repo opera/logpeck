@@ -209,9 +209,11 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 			} else {
 				return errors.New("Fields error: need Name")
 			}
-			if val, ok := field.(map[string]interface{})["Value"]; ok {
-				if f.Value, ok = val.(string); !ok {
-					return errors.New("Fields format error: Value must be a string")
+			if p.LogFormat == "text" {
+				if val, ok := field.(map[string]interface{})["Value"]; ok {
+					if f.Value, ok = val.(string); !ok {
+						return errors.New("Fields format error: Value must be a string")
+					}
 				}
 			}
 			p.Fields = append(p.Fields, f)

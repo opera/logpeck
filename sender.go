@@ -18,7 +18,7 @@ type ElasticSearchConfig struct {
 	Type              string                 `json:"Type"`
 	Mapping           map[string]interface{} `json:"Mapping"`
 	Interval          int64                  `json:"Interval"`
-	AggregatorConfigs AggregatorConfig       `json:"AggregatorConfigs"`
+	AggregatorConfigs []AggregatorConfig     `json:"AggregatorConfigs"`
 }
 
 type ElasticSearchSender struct {
