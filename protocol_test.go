@@ -26,10 +26,13 @@ func TestPeckTaskConfigUnmarshal(*testing.T) {
 	configStr = `{
 		"Name":"TestLog",
 		"LogPath":"test.log",
-		"ESConfig":{
-			"Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
-			"Index":"TestLog",
-			"Type":"Mock"
+		"SenderConfig":{
+	        "SenderName":"ElasticsearchConfig",
+            "Config":{
+			       "Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
+			       "Index":"TestLog",
+			       "Type":"Mock"
+	        }
 		}
 	}`
 	if e := config.Unmarshal([]byte(configStr)); e != nil {
@@ -39,13 +42,16 @@ func TestPeckTaskConfigUnmarshal(*testing.T) {
 	configStr = `{
 		"Name":"TestLog",
 		"LogPath":"test.log",
-		"ESConfig":{
-			"Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
-			"Index":"TestLog",
-			"Type":"Mock",
-			"Mapping":{
-				"properties":"haha"
-			}
+	    "SenderConfig":{
+	        "SenderName":"ElasticsearchConfig",
+            "Config":{
+			    "Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
+			     "Index":"TestLog",
+			     "Type":"Mock",
+	             "Mapping":{
+				 "properties":"haha"
+			     }
+	        }
 		}
 	}`
 	if e := config.Unmarshal([]byte(configStr)); e != nil {
@@ -56,16 +62,19 @@ func TestPeckTaskConfigUnmarshal(*testing.T) {
 	configStr = `{
 		"Name":"TestLog",
 		"LogPath":"test.log",
-		"ESConfig":{
-			"Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
-			"Index":"TestLog",
-			"Type":"Mock",
-			"Mapping":{
-				"properties":"haha"
-			}
+		"SenderConfig":{
+	        "SenderName":"ElasticsearchConfig",
+            "Config":{
+			    "Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
+			     "Index":"TestLog",
+			     "Type":"Mock",
+	             "Mapping":{
+				 "properties":"haha"
+			     }
+	        }
 		},
 		"Delimiters": "",
-		"FilterExpr":"mocklog hahaha|mocklog",
+		"Keywords":"mocklog hahaha|mocklog",
 		"LogFormat": "json"
 	}`
 	if e := config.Unmarshal([]byte(configStr)); e != nil {
@@ -76,13 +85,16 @@ func TestPeckTaskConfigUnmarshal(*testing.T) {
 	configStr = `{
 		"Name":"TestLog",
 		"LogPath":"test.log",
-		"ESConfig":{
-			"Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
-			"Index":"TestLog",
-			"Type":"Mock",
-			"Mapping":{
-				"properties":"haha"
-			}
+		"SenderConfig":{
+	        "SenderName":"ElasticsearchConfig",
+            "Config":{
+			    "Hosts":["127.0.0.1:9200","127.0.0.1:9201"],
+			     "Index":"TestLog",
+			     "Type":"Mock",
+	             "Mapping":{
+				 "properties":"haha"
+			     }
+	        }
 		},
 		"Fields":[
 		{
@@ -95,7 +107,7 @@ func TestPeckTaskConfigUnmarshal(*testing.T) {
 		}
 		],
 		"Delimiters": "",
-		"FilterExpr":"mocklog hahaha|mocklog",
+		"Keywords":"mocklog hahaha|mocklog",
 		"LogFormat": "json"
 	}`
 	if e := config.Unmarshal([]byte(configStr)); e != nil {

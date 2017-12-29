@@ -11,9 +11,9 @@ type PeckFilter struct {
 	have_excl bool
 }
 
-func NewPeckFilter(filterExpr string) *PeckFilter {
+func NewPeckFilter(Keywords string) *PeckFilter {
 	filter := &PeckFilter{have_incl: false, have_excl: false}
-	substrs := strings.Split(filterExpr, "|")
+	substrs := strings.Split(Keywords, "|")
 	for _, substr := range substrs {
 		if substr == "" {
 			continue
@@ -47,5 +47,6 @@ func (p *PeckFilter) Drop(str string) bool {
 			return true
 		}
 	}
+	SplitString("", "")
 	return false
 }

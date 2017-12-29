@@ -1,18 +1,20 @@
 package logpeck
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
 )
 
 type PeckTaskConfig struct {
-	Name     string
-	LogPath  string
-	ESConfig ElasticSearchConfig
+	Name         string
+	LogPath      string
+	SenderConfig SenderConfig
 
 	LogFormat  string
-	FilterExpr string
+	Keywords   string
 	Fields     []PeckField
 	Delimiters string
 	Test       TestModule
@@ -23,11 +25,9 @@ type PeckField struct {
 	Value string
 }
 
-type ElasticSearchConfig struct {
-	Hosts   []string
-	Index   string
-	Type    string
-	Mapping map[string]interface{}
+type SenderConfig struct {
+	SenderName string
+	Config     interface{}
 }
 
 type PeckTaskStat struct {
@@ -87,31 +87,53 @@ func GetStringArray(j *sjson.Json, key string) ([]string, error) {
 	return valJson.StringArray()
 }
 
-func ParseESConfig(j *sjson.Json) (config ElasticSearchConfig, e error) {
-	cJson := j.Get("ESConfig")
+func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
+	cJson := j.Get("SenderConfig")
 	if cJson.Interface() == nil {
-		return config, nil
+		return senderConfig, nil
 	}
+	senderConfig.SenderName, e = cJson.Get("SenderName").String()
+	if e != nil {
+		log.Infof("[ParseConfig]err: %v", e)
+		return
+	}
+	if senderConfig.SenderName == "ElasticSearchConfig" {
+		elasticSearchConfig := ElasticSearchConfig{}
+		cJson := cJson.Get("Config")
+		if cJson.Interface() == nil {
+			return senderConfig, nil
+		}
 
-	// Parse "ESConfig.Hosts", required
-	config.Hosts, e = GetStringArray(cJson, "Hosts")
-	if e != nil {
-		return
+		jbyte, err := cJson.MarshalJSON()
+		if err != nil {
+			return
+		}
+		err = json.Unmarshal(jbyte, &elasticSearchConfig)
+		if err != nil {
+			return
+		}
+		log.Infof("[ParseConfig]ElasticSearchConfig: %v", elasticSearchConfig)
+		senderConfig.Config = elasticSearchConfig
 	}
-	// Parse "ESConfig.Index", required
-	config.Index, e = GetString(cJson, "Index", true)
-	if e != nil {
-		return
-	}
-	// Parse "ESConfig.Type", required
-	config.Type, e = GetString(cJson, "Type", true)
-	if e != nil {
-		return
-	}
+	if senderConfig.SenderName == "InfluxDbConfig" {
+		influxDbConfig := InfluxDbConfig{}
+		cJson := cJson.Get("Config")
+		if cJson.Interface() == nil {
+			return senderConfig, nil
+		}
 
-	// Parse "ESConfig.Mapping", optional
-	config.Mapping, _ = cJson.Get("Mapping").Map()
-	return config, nil
+		jbyte, err := cJson.MarshalJSON()
+		if err != nil {
+			return
+		}
+		err = json.Unmarshal(jbyte, &influxDbConfig)
+		if err != nil {
+			return
+		}
+		log.Infof("[ParseConfig]influxDbConfig: %v", influxDbConfig)
+		senderConfig.Config = influxDbConfig
+	}
+	return senderConfig, nil
 }
 
 func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
@@ -125,13 +147,15 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	if e != nil {
 		return e
 	}
+
 	// Parse "LogPath", optional
 	p.LogPath, e = GetString(j, "LogPath", false)
 	if e != nil {
 		return e
 	}
-	// Parse "ESConfig", optional
-	p.ESConfig, e = ParseESConfig(j)
+
+	// Parse "SenderConfig", optional
+	p.SenderConfig, e = ParseConfig(j)
 	if e != nil {
 		return e
 	}
@@ -143,7 +167,7 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	}
 
 	// Parse "FilterExpr", optional
-	p.FilterExpr, e = GetString(j, "FilterExpr", false)
+	p.Keywords, e = GetString(j, "Keywords", false)
 	if e != nil {
 		return e
 	}
@@ -185,9 +209,11 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 			} else {
 				return errors.New("Fields error: need Name")
 			}
-			if val, ok := field.(map[string]interface{})["Value"]; ok {
-				if f.Value, ok = val.(string); !ok {
-					return errors.New("Fields format error: Value must be a string")
+			if p.LogFormat == "text" {
+				if val, ok := field.(map[string]interface{})["Value"]; ok {
+					if f.Value, ok = val.(string); !ok {
+						return errors.New("Fields format error: Value must be a string")
+					}
 				}
 			}
 			p.Fields = append(p.Fields, f)

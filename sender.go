@@ -12,6 +12,15 @@ import (
 	"time"
 )
 
+type ElasticSearchConfig struct {
+	Hosts             []string               `json:"Hosts"`
+	Index             string                 `json:"Index"`
+	Type              string                 `json:"Type"`
+	Mapping           map[string]interface{} `json:"Mapping"`
+	Interval          int64                  `json:"Interval"`
+	AggregatorConfigs []AggregatorConfig     `json:"AggregatorConfigs"`
+}
+
 type ElasticSearchSender struct {
 	config        ElasticSearchConfig
 	fields        []PeckField
@@ -19,11 +28,13 @@ type ElasticSearchSender struct {
 	lastIndexName string
 }
 
-func NewElasticSearchSender(config *ElasticSearchConfig, fields []PeckField) *ElasticSearchSender {
-	return &ElasticSearchSender{
-		config: *config,
+func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) *ElasticSearchSender {
+	config := senderConfig.Config.(ElasticSearchConfig)
+	sender := ElasticSearchSender{
+		config: config,
 		fields: fields,
 	}
+	return &sender
 }
 
 func HttpCall(method, url string, bodyString string) {

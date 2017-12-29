@@ -84,9 +84,9 @@ func TestJson(*testing.T) {
 	filterExpr := "panic"
 
 	config := PeckTaskConfig{
-		Name:       name,
-		LogPath:    logPath,
-		FilterExpr: filterExpr,
+		Name:     name,
+		LogPath:  logPath,
+		Keywords: filterExpr,
 	}
 
 	raw, err := json.Marshal(config)
@@ -102,7 +102,7 @@ func TestJson(*testing.T) {
 	}
 	if unma.Name != name ||
 		unma.LogPath != logPath ||
-		unma.FilterExpr != filterExpr {
+		unma.Keywords != filterExpr {
 		panic(unma)
 	}
 }
@@ -111,17 +111,20 @@ func TestConfigsAccess(*testing.T) {
 	name := "test_peck_task"
 	logPath := "./test.log"
 	filterExpr := "panic"
-	esconfig := ElasticSearchConfig{
+	ESConfig := ElasticSearchConfig{
 		Hosts: []string{"127.0.0.1:9200"},
 		Index: "test",
 		Type:  "testType",
 	}
-
+	esconfig := SenderConfig{
+		SenderName: "ElasticsearchConfig",
+		Config:     ESConfig,
+	}
 	config := PeckTaskConfig{
-		Name:       name,
-		LogPath:    logPath,
-		FilterExpr: filterExpr,
-		ESConfig:   esconfig,
+		Name:         name,
+		LogPath:      logPath,
+		Keywords:     filterExpr,
+		SenderConfig: esconfig,
 	}
 
 	defer LogExecTime(time.Now(), "config access")
