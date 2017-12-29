@@ -54,13 +54,13 @@ func TestRecord(*testing.T) {
 	if aggregator.Record(fields) != int64(15) {
 		panic(fields)
 	}
-	if aggregator.buckets["Test,aaa"]["getTest,upstream=127.0.0.1"][0] != 2 {
+	if aggregator.buckets["Test_aaa_cost"]["getTest_cost,upstream=127.0.0.1"][0] != 2 {
 		panic(aggregator)
 	}
 	if aggregator.Record(fields) != int64(15) {
 		panic(fields)
 	}
-	if aggregator.buckets["Test,aaa"]["getTest,upstream=127.0.0.1"][0]+aggregator.buckets["Test,aaa"]["getTest,upstream=127.0.0.1"][1] != 4 {
+	if aggregator.buckets["Test_aaa_cost"]["getTest_cost,upstream=127.0.0.1"][0]+aggregator.buckets["Test_aaa_cost"]["getTest_cost,upstream=127.0.0.1"][1] != 4 {
 		panic(aggregator)
 	}
 }
@@ -90,7 +90,7 @@ func TestDump(*testing.T) {
 	}
 	dump := aggregator.Dump(int64(30))
 	log.Infof("%v", dump)
-	a := dump["Test_getTest,upstream=127.0.0.1"].(map[string]int64)
+	a := dump["Test_getTest_cost,upstream=127.0.0.1"].(map[string]int64)
 	if a["cnt"] != 10 {
 		panic(a)
 	}

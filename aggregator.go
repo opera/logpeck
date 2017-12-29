@@ -73,11 +73,11 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			now = time.Now().Unix()
 			continue
 		}
-		bucketName := p.AggregatorConfigs[i].PreMeasurment + "," + p.AggregatorConfigs[i].Measurment
-		bucketTag := measurment
 		tags := p.AggregatorConfigs[i].Tags
 		target := p.AggregatorConfigs[i].Target
 		timestamp := p.AggregatorConfigs[i].Timestamp
+		bucketName := p.AggregatorConfigs[i].PreMeasurment + "_" + p.AggregatorConfigs[i].Measurment + "_" + target
+		bucketTag := measurment + "_" + target
 
 		//get time
 		var err error
@@ -229,7 +229,7 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	for bucketName, bucketTag_value := range p.buckets {
 		for bucketTag, targetValue := range bucketTag_value {
 			for i := 0; i < len(p.AggregatorConfigs); i++ {
-				if p.AggregatorConfigs[i].PreMeasurment+","+p.AggregatorConfigs[i].Measurment == bucketName {
+				if p.AggregatorConfigs[i].PreMeasurment+"_"+p.AggregatorConfigs[i].Measurment+"_"+p.AggregatorConfigs[i].Target == bucketName {
 					aggregations := p.AggregatorConfigs[i].Aggregations
 					preMeasurment := p.AggregatorConfigs[i].PreMeasurment
 					if preMeasurment != "" {
