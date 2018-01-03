@@ -1,6 +1,7 @@
 package logpeck
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
@@ -142,7 +143,13 @@ func (p *PeckTask) ExtractFieldsFromJson(content string) map[string]interface{} 
 		tmp := mContent
 		for i := 0; i < length; i++ {
 			if i == length-1 {
-				value = tmp[key[i]].(string)
+				if v, ok := tmp[key[i]].(string); ok {
+					value = v
+				} else if v, ok := tmp[key[i]].(json.Number); ok {
+					value = v.String()
+				} else {
+					value = fmt.Sprintf("unknown type %v", tmp[key[i]])
+				}
 				break
 			}
 			tmp = tmp[key[i]].(map[string]interface{})
