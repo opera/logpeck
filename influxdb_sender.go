@@ -26,48 +26,50 @@ type InfluxDbSender struct {
 	fields        []PeckField
 	mu            sync.Mutex
 	lastIndexName string
+	host          string
 }
 
 func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDbSender {
 	config := senderConfig.Config.(InfluxDbConfig)
+
 	sender := InfluxDbSender{
 		config: config,
 		fields: fields,
 	}
-	return &sender
-}
 
-func toInfluxdbLine(fields map[string]interface{}) string {
-	lines := ""
-	timestamp := fields["timestamp"].(int64)
-	host := ""
 	conn, err := net.Dial("udp", "google.com:80")
 	if err != nil {
 		fmt.Println(err.Error())
-		//return
+		return nil
 	}
 	defer conn.Close()
-	host = strings.Split(conn.LocalAddr().String(), ":")[0]
+	sender.host = strings.Split(conn.LocalAddr().String(), ":")[0]
+	return &sender
+}
+
+func (p *InfluxDbSender) toInfluxdbLine(fields map[string]interface{}) string {
+	lines := ""
+	timestamp := fields["timestamp"].(int64)
 
 	for k, v := range fields {
 		if k == "timestamp" {
 			continue
 		}
 		aggregationResults := v.(map[string]int64)
-		line := k + ",host=" + host + " "
+		line := k + ",host=" + p.host + " "
 		for aggregation, result := range aggregationResults {
 			line += aggregation + "=" + strconv.FormatInt(result, 10) + ","
 		}
 		length := len(line)
 		line = line[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
 		lines += line
-		log.Infof("[toInfluxdbLine] line is %s",line)
+		log.Infof("[toInfluxdbLine] line is %s", line)
 	}
 	return lines
 }
 
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
-	lines := toInfluxdbLine(fields)
+	lines := p.toInfluxdbLine(fields)
 	log.Infof("[InfluxDbSender.Sender] timestamp is %v", time.Now())
 	raw_data := []byte(lines)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
