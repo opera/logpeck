@@ -8,6 +8,7 @@ logpeckd.log
 .idea/
 logpeck.iml
 haha
+_config.yml
 
 .DS_store
 */.DS_store
