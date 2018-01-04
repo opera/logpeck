@@ -8,13 +8,19 @@ Logpeck aims to be an easy-to-use module that parsing and collecting contents fr
 
 ## Getting Started
 
-### Build & Launch
+### Installation
+#### From Binary (linux only)
 
-`go build cmd/logpeckd/logpeckd.go`
+ * Download installation package [logpeck_0.3.0.deb](https://github.com/opera/resources/blob/master/logpeck/releases/logpeck_0.3.0.deb)
+ * Run `sudo dpkg -i logpeck_0.3.0.deb`
+ * Run `sudo service logpeck start` (or `sudo supervisorctl update` if `supervisor` is avalible) 
 
-`./logpeckd -config logpeckd.conf`
+#### From Source Code
 
-We can also use `supervisor` or other service management software to manage logpeck process.
+ * Download source code: [Release page v0.3.0](https://github.com/opera/logpeck/releases/tag/0.3.0)
+ * Build: `go build cmd/logpeckd/logpeckd.go`
+ * Launch: `./logpeckd -config logpeckd.conf`
+ * We can also use `supervisor` or other service management software to manage logpeck process.
 
 ### Web UI
 
