@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"os"
+	"strings"
 )
 
 const configBucket string = "config"
@@ -95,7 +96,14 @@ func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 		return nil, err
 	}
 	//	fmt.Println(rawKV)
-	for _, v := range rawKV {
+	for k, v := range rawKV {
+		// for data compat
+		if strings.Contains(k, "#") {
+			nk := k[strings.Index(k, "#")+1:]
+			p.remove(configBucket, k)
+			p.put(configBucket, nk, v)
+		}
+		//
 		config := &PeckTaskConfig{}
 		err = config.Unmarshal([]byte(v))
 		if err != nil {
@@ -148,7 +156,14 @@ func (p *DB) GetAllStats() (stats []PeckTaskStat, err error) {
 		return nil, err
 	}
 	//	fmt.Println(rawKV)
-	for _, v := range rawKV {
+	for k, v := range rawKV {
+		// for data compat
+		if strings.Contains(k, "#") {
+			nk := k[strings.Index(k, "#")+1:]
+			p.remove(statBucket, k)
+			p.put(statBucket, nk, v)
+		}
+		//
 		stat := &PeckTaskStat{}
 		err = json.Unmarshal([]byte(v), stat)
 		if err != nil {
