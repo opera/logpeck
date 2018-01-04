@@ -4,7 +4,7 @@
 [![Documentation Status](https://img.shields.io/badge/中文文档-最新-brightgreen.svg)](README-cn.md)
 
 ## Objectives
-Logpeck aims to be an easy-to-use module that parsing and collecting contents from log file and posting into [ElasticSearch](https://github.com/elastic/elasticsearch). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
+Logpeck aims to be an easy-to-use module that parsing and collecting contents from log file and posting into specific storage system, such as [ElasticSearch](https://github.com/elastic/elasticsearch), [Influxdb](https://github.com/influxdata/influxdb), [Kafka](https://github.com/apache/kafka). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
 
 ## Getting Started
 
