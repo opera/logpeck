@@ -136,14 +136,12 @@ func TestConfigsAccess(*testing.T) {
 	defer CleanTestDB(db)
 
 	// Test SaveConfig
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			config.Name = fmt.Sprintf("%s-%d", name, j)
-			config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
-			err = db.SaveConfig(&config)
-			if err != nil {
-				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
-			}
+	for i := 0; i < 100; i++ {
+		config.Name = fmt.Sprintf("%s-%d", name, i)
+		config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+		err = db.SaveConfig(&config)
+		if err != nil {
+			panic(fmt.Errorf("i[%d] err[%s]", i, err))
 		}
 	}
 
@@ -152,12 +150,13 @@ func TestConfigsAccess(*testing.T) {
 		Name:    name + "-0",
 		LogPath: logPath + "-0",
 	}
-	config_get, e := db.GetConfig(config_get_tmp.LogPath, config_get_tmp.Name)
+	config_get, e := db.GetConfig(config_get_tmp.Name)
 	if e != nil {
 		panic(e)
 	}
 	if config_get.Name != config_get_tmp.Name ||
 		config_get.LogPath != config_get_tmp.LogPath {
+		fmt.Printf("%s vs %s, %s vs %s\n", config_get.Name, config_get_tmp.Name, config_get.LogPath, config_get_tmp.LogPath)
 		panic(config_get)
 	}
 
@@ -166,7 +165,7 @@ func TestConfigsAccess(*testing.T) {
 	if c_err != nil {
 		panic(c_err)
 	}
-	if len(configs) != 9 {
+	if len(configs) != 100 {
 		panic(len(configs))
 	}
 
@@ -178,14 +177,12 @@ func TestConfigsAccess(*testing.T) {
 	}
 
 	// Test RemoveConfig
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			config.Name = fmt.Sprintf("%s-%d", name, j)
-			config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
-			err = db.RemoveConfig(config.LogPath, config.Name)
-			if err != nil {
-				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
-			}
+	for i := 0; i < 100; i++ {
+		config.Name = fmt.Sprintf("%s-%d", name, i)
+		config.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+		err = db.RemoveConfig(config.Name)
+		if err != nil {
+			panic(fmt.Errorf("i[%d] err[%s]", i, err))
 		}
 	}
 
@@ -214,14 +211,12 @@ func TestStatsAccess(*testing.T) {
 	defer CleanTestDB(db)
 
 	// Test SaveStat
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			stat.Name = fmt.Sprintf("%s-%d", name, j)
-			stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
-			err = db.SaveStat(&stat)
-			if err != nil {
-				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
-			}
+	for i := 0; i < 100; i++ {
+		stat.Name = fmt.Sprintf("%s-%d", name, i)
+		stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+		err = db.SaveStat(&stat)
+		if err != nil {
+			panic(fmt.Errorf("i[%d] err[%s]", i, err))
 		}
 	}
 
@@ -230,7 +225,7 @@ func TestStatsAccess(*testing.T) {
 		Name:    name + "-0",
 		LogPath: logPath + "-0",
 	}
-	stat_get, e := db.GetStat(stat_get_tmp.LogPath, stat_get_tmp.Name)
+	stat_get, e := db.GetStat(stat_get_tmp.Name)
 	if e != nil {
 		panic(e)
 	}
@@ -244,7 +239,7 @@ func TestStatsAccess(*testing.T) {
 	if c_err != nil {
 		panic(c_err)
 	}
-	if len(stats) != 9 {
+	if len(stats) != 100 {
 		panic(len(stats))
 	}
 
@@ -256,14 +251,12 @@ func TestStatsAccess(*testing.T) {
 	}
 
 	// Test RemoveStat
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			stat.Name = fmt.Sprintf("%s-%d", name, j)
-			stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
-			err = db.RemoveStat(stat.LogPath, stat.Name)
-			if err != nil {
-				panic(fmt.Errorf("i[%d] j[%d] err[%s]", i, j, err))
-			}
+	for i := 0; i < 100; i++ {
+		stat.Name = fmt.Sprintf("%s-%d", name, i)
+		stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
+		err = db.RemoveStat(stat.Name)
+		if err != nil {
+			panic(fmt.Errorf("i[%d] err[%s]", i, err))
 		}
 	}
 

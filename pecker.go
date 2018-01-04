@@ -39,7 +39,7 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 		return err
 	}
 	for i, config := range configs {
-		stat, _ := p.db.GetStat(config.LogPath, config.Name)
+		stat, _ := p.db.GetStat(config.Name)
 		p.AddPeckTask(&config, stat)
 		log.Infof("[Pecker] Restore PeckTask[%d] : %s", i, config)
 	}
@@ -91,7 +91,7 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 		return errors.New("Peck task name not exist")
 	}
 
-	stat, err := db.GetStat(p.nameToPath[config.Name], config.Name)
+	stat, err := db.GetStat(config.Name)
 	task, err := NewPeckTask(config, stat)
 	if err != nil {
 		return err
@@ -120,8 +120,8 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	}
 
 	log.Infof("[Pecker] Remove PeckTask try clean db: %s", config)
-	err1 := db.RemoveConfig(log_path, config.Name)
-	err2 := db.RemoveStat(log_path, config.Name)
+	err1 := db.RemoveConfig(config.Name)
+	err2 := db.RemoveStat(config.Name)
 	if err1 != nil || err2 != nil {
 		panic(err1.Error() + " " + err2.Error())
 	}
@@ -170,7 +170,7 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	{
 		// Try update peck task stat in boltdb
 		// stat, err := db.GetStat(config.LogPath, config.Name)
-		stat, err := db.GetStat(log_path, config.Name)
+		stat, err := db.GetStat(config.Name)
 		if err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 
 	{
 		// Try update peck task stat in boltdb
-		stat, err := db.GetStat(log_path, config.Name)
+		stat, err := db.GetStat(config.Name)
 		if err != nil {
 			return err
 		}
