@@ -73,7 +73,9 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 		return err
 	}
 
+	log.Infof("1")
 	p.record(config, &task.Stat)
+	log.Infof("2")
 
 	// AddPeckTask must be successful
 	p.logTasks[p.nameToPath[config.Name]].AddPeckTask(task)

@@ -50,13 +50,14 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	aggregator := &Aggregator{}
 	if c.SenderConfig.SenderName == "ElasticSearchConfig" {
 		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
-	}
-
-	if c.SenderConfig.SenderName == "InfluxDbConfig" {
+	} else if c.SenderConfig.SenderName == "InfluxDbConfig" {
 		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
 		interval := c.SenderConfig.Config.(InfluxDbConfig).Interval
 		aggregatorConfigs := c.SenderConfig.Config.(InfluxDbConfig).AggregatorConfigs
 		aggregator = NewAggregator(interval, &aggregatorConfigs)
+	} else if c.SenderConfig.SenderName == "KafkaConfig" {
+		sender = NewKafkaSender(&c.SenderConfig, c.Fields)
+	} else {
 	}
 
 	task := &PeckTask{
@@ -179,6 +180,9 @@ func (p *PeckTask) Process(content string) {
 			aggregationResults := p.aggregator.Dump(timestamp)
 			p.sender.Send(aggregationResults)
 		}
+	} else if p.Config.SenderConfig.SenderName == "KafkaConfig" {
+		fields := p.ExtractFields(content)
+		p.sender.Send(fields)
 	}
 }
 
