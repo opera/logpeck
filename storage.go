@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"os"
+	"strings"
 )
 
 const configBucket string = "config"
@@ -58,19 +59,17 @@ func (p *DB) makeConfigRawKey(logPath, name string) string {
 }
 
 func (p *DB) SaveConfig(config *PeckTaskConfig) error {
-	rawKey := p.makeConfigRawKey(config.LogPath, config.Name)
 	rawValueByte, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
 	rawValue := string(rawValueByte[:])
 	//	fmt.Println(rawKey + string(" ") + rawValue)
-	return p.put(configBucket, rawKey, rawValue)
+	return p.put(configBucket, config.Name, rawValue)
 }
 
-func (p *DB) GetConfig(logPath, name string) (*PeckTaskConfig, error) {
-	rawKey := p.makeConfigRawKey(logPath, name)
-	rawValue := p.get(configBucket, rawKey)
+func (p *DB) GetConfig(name string) (*PeckTaskConfig, error) {
+	rawValue := p.get(configBucket, name)
 	if len(rawValue) == 0 {
 		return nil, errors.New("Task not exist")
 	}
@@ -83,9 +82,8 @@ func (p *DB) GetConfig(logPath, name string) (*PeckTaskConfig, error) {
 	return &result, nil
 }
 
-func (p *DB) RemoveConfig(logPath, name string) error {
-	rawKey := p.makeConfigRawKey(logPath, name)
-	err := p.remove(configBucket, rawKey)
+func (p *DB) RemoveConfig(name string) error {
+	err := p.remove(configBucket, name)
 	if err != nil {
 		return err
 	}
@@ -98,7 +96,14 @@ func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 		return nil, err
 	}
 	//	fmt.Println(rawKV)
-	for _, v := range rawKV {
+	for k, v := range rawKV {
+		// for data compat
+		if strings.Contains(k, "#") {
+			nk := k[strings.Index(k, "#")+1:]
+			p.remove(configBucket, k)
+			p.put(configBucket, nk, v)
+		}
+		//
 		config := &PeckTaskConfig{}
 		err = config.Unmarshal([]byte(v))
 		if err != nil {
@@ -114,19 +119,17 @@ func (p *DB) makeStatRawKey(logPath, name string) string {
 }
 
 func (p *DB) SaveStat(stat *PeckTaskStat) error {
-	rawKey := p.makeStatRawKey(stat.LogPath, stat.Name)
 	rawValueByte, err := json.Marshal(stat)
 	if err != nil {
 		return err
 	}
 	rawValue := string(rawValueByte[:])
 	//	log.Println("[Storage] SaveStat: " + rawKey + string(" ") + rawValue)
-	return p.put(statBucket, rawKey, rawValue)
+	return p.put(statBucket, stat.Name, rawValue)
 }
 
-func (p *DB) GetStat(logPath, name string) (*PeckTaskStat, error) {
-	rawKey := p.makeStatRawKey(logPath, name)
-	rawValue := p.get(statBucket, rawKey)
+func (p *DB) GetStat(name string) (*PeckTaskStat, error) {
+	rawValue := p.get(statBucket, name)
 	if len(rawValue) == 0 {
 		return nil, errors.New("Task not exist")
 	}
@@ -139,9 +142,8 @@ func (p *DB) GetStat(logPath, name string) (*PeckTaskStat, error) {
 	return &result, nil
 }
 
-func (p *DB) RemoveStat(logPath, name string) error {
-	rawKey := p.makeStatRawKey(logPath, name)
-	err := p.remove(statBucket, rawKey)
+func (p *DB) RemoveStat(name string) error {
+	err := p.remove(statBucket, name)
 	if err != nil {
 		return err
 	}
@@ -154,7 +156,14 @@ func (p *DB) GetAllStats() (stats []PeckTaskStat, err error) {
 		return nil, err
 	}
 	//	fmt.Println(rawKV)
-	for _, v := range rawKV {
+	for k, v := range rawKV {
+		// for data compat
+		if strings.Contains(k, "#") {
+			nk := k[strings.Index(k, "#")+1:]
+			p.remove(statBucket, k)
+			p.put(statBucket, nk, v)
+		}
+		//
 		stat := &PeckTaskStat{}
 		err = json.Unmarshal([]byte(v), stat)
 		if err != nil {
