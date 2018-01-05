@@ -4,7 +4,25 @@
 [![Documentation Status](https://img.shields.io/badge/中文文档-最新-brightgreen.svg)](README-cn.md)
 
 ## Objectives
-Logpeck aims to be an easy-to-use module that parsing and collecting contents from log file and posting into [ElasticSearch](https://github.com/elastic/elasticsearch). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
+Logpeck aims to be an easy-to-use module that parsing and collecting contents from log file and posting into specific storage system, such as [ElasticSearch](https://github.com/elastic/elasticsearch), [Influxdb](https://github.com/influxdata/influxdb), [Kafka](https://github.com/apache/kafka). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
+
+## Getting Started
+
+### Installation
+#### From Binary (linux only)
+
+ * Download installation package [logpeck_0.3.0.deb](https://github.com/opera/resources/blob/master/logpeck/releases/logpeck_0.3.0.deb)
+ * Run `sudo dpkg -i logpeck_0.3.0.deb`
+ * Run `sudo service logpeck start` (or `sudo supervisorctl update` if `supervisor` is avalible) 
+
+#### From Source Code
+
+ * Download source code: [Release page v0.3.0](https://github.com/opera/logpeck/releases/tag/0.3.0)
+ * Build: `go build cmd/logpeckd/logpeckd.go`
+ * Launch: `./logpeckd -config logpeckd.conf`
+ * We can also use `supervisor` or other service management software to manage logpeck process.
+
+### Web UI
 
 We highly recommend to install [**logpeck-kibana-plugin**](https://github.com/opera/logpeck-kibana-plugin) into [Kibana](https://github.com/elastic/kibana). With this plugin, we can control all machines and collection tasks conveniently. At the same time, we can take advantage of powerful searching and visualization features of Kibana.
 
@@ -13,65 +31,9 @@ We highly recommend to install [**logpeck-kibana-plugin**](https://github.com/op
   <img src="https://github.com/opera/resources/blob/master/logpeck/2.png" width="400" /> 
 </p>
 
-## Build & Launch
+### RESTful API
 
-`go build cmd/logpeckd/logpeckd.go`
-
-`./logpeckd -config logpeckd.conf`
-
-We can also use `supervisor` or other service management software to manage logpeck process.
-
-## Try RESTful API
-
-1. Add a new task first. (Want more task config, filter, json, long, etc.? see [here](doc/task_config.md).)
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
-  	"Name":"SystemLog",
-	"LogPath":"/var/log/syslog",
-	"ESConfig":{
-	  	"Hosts":["127.0.0.1:9200"],
-		"Index":"syslog",
-		"Type":"raw"
-	}
-}
-```
-```
-Add Success
-```
-
-2. Start task.
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
-  	"Name":"SystemLog"
-}
-```
-```
-Start Success
-```
-
-3. Stop task
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
-  	"Name":"SystemLog"
-}
-```
-
-4. Remove task
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
-  	"Name":"SystemLog"
-}
-```
-
-5. List tasks
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/list
-```
+We can also control collection tasks with RESTful API. [See more](doc/restful.md)
 
 ## Documentation
 
