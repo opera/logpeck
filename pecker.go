@@ -100,7 +100,9 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	p.record(config, &task.Stat)
 
 	// UpdatePeckTask must be successful
-	p.logTasks[p.nameToPath[config.Name]].UpdatePeckTask(task)
+	if err := p.logTasks[p.nameToPath[config.Name]].UpdatePeckTask(task); err != nil {
+		return err
+	}
 	log.Infof("[Pecker] Update PeckTask nameToPath: %v", p.nameToPath)
 	log.Infof("[Pecker] Update PeckTask logTasks: %v", p.logTasks)
 	return nil
@@ -126,7 +128,9 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		panic(err1.Error() + " " + err2.Error())
 	}
 
-	log_task.RemovePeckTask(config)
+	if err := log_task.RemovePeckTask(config); err != nil {
+		return err
+	}
 	delete(p.nameToPath, config.Name)
 	if log_task.Empty() {
 		log_task.Close()
@@ -167,6 +171,10 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 
 	log_task := p.logTasks[log_path]
 
+	if err := log_task.StartPeckTask(config); err != nil {
+		return err
+	}
+
 	{
 		// Try update peck task stat in boltdb
 		// stat, err := db.GetStat(config.LogPath, config.Name)
@@ -183,8 +191,7 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	if log_task.IsStop() {
 		log_task.Start()
 	}
-
-	return log_task.StartPeckTask(config)
+	return nil
 }
 
 func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
@@ -199,6 +206,10 @@ func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 
 	log_task := p.logTasks[log_path]
 
+	if err := log_task.StopPeckTask(config); err != nil {
+		return err
+	}
+
 	{
 		// Try update peck task stat in boltdb
 		stat, err := db.GetStat(config.Name)
@@ -212,7 +223,7 @@ func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 		err = db.SaveStat(stat)
 	}
 
-	return log_task.StopPeckTask(config)
+	return nil
 }
 
 func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {

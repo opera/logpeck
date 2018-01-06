@@ -21,6 +21,8 @@ type PeckTask struct {
 
 type Sender interface {
 	Send(map[string]interface{})
+	Start() error
+	Stop() error
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
@@ -51,13 +53,14 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	aggregator := &Aggregator{}
 	if c.SenderConfig.SenderName == "ElasticSearchConfig" {
 		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
-	}
-
-	if c.SenderConfig.SenderName == "InfluxDbConfig" {
+	} else if c.SenderConfig.SenderName == "InfluxDbConfig" {
 		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
 		interval := c.SenderConfig.Config.(InfluxDbConfig).Interval
 		aggregatorConfigs := c.SenderConfig.Config.(InfluxDbConfig).AggregatorConfigs
 		aggregator = NewAggregator(interval, &aggregatorConfigs)
+	} else if c.SenderConfig.SenderName == "KafkaConfig" {
+		sender = NewKafkaSender(&c.SenderConfig, c.Fields)
+	} else {
 	}
 
 	task := &PeckTask{
@@ -70,12 +73,20 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	return task, nil
 }
 
-func (p *PeckTask) Start() {
+func (p *PeckTask) Start() error {
 	p.Stat.Stop = false
+	if err := p.sender.Start(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (p *PeckTask) Stop() {
+func (p *PeckTask) Stop() error {
 	p.Stat.Stop = true
+	if err := p.sender.Stop(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *PeckTask) IsStop() bool {
@@ -186,6 +197,9 @@ func (p *PeckTask) Process(content string) {
 			aggregationResults := p.aggregator.Dump(timestamp)
 			p.sender.Send(aggregationResults)
 		}
+	} else if p.Config.SenderConfig.SenderName == "KafkaConfig" {
+		fields := p.ExtractFields(content)
+		p.sender.Send(fields)
 	}
 }
 

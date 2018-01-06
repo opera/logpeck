@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/boltdb/bolt"
 	"os"
 	"strings"
@@ -61,10 +62,12 @@ func (p *DB) makeConfigRawKey(logPath, name string) string {
 func (p *DB) SaveConfig(config *PeckTaskConfig) error {
 	rawValueByte, err := json.Marshal(config)
 	if err != nil {
+		log.Errorf("[Storage] save config error %#v, err %#v", config, err)
 		return err
 	}
 	rawValue := string(rawValueByte[:])
 	//	fmt.Println(rawKey + string(" ") + rawValue)
+	log.Debugf("[Storage] save config %#v", rawValue)
 	return p.put(configBucket, config.Name, rawValue)
 }
 
@@ -95,6 +98,7 @@ func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("[Storage] Get all configs %#v", rawKV)
 	//	fmt.Println(rawKV)
 	for k, v := range rawKV {
 		// for data compat

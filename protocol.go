@@ -133,6 +133,20 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		log.Infof("[ParseConfig]influxDbConfig: %v", influxDbConfig)
 		senderConfig.Config = influxDbConfig
 	}
+	if senderConfig.SenderName == "KafkaConfig" {
+		cJson := cJson.Get("Config")
+		if cJson.Interface() == nil {
+			return senderConfig, nil
+		}
+
+		kafkaConfig, e := GetKafkaConfig(cJson)
+		if e != nil {
+			senderConfig.Config = kafkaConfig
+			return senderConfig, e
+		}
+		log.Infof("[ParseConfig]KafkaConfig: %v", kafkaConfig)
+		senderConfig.Config = kafkaConfig
+	}
 	return senderConfig, nil
 }
 
