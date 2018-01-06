@@ -31,12 +31,24 @@ func (p *LogTask) AddPeckTask(task *PeckTask) error {
 }
 
 func (p *LogTask) UpdatePeckTask(task *PeckTask) error {
-	task.Stat = p.peckTasks[task.Config.Name].Stat
-	p.peckTasks[task.Config.Name] = task
+	if !task.IsStop() {
+		if err := p.peckTasks[task.Config.Name].Stop(); err != nil {
+			return err
+		}
+		p.peckTasks[task.Config.Name] = task
+		if err := task.Start(); err != nil {
+			return err
+		}
+	} else {
+		p.peckTasks[task.Config.Name] = task
+	}
 	return nil
 }
 
 func (p *LogTask) RemovePeckTask(config *PeckTaskConfig) error {
+	if !p.peckTasks[config.Name].IsStop() {
+		p.peckTasks[config.Name].Stop()
+	}
 	delete(p.peckTasks, config.Name)
 	return nil
 }
@@ -46,7 +58,9 @@ func (p *LogTask) StartPeckTask(config *PeckTaskConfig) error {
 		panic(config)
 	}
 	if p.peckTasks[config.Name].IsStop() {
-		p.peckTasks[config.Name].Start()
+		if err := p.peckTasks[config.Name].Start(); err != nil {
+			return err
+		}
 	} else {
 		panic(config)
 	}
@@ -58,7 +72,9 @@ func (p *LogTask) StopPeckTask(config *PeckTaskConfig) error {
 		panic(config)
 	}
 	if !p.peckTasks[config.Name].IsStop() {
-		p.peckTasks[config.Name].Stop()
+		if err := p.peckTasks[config.Name].Stop(); err != nil {
+			return err
+		}
 	} else {
 		panic(config)
 	}

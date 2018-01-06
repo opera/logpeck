@@ -21,6 +21,8 @@ type PeckTask struct {
 
 type Sender interface {
 	Send(map[string]interface{})
+	Start() error
+	Stop() error
 }
 
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
@@ -71,12 +73,20 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	return task, nil
 }
 
-func (p *PeckTask) Start() {
+func (p *PeckTask) Start() error {
 	p.Stat.Stop = false
+	if err := p.sender.Start(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (p *PeckTask) Stop() {
+func (p *PeckTask) Stop() error {
 	p.Stat.Stop = true
+	if err := p.sender.Stop(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *PeckTask) IsStop() bool {

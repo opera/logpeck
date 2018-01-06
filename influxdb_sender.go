@@ -68,6 +68,14 @@ func (p *InfluxDbSender) toInfluxdbLine(fields map[string]interface{}) string {
 	return lines
 }
 
+func (p *InfluxDbSender) Start() error {
+	return nil
+}
+
+func (p *InfluxDbSender) Stop() error {
+	return nil
+}
+
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
 	lines := p.toInfluxdbLine(fields)
 	log.Infof("[InfluxDbSender.Sender] timestamp is %v", time.Now())

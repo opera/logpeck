@@ -10,8 +10,8 @@ import (
 )
 
 type KafkaConfig struct {
-	Hosts []string `json:"Hosts"`
-	Topic string   `json:"Topic"`
+	Brokers []string `json:"Brokers"`
+	Topic   string   `json:"Topic"`
 
 	MaxMessageBytes int                     `json:"MaxMessageBytes"`
 	RequiredAcks    sarama.RequiredAcks     `json:"RequiredAcks"`
@@ -43,6 +43,7 @@ type KafkaSender struct {
 	fields        []PeckField
 	mu            sync.Mutex
 	lastIndexName string
+	producer      sarama.SyncProducer
 }
 
 func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) *KafkaSender {
@@ -54,7 +55,7 @@ func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) *KafkaSender
 	return &sender
 }
 func GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
-	kafkaConfig.Hosts, e = GetStringArray(cJson, "Hosts")
+	kafkaConfig.Brokers, e = GetStringArray(cJson, "Brokers")
 	if e != nil {
 		return kafkaConfig, e
 	}
@@ -161,7 +162,8 @@ func GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 
 	return kafkaConfig, nil
 }
-func (p *KafkaSender) Send(fields map[string]interface{}) {
+
+func (p *KafkaSender) Start() error {
 	config := sarama.NewConfig()
 
 	config.Producer.MaxMessageBytes = p.config.MaxMessageBytes
@@ -187,15 +189,28 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 		config.Producer.Partitioner = sarama.NewRoundRobinPartitioner
 	default:
 		config.Producer.Partitioner = sarama.NewRandomPartitioner
-		log.Debug("[sender]Partitioner：%v is Invalid", p.config.Partitioner)
+		log.Debug("[Start]Partitioner：%v is Invalid", p.config.Partitioner)
 	}
 
-	producer, err := sarama.NewSyncProducer(p.config.Hosts, config)
+	producer, err := sarama.NewSyncProducer(p.config.Brokers, config)
 	if err != nil {
-		log.Infof("[Send] producer err:%v", err)
-		return
+		log.Infof("[Start] producer err:%v", err)
+		return err
 	}
-	defer producer.Close()
+	p.producer = producer
+	return nil
+}
+
+func (p *KafkaSender) Stop() error {
+	if p.producer == nil {
+		return nil
+	} else if err := p.producer.Close(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *KafkaSender) Send(fields map[string]interface{}) {
 	msg := &sarama.ProducerMessage{
 		Topic:     p.config.Topic,
 		Partition: int32(-1),
@@ -207,7 +222,7 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 		return
 	}
 	msg.Value = sarama.ByteEncoder(value)
-	paritition, offset, err := producer.SendMessage(msg)
+	paritition, offset, err := p.producer.SendMessage(msg)
 	if err != nil {
 		log.Infof("Send Message Fail")
 	}

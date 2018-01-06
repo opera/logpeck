@@ -105,6 +105,14 @@ func (p *ElasticSearchSender) InitMapping() error {
 	return nil
 }
 
+func (p *ElasticSearchSender) Start() error {
+	return nil
+}
+
+func (p *ElasticSearchSender) Stop() error {
+	return nil
+}
+
 func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 	defer LogExecTime(time.Now(), "Sender")
 	data := map[string]interface{}{
