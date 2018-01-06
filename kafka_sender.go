@@ -227,6 +227,6 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 		log.Infof("Send Message Fail")
 	}
 
-	log.Infof("[Send]Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
+	log.Debug("[Send]Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
 	//p.measurments.MeasurmentRecall(fields)
 }

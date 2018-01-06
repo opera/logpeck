@@ -128,7 +128,9 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		panic(err1.Error() + " " + err2.Error())
 	}
 
-	log_task.RemovePeckTask(config)
+	if err := log_task.RemovePeckTask(config); err != nil {
+		return err
+	}
 	delete(p.nameToPath, config.Name)
 	if log_task.Empty() {
 		log_task.Close()
