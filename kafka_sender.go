@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Shopify/sarama"
 	log "github.com/Sirupsen/logrus"
+	sjson "github.com/bitly/go-simplejson"
 	"sync"
 	"time"
 )
@@ -51,6 +52,114 @@ func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) *KafkaSender
 		fields: fields,
 	}
 	return &sender
+}
+func GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
+	kafkaConfig.Hosts, e = GetStringArray(cJson, "Hosts")
+	if e != nil {
+		return kafkaConfig, e
+	}
+
+	kafkaConfig.Topic, e = GetString(cJson, "Topic", true)
+	if e != nil {
+		return kafkaConfig, e
+	}
+
+	kafkaConfig.MaxMessageBytes, e = cJson.Get("MaxMessageBytes").Int()
+	if e != nil {
+		kafkaConfig.MaxMessageBytes = 1000000
+	}
+
+	kafkaJson := cJson.Get("RequiredAcks")
+	if kafkaJson.Interface() == nil {
+		kafkaConfig.RequiredAcks = 1
+	} else {
+		kafkaByte, e := kafkaJson.MarshalJSON()
+		if e != nil {
+			return kafkaConfig, e
+		}
+		e = json.Unmarshal(kafkaByte, &kafkaConfig.RequiredAcks)
+		if e != nil {
+			return kafkaConfig, e
+		}
+	}
+
+	kafkaJson = cJson.Get("Timeout")
+	if kafkaJson.Interface() == nil {
+		kafkaConfig.Timeout = 10 * time.Second
+	} else {
+		kafkaByte, e := kafkaJson.MarshalJSON()
+		if e != nil {
+			return kafkaConfig, e
+		}
+		e = json.Unmarshal(kafkaByte, &kafkaConfig.Timeout)
+		if e != nil {
+			return kafkaConfig, e
+		}
+	}
+
+	kafkaJson = cJson.Get("Compression")
+	if kafkaJson.Interface() == nil {
+		kafkaConfig.Compression = 0
+	} else {
+		kafkaByte, e := kafkaJson.MarshalJSON()
+		if e != nil {
+			return kafkaConfig, e
+		}
+		e = json.Unmarshal(kafkaByte, &kafkaConfig.Compression)
+		if e != nil {
+			return kafkaConfig, e
+		}
+	}
+
+	kafkaConfig.Partitioner, e = GetString(cJson, "Partitioner", true)
+	if e != nil {
+		kafkaConfig.Partitioner = "RandomPartitioner"
+	}
+
+	kafkaJson = cJson.Get("ReturnErrors")
+	if kafkaJson.Interface() == nil {
+		kafkaConfig.ReturnErrors = true
+	} else {
+		kafkaByte, e := kafkaJson.MarshalJSON()
+		if e != nil {
+			return kafkaConfig, e
+		}
+		e = json.Unmarshal(kafkaByte, &kafkaConfig.ReturnErrors)
+		if e != nil {
+			return kafkaConfig, e
+		}
+	}
+
+	kafkaJson = cJson.Get("Flush")
+	if kafkaJson.Interface() == nil {
+
+	} else {
+		kafkaByte, e := kafkaJson.MarshalJSON()
+		if e != nil {
+			return kafkaConfig, e
+		}
+		e = json.Unmarshal(kafkaByte, &kafkaConfig.Flush)
+		if e != nil {
+			return kafkaConfig, e
+		}
+	}
+
+	kafkaJson = cJson.Get("Retry")
+	if kafkaJson.Interface() == nil {
+		kafkaConfig.Retry.Max = 3
+		kafkaConfig.Retry.Backoff = 100 * time.Millisecond
+	} else {
+		kafkaByte, e := kafkaJson.MarshalJSON()
+		if e != nil {
+			return kafkaConfig, e
+		}
+		e = json.Unmarshal(kafkaByte, &kafkaConfig.Retry)
+		if e != nil {
+			return kafkaConfig, e
+		}
+	}
+
+	return kafkaConfig, nil
 }
 func (p *KafkaSender) Send(fields map[string]interface{}) {
 	config := sarama.NewConfig()

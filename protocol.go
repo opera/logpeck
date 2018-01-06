@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Shopify/sarama"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
-	"time"
 )
 
 type PeckTaskConfig struct {
@@ -136,135 +134,18 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		senderConfig.Config = influxDbConfig
 	}
 	if senderConfig.SenderName == "KafkaConfig" {
-		KafkaConfig := KafkaConfig{}
 		cJson := cJson.Get("Config")
 		if cJson.Interface() == nil {
 			return senderConfig, nil
 		}
 
-		KafkaConfig.Hosts, e = GetStringArray(cJson, "Hosts")
+		kafkaConfig, e := GetKafkaConfig(cJson)
 		if e != nil {
-			senderConfig.Config = KafkaConfig
+			senderConfig.Config = kafkaConfig
 			return senderConfig, e
 		}
-
-		KafkaConfig.Topic, e = GetString(cJson, "Topic", true)
-		if e != nil {
-			senderConfig.Config = KafkaConfig
-			return senderConfig, e
-		}
-
-		KafkaConfig.MaxMessageBytes, e = cJson.Get("MaxMessageBytes").Int()
-		if e != nil {
-			KafkaConfig.MaxMessageBytes = 1000000
-		}
-
-		kafkaJson := cJson.Get("RequiredAcks")
-		if kafkaJson.Interface() == nil {
-			KafkaConfig.RequiredAcks = 1
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.RequiredAcks)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-		}
-
-		kafkaJson = cJson.Get("Timeout")
-		if kafkaJson.Interface() == nil {
-			KafkaConfig.Timeout = 10 * time.Second
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.Timeout)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-		}
-
-		kafkaJson = cJson.Get("Compression")
-		if kafkaJson.Interface() == nil {
-			KafkaConfig.Compression = 0
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.Compression)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-		}
-
-		KafkaConfig.Partitioner, e = GetString(cJson, "Partitioner", true)
-		if e != nil {
-			KafkaConfig.Partitioner = "RandomPartitioner"
-		}
-
-		kafkaJson = cJson.Get("ReturnErrors")
-		if kafkaJson.Interface() == nil {
-			KafkaConfig.ReturnErrors = true
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.ReturnErrors)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-		}
-
-		kafkaJson = cJson.Get("Flush")
-		if kafkaJson.Interface() == nil {
-
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.Flush)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-		}
-
-		kafkaJson = cJson.Get("Retry")
-		if kafkaJson.Interface() == nil {
-			KafkaConfig.Retry.Max = 3
-			KafkaConfig.Retry.Backoff = 100 * time.Millisecond
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.Retry)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-		}
-
-		log.Infof("[ParseConfig]KafkaConfig: %v", KafkaConfig)
-		senderConfig.Config = KafkaConfig
-		config := sarama.NewConfig()
-		log.Infof("[ParseConfig] config=%v", config)
+		log.Infof("[ParseConfig]KafkaConfig: %v", kafkaConfig)
+		senderConfig.Config = kafkaConfig
 	}
 	return senderConfig, nil
 }
