@@ -2,7 +2,6 @@ package logpeck
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Shopify/sarama"
 	log "github.com/Sirupsen/logrus"
 	"sync"
@@ -13,22 +12,17 @@ type KafkaConfig struct {
 	Hosts []string `json:"Hosts"`
 	Topic string   `json:"Topic"`
 
-	MaxMessageBytes int                           `json:"MaxMessageBytes"`
-	RequiredAcks    sarama.RequiredAcks           `json:"RequiredAcks"`
-	Timeout         time.Duration                 `json:"Timeout"`
-	Compression     sarama.CompressionCodec       `json:"Compression"`
-	Partitioner     sarama.PartitionerConstructor `json:"Partitioner"`
-	Return          KafkaReturn                   `json:"Return"`
-	Flush           KafkaFlush                    `json:"Flush"`
-	Retry           KafkaRetry                    `json:"Retry"`
+	MaxMessageBytes int                     `json:"MaxMessageBytes"`
+	RequiredAcks    sarama.RequiredAcks     `json:"RequiredAcks"`
+	Timeout         time.Duration           `json:"Timeout"`
+	Compression     sarama.CompressionCodec `json:"Compression"`
+	Partitioner     string                  `json:"Partitioner"`
+	ReturnErrors    bool                    `json:"ReturnErrors"`
+	Flush           KafkaFlush              `json:"Flush"`
+	Retry           KafkaRetry              `json:"Retry"`
 
 	Interval          int64              `json:"Interval"`
 	AggregatorConfigs []AggregatorConfig `json:"AggregatorConfigs"`
-}
-
-type KafkaReturn struct {
-	Successes bool `json:"ReturnSuccesses"`
-	Errors    bool `json:"ReturnErrors"`
 }
 
 type KafkaFlush struct {
@@ -59,25 +53,40 @@ func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) *KafkaSender
 	return &sender
 }
 func (p *KafkaSender) Send(fields map[string]interface{}) {
-	log.Infof("[KafkaSender.send]%v", fields)
 	config := sarama.NewConfig()
-	log.Infof("[Kafka.Send] config=%v", config)
-	/*
-		config.Producer.MaxMessageBytes = p.config.MaxMessageBytes
-		config.Producer.RequiredAcks = p.config.RequiredAcks
-		config.Producer.Timeout = p.config.Timeout
-		config.Producer.Compression = p.config.Compression
-		config.Producer.Partitioner = p.config.Partitioner
-		config.Producer.Return = p.config.Return
-		config.Producer.Flush= p.config.Flush
-		config.Producer.Retry = p.config.Retry
-	*/
+
+	config.Producer.MaxMessageBytes = p.config.MaxMessageBytes
+	config.Producer.RequiredAcks = p.config.RequiredAcks
+	config.Producer.Timeout = p.config.Timeout
+	config.Producer.Compression = p.config.Compression
+	config.Producer.Return.Successes = true
+	config.Producer.Return.Errors = p.config.ReturnErrors
+	config.Producer.Flush.Bytes = p.config.Flush.Bytes
+	config.Producer.Flush.Frequency = p.config.Flush.Frequency
+	config.Producer.Flush.MaxMessages = p.config.Flush.MaxMessages
+	config.Producer.Flush.Messages = p.config.Flush.Messages
+	config.Producer.Retry.Backoff = p.config.Retry.Backoff
+	config.Producer.Retry.Max = p.config.Retry.Max
+	switch p.config.Partitioner {
+	case "RandomPartitioner":
+		config.Producer.Partitioner = sarama.NewRandomPartitioner
+	case "HashPartitioner":
+		config.Producer.Partitioner = sarama.NewHashPartitioner
+	case "ManualPartitioner":
+		config.Producer.Partitioner = sarama.NewManualPartitioner
+	case "RoundRobinPartitioner":
+		config.Producer.Partitioner = sarama.NewRoundRobinPartitioner
+	default:
+		config.Producer.Partitioner = sarama.NewRandomPartitioner
+		log.Debug("[sender]Partitioner：%v is Invalid", p.config.Partitioner)
+	}
+
 	producer, err := sarama.NewSyncProducer(p.config.Hosts, config)
 	if err != nil {
-		panic(err)
+		log.Infof("[Send] producer err:%v", err)
+		return
 	}
 	defer producer.Close()
-	log.Infof("%v", fields)
 	msg := &sarama.ProducerMessage{
 		Topic:     p.config.Topic,
 		Partition: int32(-1),
@@ -85,14 +94,15 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 	}
 	value, err := json.Marshal(fields)
 	if err != nil {
-		panic(err)
+		log.Infof("[Send] fields Marshal err:%v", err)
+		return
 	}
 	msg.Value = sarama.ByteEncoder(value)
 	paritition, offset, err := producer.SendMessage(msg)
 	if err != nil {
-		fmt.Println("Send Message Fail")
+		log.Infof("Send Message Fail")
 	}
 
-	log.Infof("Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
+	log.Infof("[Send]Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
 	//p.measurments.MeasurmentRecall(fields)
 }

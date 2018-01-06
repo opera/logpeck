@@ -161,7 +161,7 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 
 		kafkaJson := cJson.Get("RequiredAcks")
 		if kafkaJson.Interface() == nil {
-			KafkaConfig.RequiredAcks = sarama.WaitForLocal
+			KafkaConfig.RequiredAcks = 1
 		} else {
 			kafkaByte, err := kafkaJson.MarshalJSON()
 			if err != nil {
@@ -193,7 +193,7 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 
 		kafkaJson = cJson.Get("Compression")
 		if kafkaJson.Interface() == nil {
-			KafkaConfig.Compression = sarama.CompressionLZ4
+			KafkaConfig.Compression = 0
 		} else {
 			kafkaByte, err := kafkaJson.MarshalJSON()
 			if err != nil {
@@ -207,32 +207,21 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 			}
 		}
 
-		kafkaJson = cJson.Get("Partitioner")
-		if kafkaJson.Interface() == nil {
-			KafkaConfig.Partitioner = sarama.NewRandomPartitioner
-		} else {
-			kafkaByte, err := kafkaJson.MarshalJSON()
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.Partitioner)
-			if err != nil {
-				senderConfig.Config = KafkaConfig
-				return senderConfig, err
-			}
+		KafkaConfig.Partitioner, e = GetString(cJson, "Partitioner", true)
+		if e != nil {
+			KafkaConfig.Partitioner = "RandomPartitioner"
 		}
 
-		kafkaJson = cJson.Get("Return")
+		kafkaJson = cJson.Get("ReturnErrors")
 		if kafkaJson.Interface() == nil {
-			KafkaConfig.Return.Errors = true
+			KafkaConfig.ReturnErrors = true
 		} else {
 			kafkaByte, err := kafkaJson.MarshalJSON()
 			if err != nil {
 				senderConfig.Config = KafkaConfig
 				return senderConfig, err
 			}
-			err = json.Unmarshal(kafkaByte, &KafkaConfig.Return)
+			err = json.Unmarshal(kafkaByte, &KafkaConfig.ReturnErrors)
 			if err != nil {
 				senderConfig.Config = KafkaConfig
 				return senderConfig, err
@@ -275,7 +264,7 @@ func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
 		log.Infof("[ParseConfig]KafkaConfig: %v", KafkaConfig)
 		senderConfig.Config = KafkaConfig
 		config := sarama.NewConfig()
-		log.Infof("[Kafka.Send] config=%v", config)
+		log.Infof("[ParseConfig] config=%v", config)
 	}
 	return senderConfig, nil
 }
