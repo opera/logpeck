@@ -72,9 +72,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		timestamp := p.AggregatorConfigs[i].Timestamp
 		bucketName := p.AggregatorConfigs[i].PreMeasurment + "_" + p.AggregatorConfigs[i].Measurment + "_" + target
 		bucketTag := ""
-		if p.AggregatorConfigs[i].PreMeasurment == "" {
-
-		} else {
+		if p.AggregatorConfigs[i].PreMeasurment != "" {
 			bucketTag += p.AggregatorConfigs[i].PreMeasurment + "_"
 		}
 		if p.AggregatorConfigs[i].Measurment == "_default" {
@@ -82,7 +80,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		} else {
 			measurment, ok := fields[p.AggregatorConfigs[i].Measurment].(string)
 			if !ok {
-				log.Infof("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
+				log.Debug("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
 				now = time.Now().Unix()
 				continue
 			}
@@ -103,12 +101,13 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		}
 
 		if target == "" {
+			log.Error("[Record] Target is error: Target is null")
 			return time.Now().Unix()
 		}
 		for i := 0; i < len(tags); i++ {
 			tags_tmp, ok := fields[tags[i]].(string)
 			if !ok {
-				log.Infof("[Record] Fields[tag] format error: Fields[tag] must be a string")
+				log.Debug("[Record] Fields[tag] format error: Fields[tag] must be a string")
 			} else {
 				bucketTag += "," + tags[i] + "=" + tags_tmp
 			}
@@ -116,7 +115,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 
 		aggValue, ok := fields[target].(string)
 		if !ok {
-			log.Infof("[Record] Fields[aggValue] format error: Fields[aggValue] must be a string")
+			log.Error("[Record] Fields[aggValue] format error: Fields[aggValue] must be a string")
 			return now
 		}
 		if _, ok := p.buckets[bucketName]; !ok {
@@ -124,7 +123,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		}
 		aggValueInt, err := strconv.ParseInt(aggValue, 10, 64)
 		if err != nil {
-			log.Infof("[Record] target:%v can't use strconv.ParseInt", aggValue)
+			log.Debug("[Record] target:%v can't use strconv.ParseInt", aggValue)
 			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
 		} else {
 			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueInt)
@@ -217,7 +216,7 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 
 func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	fields := map[string]interface{}{}
-	log.Infof("[Dump] bucket is : %v", p.buckets)
+	log.Debug("[Dump] bucket is : %v", p.buckets)
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
 		aggregations := []string{}
@@ -234,6 +233,6 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	fields["timestamp"] = timestamp
 	p.postTime = getSampleTime(timestamp, p.Interval)
 	p.buckets = map[string]map[string][]int64{}
-	log.Infof("[Dump] fields is : %v", fields)
+	log.Debug("[Dump] fields is : %v", fields)
 	return fields
 }
