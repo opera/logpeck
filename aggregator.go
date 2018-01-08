@@ -67,17 +67,27 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	var now int64
 	for i := 0; i < len(p.AggregatorConfigs); i++ {
-		measurment, ok := fields[p.AggregatorConfigs[i].Measurment].(string)
-		if !ok {
-			log.Infof("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
-			now = time.Now().Unix()
-			continue
-		}
 		tags := p.AggregatorConfigs[i].Tags
 		target := p.AggregatorConfigs[i].Target
 		timestamp := p.AggregatorConfigs[i].Timestamp
 		bucketName := p.AggregatorConfigs[i].PreMeasurment + "_" + p.AggregatorConfigs[i].Measurment + "_" + target
-		bucketTag := measurment + "_" + target
+		bucketTag := ""
+		if p.AggregatorConfigs[i].PreMeasurment == "" {
+
+		} else {
+			bucketTag += p.AggregatorConfigs[i].PreMeasurment + "_"
+		}
+		if p.AggregatorConfigs[i].Measurment == "_default" {
+			bucketTag += target
+		} else {
+			measurment, ok := fields[p.AggregatorConfigs[i].Measurment].(string)
+			if !ok {
+				log.Infof("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
+				now = time.Now().Unix()
+				continue
+			}
+			bucketTag += measurment + "_" + target
+		}
 
 		//get time
 		var err error
@@ -104,23 +114,6 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			}
 		}
 
-		/*
-			if p.timeParse == "Unix" {
-				now, err = strconv.ParseInt(fields[timestamp].(string), 10, 64)
-				if err != nil {
-					log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", fields[timestamp].(string))
-					now = time.Now().Unix()
-				}
-			} else {
-				nowTime, err := time.Parse(FormatTime[timeParse], fields[timestamp].(string))
-				if err != nil {
-					log.Debug("[Record] timestamp:%v can't use time.Parse", fields[timestamp].(string))
-					now = time.Now().Unix()
-				} else {
-					now = nowTime.Unix()
-				}
-			}
-		*/
 		aggValue, ok := fields[target].(string)
 		if !ok {
 			log.Infof("[Record] Fields[aggValue] format error: Fields[aggValue] must be a string")
@@ -227,17 +220,15 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	log.Infof("[Dump] bucket is : %v", p.buckets)
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
-		for bucketTag, targetValue := range bucketTag_value {
-			for i := 0; i < len(p.AggregatorConfigs); i++ {
-				if p.AggregatorConfigs[i].PreMeasurment+"_"+p.AggregatorConfigs[i].Measurment+"_"+p.AggregatorConfigs[i].Target == bucketName {
-					aggregations := p.AggregatorConfigs[i].Aggregations
-					preMeasurment := p.AggregatorConfigs[i].PreMeasurment
-					if preMeasurment != "" {
-						preMeasurment += "_"
-					}
-					fields[preMeasurment+bucketTag] = getAggregation(targetValue, aggregations)
-				}
+		aggregations := []string{}
+		for i := 0; i < len(p.AggregatorConfigs); i++ {
+			if p.AggregatorConfigs[i].PreMeasurment+"_"+p.AggregatorConfigs[i].Measurment+"_"+p.AggregatorConfigs[i].Target == bucketName {
+				aggregations = p.AggregatorConfigs[i].Aggregations
+				break
 			}
+		}
+		for bucketTag, targetValue := range bucketTag_value {
+			fields[bucketTag] = getAggregation(targetValue, aggregations)
 		}
 	}
 	fields["timestamp"] = timestamp

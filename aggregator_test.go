@@ -54,13 +54,13 @@ func TestRecord(*testing.T) {
 	if aggregator.Record(fields) != int64(15) {
 		panic(fields)
 	}
-	if aggregator.buckets["Test_aaa_cost"]["getTest_cost,upstream=127.0.0.1"][0] != 2 {
+	if aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][0] != 2 {
 		panic(aggregator)
 	}
 	if aggregator.Record(fields) != int64(15) {
 		panic(fields)
 	}
-	if aggregator.buckets["Test_aaa_cost"]["getTest_cost,upstream=127.0.0.1"][0]+aggregator.buckets["Test_aaa_cost"]["getTest_cost,upstream=127.0.0.1"][1] != 4 {
+	if aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][0]+aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][1] != 4 {
 		panic(aggregator)
 	}
 }
