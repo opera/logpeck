@@ -5,26 +5,26 @@ import (
 )
 
 func TestNewPeckFilter(*testing.T) {
-	Keywords := ""
-	filter := NewPeckFilter(Keywords)
+	keywords := ""
+	filter := NewPeckFilter(keywords)
 	if len(filter.incl) != 0 || len(filter.excl) != 0 {
 		panic(filter)
 	}
 
-	Keywords = "hello"
-	filter = NewPeckFilter(Keywords)
+	keywords = "hello"
+	filter = NewPeckFilter(keywords)
 	if len(filter.incl) != 1 || len(filter.excl) != 0 {
 		panic(filter)
 	}
 
-	Keywords = "hello|^logpeck"
-	filter = NewPeckFilter(Keywords)
+	keywords = "hello|^logpeck"
+	filter = NewPeckFilter(keywords)
 	if len(filter.incl) != 1 || len(filter.excl) != 1 {
 		panic(filter)
 	}
 
-	Keywords = "hello logpeck | golang|^ include "
-	filter = NewPeckFilter(Keywords)
+	keywords = "hello logpeck | golang|^ include "
+	filter = NewPeckFilter(keywords)
 	if len(filter.incl) != 2 || len(filter.excl) != 1 {
 		panic(filter)
 	}
@@ -36,22 +36,22 @@ func TestNewPeckFilter(*testing.T) {
 }
 
 func TestDrop(*testing.T) {
-	Keywords := ""
-	filter := NewPeckFilter(Keywords)
+	keywords := ""
+	filter := NewPeckFilter(keywords)
 
 	if filter.Drop("hello") {
 		panic(filter)
 	}
 
-	Keywords = "logpeck"
-	filter = NewPeckFilter(Keywords)
+	keywords = "logpeck"
+	filter = NewPeckFilter(keywords)
 
 	if !filter.Drop("hello") {
 		panic(filter)
 	}
 
-	Keywords = "hello logpeck | golang|^ include "
-	filter = NewPeckFilter(Keywords)
+	keywords = "hello logpeck | golang|^ include "
+	filter = NewPeckFilter(keywords)
 
 	if !filter.Drop("hello") {
 		panic(filter)

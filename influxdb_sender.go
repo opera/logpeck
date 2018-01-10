@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 type InfluxDbConfig struct {
@@ -78,7 +77,6 @@ func (p *InfluxDbSender) Stop() error {
 
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
 	lines := p.toInfluxdbLine(fields)
-	log.Infof("[InfluxDbSender.Sender] timestamp is %v", time.Now())
 	raw_data := []byte(lines)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
 	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.DBName

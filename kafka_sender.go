@@ -194,7 +194,7 @@ func (p *KafkaSender) Start() error {
 
 	producer, err := sarama.NewSyncProducer(p.config.Brokers, config)
 	if err != nil {
-		log.Infof("[Start] producer err:%v", err)
+		log.Error("[Start] producer err:%v", err)
 		return err
 	}
 	p.producer = producer
@@ -218,13 +218,13 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 	}
 	value, err := json.Marshal(fields)
 	if err != nil {
-		log.Infof("[Send] fields Marshal err:%v", err)
+		log.Error("[Send] fields Marshal err:%v", err)
 		return
 	}
 	msg.Value = sarama.ByteEncoder(value)
 	paritition, offset, err := p.producer.SendMessage(msg)
 	if err != nil {
-		log.Infof("Send Message Fail")
+		log.Error("Send Message Fail")
 	}
 
 	log.Debug("[Send]Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
