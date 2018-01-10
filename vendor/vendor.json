@@ -9,6 +9,11 @@
 			"revisionTime": "2017-03-07T03:38:02Z"
 		},
 		{
+			"checksumSHA1": "kTlNdyZIhQxOA+kQKpoQaptbNhE=",
+			"path": "github.com/Shopify/sarama",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "fmtJPOSqioLxBve4Mz/dPpGMKmY=",
 			"path": "github.com/Sirupsen/logrus",
 			"revision": "d4158e8bbd3220596557f967617f1ff37bd93c80",
@@ -27,10 +32,22 @@
 			"revisionTime": "2017-01-31T19:20:18Z"
 		},
 		{
+			"checksumSHA1": "mrz/kicZiUaHxkyfvC/DyQcr8Do=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "ecdeabc65495df2dec95d7c4a4c3e021903035e5",
+			"revisionTime": "2017-10-02T20:02:53Z"
+		},
+		{
 			"checksumSHA1": "Yz28Zxff+3FcqcfL9iIZE3MEn38=",
 			"path": "github.com/go-zoo/bone",
 			"revision": "11ae278a93c8268a0f98758aa915def5dfca3254",
 			"revisionTime": "2017-02-24T18:17:32Z"
+		},
+		{
+			"checksumSHA1": "p/8vSviYF91gFflhrt5vkyksroo=",
+			"path": "github.com/golang/snappy",
+			"revision": "553a641470496b2327abcac10b36396bd98e45c9",
+			"revisionTime": "2017-02-15T23:32:05Z"
 		},
 		{
 			"checksumSHA1": "P5KyE9QEbAeHLeXzycSF/jS1FIc=",
@@ -61,6 +78,12 @@
 			"path": "github.com/hpcloud/tail/winfile",
 			"revision": "faf842bde7ed83bbc3c65a2c454fae39bc29a95f",
 			"revisionTime": "2017-02-07T02:33:46Z"
+		},
+		{
+			"checksumSHA1": "6/zXof97s7P9tlNp3mUioXgeEVI=",
+			"path": "github.com/klauspost/crc32",
+			"revision": "bab58d77464aa9cf4e84200c3276da0831fe0c03",
+			"revisionTime": "2017-06-28T07:24:49Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"
