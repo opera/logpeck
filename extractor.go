@@ -32,9 +32,9 @@ func NewExtractorConfig(configStr string) (*ExtractorConfig, error) {
 	case "lua":
 		c.Config, err = NewLuaExtractorConfig(jbyte)
 	case "json":
-		err = errors.New("not support json")
+		c.Config, err = NewJsonExtractorConfig(jbyte)
 	case "text":
-		err = errors.New("not support text")
+		c.Config, err = NewTextExtractorConfig(jbyte)
 	default:
 		err = errors.New("extractor name error: " + c.Name)
 	}
@@ -42,6 +42,21 @@ func NewExtractorConfig(configStr string) (*ExtractorConfig, error) {
 	return &c, err
 }
 
-func NewExtractor(configStr string) (*Extractor, error) {
-	return nil, nil
+func NewExtractor(configStr string, fields []PeckField) (Extractor, error) {
+	c, err := NewExtractorConfig(configStr)
+	if err != nil {
+		return nil, err
+	}
+	var e Extractor
+	switch c.Name {
+	case "lua":
+		e, err = NewLuaExtractor(&c)
+	case "json":
+		e, err = NewJsonExtractor(&c, fields)
+	case "text":
+		e, err = NewTextExtractor(&c, fields)
+	default:
+		err = errors.New("extractor name error: " + c.Name)
+	}
+	return e, nil
 }

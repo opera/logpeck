@@ -26,25 +26,25 @@ func NewLuaExtractorConfig(configStr []byte) (LuaExtractorConfig, error) {
 	return c, nil
 }
 
-func NewLuaExtractor(config interface{}) (*LuaExtractor, error) {
+func NewLuaExtractor(config interface{}) (LuaExtractor, error) {
 	c, ok := config.(LuaExtractorConfig)
 	if !ok {
-		return nil, errors.New("LuaExtractor config error")
+		return LuaExtractor{}, errors.New("LuaExtractor config error")
 	}
 	return newLuaExtractor(c.LuaString)
 }
 
-func newLuaExtractor(luaStr string) (*LuaExtractor, error) {
-	l := &LuaExtractor{
+func newLuaExtractor(luaStr string) (LuaExtractor, error) {
+	l := LuaExtractor{
 		state: lua.NewState(),
 	}
 	if err := l.state.DoString(luaStr); err != nil {
-		return nil, err
+		return l, err
 	}
 	return l, nil
 }
 
-func (le *LuaExtractor) Extract(content string) (map[string]interface{}, error) {
+func (le LuaExtractor) Extract(content string) (map[string]interface{}, error) {
 	param := lua.P{
 		Fn:      le.state.GetGlobal(LuaExtractorFuncName),
 		NRet:    1,
@@ -67,6 +67,6 @@ func (le *LuaExtractor) Extract(content string) (map[string]interface{}, error) 
 	return ret, nil
 }
 
-func (le *LuaExtractor) Close() {
+func (le LuaExtractor) Close() {
 	le.state.Close()
 }

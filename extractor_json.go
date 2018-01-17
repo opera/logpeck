@@ -25,10 +25,10 @@ func NewJsonExtractorConfig(configStr []byte) (JsonExtractorConfig, error) {
 	return c, nil
 }
 
-func NewJsonExtractor(config interface{}, fields []PeckField) (*JsonExtractor, error) {
+func NewJsonExtractor(config interface{}, fields []PeckField) (JsonExtractor, error) {
 	c, ok := config.(JsonExtractorConfig)
 	if !ok {
-		return nil, errors.New("JsonExtractor config error")
+		return JsonExtractor{}, errors.New("JsonExtractor config error")
 	}
 	e := JsonExtractor{
 		config: &c,
@@ -38,10 +38,10 @@ func NewJsonExtractor(config interface{}, fields []PeckField) (*JsonExtractor, e
 		e.fields[f.Name] = true
 	}
 	log.Infof("[JsonExtractor] Init extractor finished %#v", e)
-	return &e, nil
+	return e, nil
 }
 
-func (je *JsonExtractor) Extract(content string) (map[string]interface{}, error) {
+func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) {
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
@@ -77,5 +77,5 @@ func (je *JsonExtractor) Extract(content string) (map[string]interface{}, error)
 	return fields, nil
 }
 
-func (je *JsonExtractor) Close() {
+func (je JsonExtractor) Close() {
 }

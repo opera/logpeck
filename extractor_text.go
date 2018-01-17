@@ -25,30 +25,30 @@ func NewTextExtractorConfig(configStr []byte) (TextExtractorConfig, error) {
 	return c, nil
 }
 
-func NewTextExtractor(config interface{}, fields []PeckField) (*TextExtractor, error) {
+func NewTextExtractor(config interface{}, fields []PeckField) (TextExtractor, error) {
 	c, ok := config.(TextExtractorConfig)
-	if !ok {
-		return nil, errors.New("TextExtractor config error")
-	}
 	e := TextExtractor{
 		config: &c,
 		fields: make(map[string]int),
 	}
+	if !ok {
+		return e, errors.New("TextExtractor config error")
+	}
 	for _, f := range fields {
 		if f.Value[0] != '$' {
-			return nil, errors.New("field format error: " + f.Value)
+			return e, errors.New("field format error: " + f.Value)
 		}
 		pos, err := strconv.Atoi(f.Value[1:])
 		if err != nil {
-			return nil, errors.New("field format error: " + f.Value)
+			return e, errors.New("field format error: " + f.Value)
 		}
 		e.fields[f.Name] = pos
 	}
 	log.Infof("[TextExtractor] Init extractor finished %#v", e)
-	return &e, nil
+	return e, nil
 }
 
-func (te *TextExtractor) Extract(content string) (map[string]interface{}, error) {
+func (te TextExtractor) Extract(content string) (map[string]interface{}, error) {
 	if len(te.fields) == 0 {
 		return map[string]interface{}{"_Log": content}, nil
 	}
@@ -63,5 +63,5 @@ func (te *TextExtractor) Extract(content string) (map[string]interface{}, error)
 	return fields, nil
 }
 
-func (te *TextExtractor) Close() {
+func (te TextExtractor) Close() {
 }
