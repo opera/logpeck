@@ -6,6 +6,21 @@ import (
 	"testing"
 )
 
+func TestLuaExtractorConfig(*testing.T) {
+	confStr := `{ "LuaString":"function conv(s) local ret = {} ret['haha'] = string.sub(s, 2, -2) return ret end" }`
+	config, err := NewLuaExtractorConfig([]byte(confStr))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%#v\n", config)
+
+	extractor, err := NewLuaExtractor(config)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("%#v\n", extractor)
+}
+
 func TestLuaExtractor(*testing.T) {
 	luaStr := `
 		function extract(s)
@@ -14,7 +29,7 @@ func TestLuaExtractor(*testing.T) {
 			return ret
     end`
 
-	le, err := NewLuaExtractor(luaStr)
+	le, err := newLuaExtractor(luaStr)
 	if err != nil {
 		panic(err)
 	}
