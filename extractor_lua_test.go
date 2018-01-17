@@ -75,3 +75,76 @@ func TestLua(*testing.T) {
 	fmt.Println(ret.Type())
 	fmt.Println(ret.RawGetString("haha"))
 }
+
+func TestTextExtractor(*testing.T) {
+	confStr := `{ "Delimiters":" " }`
+	config, err := NewTextExtractorConfig([]byte(confStr))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[NewTextExtractorConfig] %#v\n", config)
+
+	fields := []PeckField{
+		{Name: "col2", Value: "$2"},
+		{Name: "col3", Value: "$3"},
+		{Name: "col4", Value: "$4"},
+	}
+
+	extractor, err := NewTextExtractor(config, fields)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[NewTextExtractor] %#v\n", extractor)
+
+	content := "this is an text extractor"
+	m, err := extractor.Extract(content)
+	if err != nil {
+		panic(err)
+	}
+	if m["col2"] != "is" || m["col3"] != "an" || m["col4"] != "text" {
+		panic(m)
+	}
+	fmt.Printf("[Extract] %#v\n", m)
+}
+
+func TestJsonExtractor(*testing.T) {
+	confStr := `{}`
+	config, err := NewJsonExtractorConfig([]byte(confStr))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[NewJsonExtractorConfig] %#v\n", config)
+
+	fields := []PeckField{
+		{Name: "k1"},
+		{Name: "k2.1"},
+		{Name: "k3.2.3"},
+	}
+
+	extractor, err := NewJsonExtractor(config, fields)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("[NewJsonExtractor] %#v\n", extractor)
+
+	content := `{
+		"k1":"v1",
+		"k2":{
+			"1":"v2"
+		},
+		"k3":{
+			"2":{
+				"3":"v3"
+			}
+		},
+		"k4":"v4"
+	}`
+	m, err := extractor.Extract(content)
+	if err != nil {
+		panic(err)
+	}
+	if m["k1"] != "v1" || m["k2.1"] != "v2" || m["k3.2.3"] != "v3" {
+		panic(m)
+	}
+	fmt.Printf("[Extract] %#v\n", m)
+}
