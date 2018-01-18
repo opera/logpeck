@@ -22,7 +22,7 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	name, err := j.Get("Name").String()
 	cJ := j.Get("Config")
 	if err != nil || name == "" {
-		return c, errors.New("extractor unmarshal error")
+		return c, nil
 	}
 	jbyte, err := cJ.MarshalJSON()
 	if err != nil {
