@@ -84,6 +84,12 @@
 			"path": "github.com/klauspost/crc32",
 			"revision": "bab58d77464aa9cf4e84200c3276da0831fe0c03",
 			"revisionTime": "2017-06-28T07:24:49Z"
+		},
+		{
+			"checksumSHA1": "evaKLjhScVfgZWZBc8Oo5Ti9Fnk=",
+			"path": "github.com/yuin/gopher-lua",
+			"revision": "478861c8ce6e8c2f16d5984d5ed30c4327c70437",
+			"revisionTime": "2017-12-29T01:25:08Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"

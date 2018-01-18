@@ -9,15 +9,14 @@ import (
 )
 
 type PeckTaskConfig struct {
-	Name         string
-	LogPath      string
-	SenderConfig SenderConfig
+	Name            string
+	LogPath         string
+	ExtractorConfig ExtractorConfig
+	SenderConfig    SenderConfig
 
-	LogFormat  string
-	Keywords   string
-	Fields     []PeckField
-	Delimiters string
-	Test       TestModule
+	Keywords string
+	Fields   []PeckField
+	Test     TestModule
 }
 
 type PeckField struct {
@@ -85,6 +84,18 @@ func GetStringArray(j *sjson.Json, key string) ([]string, error) {
 		return []string{""}, errors.New("Parse error: need field " + key)
 	}
 	return valJson.StringArray()
+}
+
+func GetMarshalString(j *sjson.Json, name string) (string, bool) {
+	cJson := j.Get(name)
+	if cJson.Interface() == nil {
+		return "", false
+	}
+	jbyte, err := cJson.MarshalJSON()
+	if err != nil {
+		return "", false
+	}
+	return string(jbyte), true
 }
 
 func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
@@ -168,26 +179,23 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 		return e
 	}
 
+	// Parse "ExtractorConfig", optional
+	eConfStr, ok := GetMarshalString(j, "ExtractorConfig")
+	if ok {
+		p.ExtractorConfig, e = NewExtractorConfig(eConfStr)
+		if e != nil {
+			return e
+		}
+	}
+
 	// Parse "SenderConfig", optional
 	p.SenderConfig, e = ParseConfig(j)
 	if e != nil {
 		return e
 	}
 
-	// Parse "LogFormat", optional
-	p.LogFormat, e = GetString(j, "LogFormat", false)
-	if e != nil {
-		return e
-	}
-
 	// Parse "FilterExpr", optional
 	p.Keywords, e = GetString(j, "Keywords", false)
-	if e != nil {
-		return e
-	}
-
-	// Parse "Delimiters", optional
-	p.Delimiters, e = GetString(j, "Delimiters", false)
 	if e != nil {
 		return e
 	}
@@ -222,13 +230,6 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 				}
 			} else {
 				return errors.New("Fields error: need Name")
-			}
-			if p.LogFormat == "text" {
-				if val, ok := field.(map[string]interface{})["Value"]; ok {
-					if f.Value, ok = val.(string); !ok {
-						return errors.New("Fields format error: Value must be a string")
-					}
-				}
 			}
 			p.Fields = append(p.Fields, f)
 		}
