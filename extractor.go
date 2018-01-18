@@ -16,17 +16,17 @@ type Extractor interface {
 	Close()
 }
 
-func NewExtractorConfig(configStr string) (*ExtractorConfig, error) {
+func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	c := ExtractorConfig{}
 	j, err := sjson.NewJson([]byte(configStr))
 	name, err := j.Get("Name").String()
 	cJ := j.Get("Config")
 	if err != nil || name == "" {
-		return nil, errors.New("extractor unmarshal error")
+		return c, errors.New("extractor unmarshal error")
 	}
 	jbyte, err := cJ.MarshalJSON()
 	if err == nil {
-		return nil, err
+		return c, err
 	}
 	switch name {
 	case "lua":
@@ -39,7 +39,7 @@ func NewExtractorConfig(configStr string) (*ExtractorConfig, error) {
 		err = errors.New("extractor name error: " + c.Name)
 	}
 	log.Infof("[ExtractorConfig] Init finish %#v, %#v", c, err)
-	return &c, err
+	return c, err
 }
 
 func NewExtractor(configStr string, fields []PeckField) (Extractor, error) {
@@ -50,11 +50,11 @@ func NewExtractor(configStr string, fields []PeckField) (Extractor, error) {
 	var e Extractor
 	switch c.Name {
 	case "lua":
-		e, err = NewLuaExtractor(&c)
+		e, err = NewLuaExtractor(c)
 	case "json":
-		e, err = NewJsonExtractor(&c, fields)
+		e, err = NewJsonExtractor(c, fields)
 	case "text":
-		e, err = NewTextExtractor(&c, fields)
+		e, err = NewTextExtractor(c, fields)
 	default:
 		err = errors.New("extractor name error: " + c.Name)
 	}
