@@ -16,10 +16,13 @@ func TestGetIndexName(*testing.T) {
 			SenderName: "ElasticsearchConfig",
 			Config:     ESConfig,
 		}
-
-		sender := NewElasticSearchSender(&config, nil)
+		sender, err := NewSender(&config, nil)
+		if err != nil {
+			fmt.Printf("New sender error")
+		}
 		proto := "logpeck"
-		if proto != sender.GetIndexName() {
+		Esender := sender.(*ElasticSearchSender)
+		if proto != Esender.GetIndexName() {
 			//panic(proto)
 		}
 	}
@@ -34,8 +37,12 @@ func TestGetIndexName(*testing.T) {
 			SenderName: "ElasticsearchConfig",
 			Config:     ESConfig,
 		}
-		sender := NewElasticSearchSender(&config, nil)
-		indexName := sender.GetIndexName()
+		sender, err := NewSender(&config, nil)
+		if err != nil {
+			fmt.Printf("New sender error")
+		}
+		Esender := sender.(*ElasticSearchSender)
+		indexName := Esender.GetIndexName()
 		fmt.Printf("proto: %s, indexName: %s\n", config.Config.(ElasticSearchConfig).Index, indexName)
 		if len(indexName) != 18 {
 			panic(indexName)

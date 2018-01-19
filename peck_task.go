@@ -15,12 +15,6 @@ type PeckTask struct {
 	aggregator *Aggregator
 }
 
-type Sender interface {
-	Send(map[string]interface{})
-	Start() error
-	Stop() error
-}
-
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	var config *PeckTaskConfig = c
 	var stat *PeckTaskStat
@@ -38,20 +32,12 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		return nil, err
 	}
 	filter := NewPeckFilter(config.Keywords)
-	var sender Sender
-	aggregator := &Aggregator{}
-	if c.SenderConfig.SenderName == "ElasticSearchConfig" {
-		sender = NewElasticSearchSender(&c.SenderConfig, c.Fields)
-	} else if c.SenderConfig.SenderName == "InfluxDbConfig" {
-		sender = NewInfluxDbSender(&c.SenderConfig, c.Fields)
-		interval := c.SenderConfig.Config.(InfluxDbConfig).Interval
-		aggregatorConfigs := c.SenderConfig.Config.(InfluxDbConfig).AggregatorConfigs
-		aggregator = NewAggregator(interval, &aggregatorConfigs)
-	} else if c.SenderConfig.SenderName == "KafkaConfig" {
-		sender = NewKafkaSender(&c.SenderConfig, c.Fields)
-	} else {
+	//var sender Sender
+	sender, err := NewSender(&config.SenderConfig, config.Fields)
+	if err != nil {
+		return nil, err
 	}
-
+	aggregator := NewAggregator(&config.AggregatorConfig)
 	task := &PeckTask{
 		Config:     *config,
 		Stat:       *stat,
@@ -92,19 +78,16 @@ func (p *PeckTask) Process(content string) {
 	if p.filter.Drop(content) {
 		return
 	}
-	if p.Config.SenderConfig.SenderName == "ElasticSearchConfig" {
-		fields, _ := p.extractor.Extract(content)
-		p.sender.Send(fields)
-	} else if p.Config.SenderConfig.SenderName == "InfluxDbConfig" {
-		fields, _ := p.extractor.Extract(content)
+
+	fields, _ := p.extractor.Extract(content)
+	if p.aggregator.IsEnable() {
 		timestamp := p.aggregator.Record(fields)
 		deadline := p.aggregator.IsDeadline(timestamp)
 		if deadline {
-			aggregationResults := p.aggregator.Dump(timestamp)
-			p.sender.Send(aggregationResults)
+			fields = p.aggregator.Dump(timestamp)
+			p.sender.Send(fields)
 		}
-	} else if p.Config.SenderConfig.SenderName == "KafkaConfig" {
-		fields, _ := p.extractor.Extract(content)
+	} else {
 		p.sender.Send(fields)
 	}
 }

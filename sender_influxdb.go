@@ -2,6 +2,8 @@ package logpeck
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
@@ -14,10 +16,8 @@ import (
 )
 
 type InfluxDbConfig struct {
-	Hosts             string             `json:"Hosts"`
-	DBName            string             `json:"DBName"`
-	Interval          int64              `json:"Interval"`
-	AggregatorConfigs []AggregatorConfig `json:"AggregatorConfigs"`
+	Hosts  string `json:"Hosts"`
+	DBName string `json:"DBName"`
 }
 
 type InfluxDbSender struct {
@@ -28,10 +28,23 @@ type InfluxDbSender struct {
 	host          string
 }
 
-func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDbSender {
-	config := senderConfig.Config.(InfluxDbConfig)
+func NewInfluxDbSenderConfig(jbyte []byte) (InfluxDbConfig, error) {
+	influxDbConfig := InfluxDbConfig{}
+	err := json.Unmarshal(jbyte, &influxDbConfig)
+	if err != nil {
+		return influxDbConfig, err
+	}
+	log.Infof("[NewInfluxDbSenderConfig]ElasticSearchConfig: %v", influxDbConfig)
+	return influxDbConfig, nil
+}
 
-	sender := InfluxDbSender{
+func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) (*InfluxDbSender, error) {
+	sender := InfluxDbSender{}
+	config, ok := senderConfig.Config.(InfluxDbConfig)
+	if !ok {
+		return &sender, errors.New("New InfluxDbSender error ")
+	}
+	sender = InfluxDbSender{
 		config: config,
 		fields: fields,
 	}
@@ -39,11 +52,11 @@ func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) *InfluxDb
 	conn, err := net.Dial("udp", "google.com:80")
 	if err != nil {
 		fmt.Println(err.Error())
-		return nil
+		return &sender, errors.New("Get InfluxDbSender host error")
 	}
 	defer conn.Close()
 	sender.host = strings.Split(conn.LocalAddr().String(), ":")[0]
-	return &sender
+	return &sender, nil
 }
 
 func (p *InfluxDbSender) toInfluxdbLine(fields map[string]interface{}) string {

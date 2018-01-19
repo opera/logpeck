@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
 )
 
 type PeckTaskConfig struct {
-	Name            string
-	LogPath         string
-	ExtractorConfig ExtractorConfig
-	SenderConfig    SenderConfig
+	Name             string
+	LogPath          string
+	ExtractorConfig  ExtractorConfig
+	SenderConfig     SenderConfig
+	AggregatorConfig AggregatorConfig
 
 	Keywords string
 	Fields   []PeckField
@@ -98,73 +98,10 @@ func GetMarshalString(j *sjson.Json, name string) (string, bool) {
 	return string(jbyte), true
 }
 
-func ParseConfig(j *sjson.Json) (senderConfig SenderConfig, e error) {
-	cJson := j.Get("SenderConfig")
-	if cJson.Interface() == nil {
-		return senderConfig, nil
-	}
-	senderConfig.SenderName, e = cJson.Get("SenderName").String()
-	if e != nil {
-		log.Infof("[ParseConfig]err: %v", e)
-		return
-	}
-	if senderConfig.SenderName == "ElasticSearchConfig" {
-		elasticSearchConfig := ElasticSearchConfig{}
-		cJson := cJson.Get("Config")
-		if cJson.Interface() == nil {
-			return senderConfig, nil
-		}
-
-		jbyte, err := cJson.MarshalJSON()
-		if err != nil {
-			return
-		}
-		err = json.Unmarshal(jbyte, &elasticSearchConfig)
-		if err != nil {
-			return
-		}
-		log.Infof("[ParseConfig]ElasticSearchConfig: %v", elasticSearchConfig)
-		senderConfig.Config = elasticSearchConfig
-	}
-	if senderConfig.SenderName == "InfluxDbConfig" {
-		influxDbConfig := InfluxDbConfig{}
-		cJson := cJson.Get("Config")
-		if cJson.Interface() == nil {
-			return senderConfig, nil
-		}
-
-		jbyte, err := cJson.MarshalJSON()
-		if err != nil {
-			return
-		}
-		err = json.Unmarshal(jbyte, &influxDbConfig)
-		if err != nil {
-			return
-		}
-		log.Infof("[ParseConfig]influxDbConfig: %v", influxDbConfig)
-		senderConfig.Config = influxDbConfig
-	}
-	if senderConfig.SenderName == "KafkaConfig" {
-		cJson := cJson.Get("Config")
-		if cJson.Interface() == nil {
-			return senderConfig, nil
-		}
-
-		kafkaConfig, e := GetKafkaConfig(cJson)
-		if e != nil {
-			senderConfig.Config = kafkaConfig
-			return senderConfig, e
-		}
-		log.Infof("[ParseConfig]KafkaConfig: %v", kafkaConfig)
-		senderConfig.Config = kafkaConfig
-	}
-	return senderConfig, nil
-}
-
 func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
-	j, je := sjson.NewJson(jsonStr)
-	if je != nil {
-		return je
+	j, e := sjson.NewJson(jsonStr)
+	if e != nil {
+		return e
 	}
 
 	// Parse "Name", required
@@ -189,7 +126,18 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	}
 
 	// Parse "SenderConfig", optional
-	p.SenderConfig, e = ParseConfig(j)
+	p.SenderConfig, e = GetSenderConfig(j)
+	if e != nil {
+		return e
+	}
+
+	//Parse "aggregatorConfig", optional
+	aggregatorConfig := j.Get("AggregatorConfig")
+	jbyte, e := aggregatorConfig.MarshalJSON()
+	if e != nil {
+		return e
+	}
+	e = json.Unmarshal(jbyte, &p.AggregatorConfig)
 	if e != nil {
 		return e
 	}

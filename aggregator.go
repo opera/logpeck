@@ -26,6 +26,12 @@ var FormatTime map[string]string = map[string]string{
 }
 
 type AggregatorConfig struct {
+	Enable            bool               `json:Enable`
+	Interval          int64              `json:"Interval"`
+	AggregatorOptions []AggregatorOption `json:"AggregatorOptions"`
+}
+
+type AggregatorOption struct {
 	PreMeasurment string   `json:"PreMeasurment"`
 	Measurment    string   `json:"Measurment"`
 	Target        string   `json:"Target"`
@@ -35,18 +41,17 @@ type AggregatorConfig struct {
 }
 
 type Aggregator struct {
-	Interval          int64
-	AggregatorConfigs []AggregatorConfig
-	buckets           map[string]map[string][]int64
-	postTime          int64
+	aggregatorConfig AggregatorConfig
+	buckets          map[string]map[string][]int64
+	postTime         int64
 }
 
-func NewAggregator(interval int64, aggregatorConfigs *[]AggregatorConfig) *Aggregator {
+func NewAggregator(aggregatorConfig *AggregatorConfig) *Aggregator {
+
 	aggregator := &Aggregator{
-		Interval:          interval,
-		AggregatorConfigs: *aggregatorConfigs,
-		buckets:           make(map[string]map[string][]int64),
-		postTime:          0,
+		aggregatorConfig: *aggregatorConfig,
+		buckets:          make(map[string]map[string][]int64),
+		postTime:         0,
 	}
 	return aggregator
 }
@@ -55,8 +60,12 @@ func getSampleTime(ts int64, interval int64) int64 {
 	return ts / interval
 }
 
+func (p *Aggregator) IsEnable() bool {
+	return p.aggregatorConfig.Enable
+}
+
 func (p *Aggregator) IsDeadline(timestamp int64) bool {
-	interval := p.Interval
+	interval := p.aggregatorConfig.Interval
 	nowTime := getSampleTime(timestamp, interval)
 	if p.postTime != nowTime {
 		return true
@@ -66,19 +75,19 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 
 func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	var now int64
-	for i := 0; i < len(p.AggregatorConfigs); i++ {
-		tags := p.AggregatorConfigs[i].Tags
-		target := p.AggregatorConfigs[i].Target
-		timestamp := p.AggregatorConfigs[i].Timestamp
-		bucketName := p.AggregatorConfigs[i].PreMeasurment + "_" + p.AggregatorConfigs[i].Measurment + "_" + target
+	for i := 0; i < len(p.aggregatorConfig.AggregatorOptions); i++ {
+		tags := p.aggregatorConfig.AggregatorOptions[i].Tags
+		target := p.aggregatorConfig.AggregatorOptions[i].Target
+		timestamp := p.aggregatorConfig.AggregatorOptions[i].Timestamp
+		bucketName := p.aggregatorConfig.AggregatorOptions[i].PreMeasurment + "_" + p.aggregatorConfig.AggregatorOptions[i].Measurment + "_" + target
 		bucketTag := ""
-		if p.AggregatorConfigs[i].PreMeasurment != "" {
-			bucketTag += p.AggregatorConfigs[i].PreMeasurment + "_"
+		if p.aggregatorConfig.AggregatorOptions[i].PreMeasurment != "" {
+			bucketTag += p.aggregatorConfig.AggregatorOptions[i].PreMeasurment + "_"
 		}
-		if p.AggregatorConfigs[i].Measurment == "_default" {
+		if p.aggregatorConfig.AggregatorOptions[i].Measurment == "_default" {
 			bucketTag += target
 		} else {
-			measurment, ok := fields[p.AggregatorConfigs[i].Measurment].(string)
+			measurment, ok := fields[p.aggregatorConfig.AggregatorOptions[i].Measurment].(string)
 			if !ok {
 				log.Debug("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
 				now = time.Now().Unix()
@@ -220,9 +229,9 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
 		aggregations := []string{}
-		for i := 0; i < len(p.AggregatorConfigs); i++ {
-			if p.AggregatorConfigs[i].PreMeasurment+"_"+p.AggregatorConfigs[i].Measurment+"_"+p.AggregatorConfigs[i].Target == bucketName {
-				aggregations = p.AggregatorConfigs[i].Aggregations
+		for i := 0; i < len(p.aggregatorConfig.AggregatorOptions); i++ {
+			if p.aggregatorConfig.AggregatorOptions[i].PreMeasurment+"_"+p.aggregatorConfig.AggregatorOptions[i].Measurment+"_"+p.aggregatorConfig.AggregatorOptions[i].Target == bucketName {
+				aggregations = p.aggregatorConfig.AggregatorOptions[i].Aggregations
 				break
 			}
 		}
@@ -231,7 +240,7 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 		}
 	}
 	fields["timestamp"] = timestamp
-	p.postTime = getSampleTime(timestamp, p.Interval)
+	p.postTime = getSampleTime(timestamp, p.aggregatorConfig.Interval)
 	p.buckets = map[string]map[string][]int64{}
 	log.Debug("[Dump] fields is : %v", fields)
 	return fields
