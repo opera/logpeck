@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Shopify/sarama"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
@@ -21,9 +22,6 @@ type KafkaConfig struct {
 	ReturnErrors    bool                    `json:"ReturnErrors"`
 	Flush           KafkaFlush              `json:"Flush"`
 	Retry           KafkaRetry              `json:"Retry"`
-
-	Interval          int64              `json:"Interval"`
-	AggregatorConfigs []AggregatorConfig `json:"AggregatorConfigs"`
 }
 
 type KafkaFlush struct {
@@ -46,13 +44,27 @@ type KafkaSender struct {
 	producer      sarama.SyncProducer
 }
 
-func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) *KafkaSender {
-	config := senderConfig.Config.(KafkaConfig)
-	sender := KafkaSender{
+func NewKafkaSenderConfig(jbyte []byte) (KafkaConfig, error) {
+	KafkaConfig := KafkaConfig{}
+	err := json.Unmarshal(jbyte, &KafkaConfig)
+	if err != nil {
+		return KafkaConfig, err
+	}
+	log.Infof("[NewKafkaSenderConfig]ElasticSearchConfig: %v", KafkaConfig)
+	return KafkaConfig, nil
+}
+
+func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) (*KafkaSender, error) {
+	sender := KafkaSender{}
+	config, ok := senderConfig.Config.(KafkaConfig)
+	if !ok {
+		return &sender, errors.New("New NewKafkaSender error ")
+	}
+	sender = KafkaSender{
 		config: config,
 		fields: fields,
 	}
-	return &sender
+	return &sender, nil
 }
 func GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 	kafkaConfig.Brokers, e = GetStringArray(cJson, "Brokers")

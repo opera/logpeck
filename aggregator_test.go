@@ -9,8 +9,7 @@ import (
 func TestStartSend(*testing.T) {
 	log.Infof("[aggregator_test] TestStartSend")
 
-	interval := int64(30)
-	test := AggregatorConfig{
+	test := AggregatorOption{
 		PreMeasurment: "Test",
 		Measurment:    "aaa",
 		Tags:          []string{"cost"},
@@ -18,9 +17,14 @@ func TestStartSend(*testing.T) {
 		Target:        "cost",
 		Timestamp:     "time",
 	}
-	var aggregatorConfigs []AggregatorConfig
-	aggregatorConfigs = append(aggregatorConfigs, test)
-	aggregator := NewAggregator(interval, &aggregatorConfigs)
+	var aggregatorOptions []AggregatorOption
+	aggregatorOptions = append(aggregatorOptions, test)
+	aggregatorConfig := AggregatorConfig{
+		Enable:         true,
+		Interval:          int64(30),
+		AggregatorOptions: aggregatorOptions,
+	}
+	aggregator := NewAggregator(&aggregatorConfig)
 
 	deadline := aggregator.IsDeadline(int64(29))
 	if deadline == true {
@@ -33,18 +37,22 @@ func TestStartSend(*testing.T) {
 }
 
 func TestRecord(*testing.T) {
-	interval := int64(30)
-	test := AggregatorConfig{
+	test := AggregatorOption{
 		PreMeasurment: "Test",
 		Measurment:    "aaa",
 		Tags:          []string{"upstream"},
-		Aggregations:  []string{"cnt,avg"},
+		Aggregations:  []string{"cnt"},
 		Target:        "cost",
 		Timestamp:     "time",
 	}
-	var aggregatorConfigs []AggregatorConfig
-	aggregatorConfigs = append(aggregatorConfigs, test)
-	aggregator := NewAggregator(interval, &aggregatorConfigs)
+	var aggregatorOptions []AggregatorOption
+	aggregatorOptions = append(aggregatorOptions, test)
+	aggregatorConfig := AggregatorConfig{
+		Enable:         true,
+		Interval:          int64(30),
+		AggregatorOptions: aggregatorOptions,
+	}
+	aggregator := NewAggregator(&aggregatorConfig)
 
 	fields := make(map[string]interface{})
 	fields["aaa"] = "getTest"
@@ -66,8 +74,7 @@ func TestRecord(*testing.T) {
 }
 
 func TestDump(*testing.T) {
-	interval := int64(30)
-	test := AggregatorConfig{
+	test := AggregatorOption{
 		PreMeasurment: "Test",
 		Measurment:    "aaa",
 		Tags:          []string{"upstream"},
@@ -75,9 +82,14 @@ func TestDump(*testing.T) {
 		Target:        "cost",
 		Timestamp:     "time",
 	}
-	var aggregatorConfigs []AggregatorConfig
-	aggregatorConfigs = append(aggregatorConfigs, test)
-	aggregator := NewAggregator(interval, &aggregatorConfigs)
+	var aggregatorOptions []AggregatorOption
+	aggregatorOptions = append(aggregatorOptions, test)
+	aggregatorConfig := AggregatorConfig{
+		Enable:         true,
+		Interval:          int64(30),
+		AggregatorOptions: aggregatorOptions,
+	}
+	aggregator := NewAggregator(&aggregatorConfig)
 
 	fields := make(map[string]interface{})
 	fields["aaa"] = "getTest"
