@@ -19,7 +19,7 @@ func TestExtractor(*testing.T) {
 	}
 	fmt.Printf("[NewExtractorConfig]%#v\n", config)
 
-	extractor, err := NewExtractor(config, nil)
+	extractor, err := NewExtractor(config)
 	if err != nil {
 		panic(err)
 	}
@@ -97,20 +97,14 @@ func TestLua(*testing.T) {
 }
 
 func TestTextExtractor(*testing.T) {
-	confStr := `{ "Delimiters":" " }`
+	confStr := `{ "Delimiters":" " ,"fields":[{"Name": "col2", "Value": "$2"},{"Name": "col3", "Value": "$3"},{"Name": "col4", "Value": "$4"}]}`
 	config, err := NewTextExtractorConfig([]byte(confStr))
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("[NewTextExtractorConfig] %#v\n", config)
 
-	fields := []PeckField{
-		{Name: "col2", Value: "$2"},
-		{Name: "col3", Value: "$3"},
-		{Name: "col4", Value: "$4"},
-	}
-
-	extractor, err := NewTextExtractor(config, fields)
+	extractor, err := NewTextExtractor(config)
 	if err != nil {
 		panic(err)
 	}
@@ -128,20 +122,14 @@ func TestTextExtractor(*testing.T) {
 }
 
 func TestJsonExtractor(*testing.T) {
-	confStr := `{}`
+	confStr := `{"fields":[{"Name": "k1"},{"Name": "k2.1"},{"Name": "k3.2.3"}]}`
 	config, err := NewJsonExtractorConfig([]byte(confStr))
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("[NewJsonExtractorConfig] %#v\n", config)
 
-	fields := []PeckField{
-		{Name: "k1"},
-		{Name: "k2.1"},
-		{Name: "k3.2.3"},
-	}
-
-	extractor, err := NewJsonExtractor(config, fields)
+	extractor, err := NewJsonExtractor(config)
 	if err != nil {
 		panic(err)
 	}

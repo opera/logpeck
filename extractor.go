@@ -43,14 +43,14 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	return c, err
 }
 
-func NewExtractor(c ExtractorConfig, fields []PeckField) (e Extractor, err error) {
+func NewExtractor(c ExtractorConfig) (e Extractor, err error) {
 	switch c.Name {
 	case "lua":
 		e, err = NewLuaExtractor(c.Config)
 	case "json":
-		e, err = NewJsonExtractor(c.Config, fields)
+		e, err = NewJsonExtractor(c.Config)
 	case "text":
-		e, err = NewTextExtractor(c.Config, fields)
+		e, err = NewTextExtractor(c.Config)
 	default:
 		err = errors.New("extractor name error: " + c.Name)
 	}

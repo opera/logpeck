@@ -22,7 +22,6 @@ type InfluxDbConfig struct {
 
 type InfluxDbSender struct {
 	config        InfluxDbConfig
-	fields        []PeckField
 	mu            sync.Mutex
 	lastIndexName string
 	host          string
@@ -38,7 +37,7 @@ func NewInfluxDbSenderConfig(jbyte []byte) (InfluxDbConfig, error) {
 	return influxDbConfig, nil
 }
 
-func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) (*InfluxDbSender, error) {
+func NewInfluxDbSender(senderConfig *SenderConfig) (*InfluxDbSender, error) {
 	sender := InfluxDbSender{}
 	config, ok := senderConfig.Config.(InfluxDbConfig)
 	if !ok {
@@ -46,7 +45,6 @@ func NewInfluxDbSender(senderConfig *SenderConfig, fields []PeckField) (*InfluxD
 	}
 	sender = InfluxDbSender{
 		config: config,
-		fields: fields,
 	}
 
 	conn, err := net.Dial("udp", "google.com:80")

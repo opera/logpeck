@@ -9,6 +9,7 @@ import (
 )
 
 type JsonExtractorConfig struct {
+	Fields []PeckField
 }
 
 type JsonExtractor struct {
@@ -25,7 +26,7 @@ func NewJsonExtractorConfig(configStr []byte) (JsonExtractorConfig, error) {
 	return c, nil
 }
 
-func NewJsonExtractor(config interface{}, fields []PeckField) (JsonExtractor, error) {
+func NewJsonExtractor(config interface{}) (JsonExtractor, error) {
 	c, ok := config.(JsonExtractorConfig)
 	if !ok {
 		return JsonExtractor{}, errors.New("JsonExtractor config error")
@@ -34,7 +35,7 @@ func NewJsonExtractor(config interface{}, fields []PeckField) (JsonExtractor, er
 		config: &c,
 		fields: make(map[string]bool),
 	}
-	for _, f := range fields {
+	for _, f := range c.Fields {
 		e.fields[f.Name] = true
 	}
 	log.Infof("[JsonExtractor] Init extractor finished %#v", e)
