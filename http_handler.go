@@ -178,33 +178,21 @@ func NewListTaskHandler(pecker *Pecker) http.HandlerFunc {
 			w.Write([]byte("List PeckTask failed, " + err.Error()))
 			return
 		}
-		jsonStr, jErr := json.Marshal(configs)
-		if jErr != nil {
-			panic(jErr)
-		}
-		log.Infof("[Handler] List Success: %s", jsonStr)
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(jsonStr))
-	}
-}
-
-func NewListStatsHandler(pecker *Pecker) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		logRequest(r, "ListStatusHandler")
-		defer r.Body.Close()
-
 		stats, err := pecker.ListTaskStats()
 		if err != nil {
 			w.WriteHeader(http.StatusNotAcceptable)
-			w.Write([]byte("List TaskStatus failed, " + err.Error()))
+			w.Write([]byte("List PeckTask failed, " + err.Error()))
 			return
 		}
-		jsonStr, jErr := json.Marshal(stats)
+		res := make(map[string]interface{})
+		res["configs"] = configs
+		res["stats"] = stats
+		jsonStr, jErr := json.Marshal(res)
 		if jErr != nil {
 			panic(jErr)
 		}
 		log.Infof("[Handler] List Success: %s", jsonStr)
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(jsonStr))
 	}

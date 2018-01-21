@@ -29,7 +29,6 @@ type SenderConfig struct {
 
 type PeckTaskStat struct {
 	Name        string
-	LogPath     string
 	LinesPerSec int64
 	BytesPerSec int64
 	LinesTotal  int64

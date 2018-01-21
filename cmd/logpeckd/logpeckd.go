@@ -51,7 +51,6 @@ func main() {
 	mux.Post("/peck_task/stop", logpeck.NewStopTaskHandler(pecker))
 	mux.Post("/peck_task/remove", logpeck.NewRemoveTaskHandler(pecker))
 	mux.Post("/peck_task/list", logpeck.NewListTaskHandler(pecker))
-	mux.Post("/peck_task/liststats", logpeck.NewListStatsHandler(pecker))
 	mux.Post("/peck_task/test", logpeck.NewTestTaskHandler())
 	mux.Post("/listpath", logpeck.NewListPathHandler())
 	mux.Post("/version", logpeck.NewVersionHandler())

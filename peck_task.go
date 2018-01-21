@@ -20,9 +20,8 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	var stat *PeckTaskStat
 	if s == nil {
 		stat = &PeckTaskStat{
-			Name:    c.Name,
-			LogPath: c.LogPath,
-			Stop:    true,
+			Name: c.Name,
+			Stop: true,
 		}
 	} else {
 		stat = s
