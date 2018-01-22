@@ -42,12 +42,12 @@ We can also control collection tasks with RESTful API. [See more](doc/restful.md
  
 ## Dependencies
 
- * [BurntSushi/toml](github.com/BurntSushi/toml): configuration management
- * [Sirupsen/logrus](github.com/Sirupsen/logrus): logging
- * [bitly/go-simplejson](github.com/bitly/go-simplejson): json parser
- * [boltdb/bolt](github.com/boltdb/bolt): local storage
- * [go-zoo/bone](github.com/go-zoo/bone): http multiplexer
- * [hpcloud/tail](github.com/hpcloud/tail): watching log file
+ * [BurntSushi/toml](https://github.com/BurntSushi/toml): configuration management
+ * [Sirupsen/logrus](https://github.com/Sirupsen/logrus): logging
+ * [bitly/go-simplejson](https://github.com/bitly/go-simplejson): json parser
+ * [boltdb/bolt](https://github.com/boltdb/bolt): local storage
+ * [go-zoo/bone](https://github.com/go-zoo/bone): http multiplexer
+ * [hpcloud/tail](https://github.com/hpcloud/tail): watching log file
  
  Saulte to all these excellent projects.
  
