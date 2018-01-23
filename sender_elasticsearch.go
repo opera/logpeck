@@ -22,7 +22,6 @@ type ElasticSearchConfig struct {
 
 type ElasticSearchSender struct {
 	config        ElasticSearchConfig
-	fields        []PeckField
 	mu            sync.Mutex
 	lastIndexName string
 }
@@ -37,7 +36,7 @@ func NewElasticSearchSenderConfig(jbyte []byte) (ElasticSearchConfig, error) {
 	return elasticSearchConfig, nil
 }
 
-func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) (*ElasticSearchSender, error) {
+func NewElasticSearchSender(senderConfig *SenderConfig) (*ElasticSearchSender, error) {
 	sender := ElasticSearchSender{}
 	config, ok := senderConfig.Config.(ElasticSearchConfig)
 	if !ok {
@@ -45,7 +44,6 @@ func NewElasticSearchSender(senderConfig *SenderConfig, fields []PeckField) (*El
 	}
 	sender = ElasticSearchSender{
 		config: config,
-		fields: fields,
 	}
 	return &sender, nil
 }

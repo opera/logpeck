@@ -3,7 +3,6 @@ package logpeck
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	sjson "github.com/bitly/go-simplejson"
 )
 
@@ -15,7 +14,6 @@ type PeckTaskConfig struct {
 	AggregatorConfig AggregatorConfig
 
 	Keywords string
-	Fields   []PeckField
 	Test     TestModule
 }
 
@@ -31,7 +29,6 @@ type SenderConfig struct {
 
 type PeckTaskStat struct {
 	Name        string
-	LogPath     string
 	LinesPerSec int64
 	BytesPerSec int64
 	LinesTotal  int64
@@ -167,21 +164,29 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	}
 	p.Test.Timeout = time
 
-	// Parse "Fields", optional
-	if fields, e := j.Get("Fields").Array(); e == nil {
-		fmt.Println(len(fields))
-		for _, field := range fields {
-			var f PeckField
-			if name, ok := field.(map[string]interface{})["Name"]; ok {
-				if f.Name, ok = name.(string); !ok {
-					return errors.New("Fields format error: Name must be a string")
+	/*
+		// Parse "Fields", optional
+		if fields, e := j.Get("Fields").Array(); e == nil {
+			fmt.Println(len(fields))
+			for _, field := range fields {
+				var f PeckField
+				if name, ok := field.(map[string]interface{})["Name"]; ok {
+					if f.Name, ok = name.(string); !ok {
+						return errors.New("Fields format error: Name must be a string")
+					}
+				} else {
+					return errors.New("Fields error: need Name")
 				}
-			} else {
-				return errors.New("Fields error: need Name")
+				if value, ok := field.(map[string]interface{})["Value"]; ok {
+					if f.Value, ok = value.(string); !ok {
+						return errors.New("Fields format error: Name must be a string")
+					}
+				}else {
+					return errors.New("Fields error: need Value")
+				}
+				p.Fields = append(p.Fields, f)
 			}
-			p.Fields = append(p.Fields, f)
-		}
-	}
+		}*/
 
 	return nil
 }

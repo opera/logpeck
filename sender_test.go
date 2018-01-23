@@ -16,7 +16,7 @@ func TestGetIndexName(*testing.T) {
 			SenderName: "ElasticsearchConfig",
 			Config:     ESConfig,
 		}
-		sender, err := NewSender(&config, nil)
+		sender, err := NewSender(&config)
 		if err != nil {
 			fmt.Printf("New sender error")
 		}
@@ -37,7 +37,7 @@ func TestGetIndexName(*testing.T) {
 			SenderName: "ElasticsearchConfig",
 			Config:     ESConfig,
 		}
-		sender, err := NewSender(&config, nil)
+		sender, err := NewSender(&config)
 		if err != nil {
 			fmt.Printf("New sender error")
 		}

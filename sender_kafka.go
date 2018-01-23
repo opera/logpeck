@@ -38,7 +38,6 @@ type KafkaRetry struct {
 
 type KafkaSender struct {
 	config        KafkaConfig
-	fields        []PeckField
 	mu            sync.Mutex
 	lastIndexName string
 	producer      sarama.SyncProducer
@@ -54,7 +53,7 @@ func NewKafkaSenderConfig(jbyte []byte) (KafkaConfig, error) {
 	return KafkaConfig, nil
 }
 
-func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) (*KafkaSender, error) {
+func NewKafkaSender(senderConfig *SenderConfig) (*KafkaSender, error) {
 	sender := KafkaSender{}
 	config, ok := senderConfig.Config.(KafkaConfig)
 	if !ok {
@@ -62,7 +61,6 @@ func NewKafkaSender(senderConfig *SenderConfig, fields []PeckField) (*KafkaSende
 	}
 	sender = KafkaSender{
 		config: config,
-		fields: fields,
 	}
 	return &sender, nil
 }

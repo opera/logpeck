@@ -45,14 +45,14 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 	return senderConfig, err
 }
 
-func NewSender(senderConfig *SenderConfig, fields []PeckField) (sender Sender, err error) {
+func NewSender(senderConfig *SenderConfig) (sender Sender, err error) {
 	switch senderConfig.SenderName {
 	case "ElasticsearchConfig":
-		sender, err = NewElasticSearchSender(senderConfig, fields)
+		sender, err = NewElasticSearchSender(senderConfig)
 	case "InfluxDbConfig":
-		sender, err = NewInfluxDbSender(senderConfig, fields)
+		sender, err = NewInfluxDbSender(senderConfig)
 	case "KafkaConfig":
-		sender, err = NewKafkaSender(senderConfig, fields)
+		sender, err = NewKafkaSender(senderConfig)
 	default:
 		err = errors.New("[NewSender]sender name error: " + senderConfig.SenderName)
 	}

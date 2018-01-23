@@ -201,12 +201,10 @@ func TestConfigsAccess(*testing.T) {
 
 func TestStatsAccess(*testing.T) {
 	name := "test_peck_task"
-	logPath := "./test.log"
 
 	stat := PeckTaskStat{
-		Name:    name,
-		LogPath: logPath,
-		Stop:    true,
+		Name: name,
+		Stop: true,
 	}
 
 	defer LogExecTime(time.Now(), "stats access")
@@ -220,7 +218,6 @@ func TestStatsAccess(*testing.T) {
 	// Test SaveStat
 	for i := 0; i < 10; i++ {
 		stat.Name = fmt.Sprintf("%s-%d", name, i)
-		stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
 		err = db.SaveStat(&stat)
 		if err != nil {
 			panic(fmt.Errorf("i[%d] err[%s]", i, err))
@@ -229,15 +226,13 @@ func TestStatsAccess(*testing.T) {
 
 	// Test GetStat
 	stat_get_tmp := &PeckTaskStat{
-		Name:    name + "-0",
-		LogPath: logPath + "-0",
+		Name: name + "-0",
 	}
 	stat_get, e := db.GetStat(stat_get_tmp.Name)
 	if e != nil {
 		panic(e)
 	}
-	if stat_get.Name != stat_get_tmp.Name ||
-		stat_get.LogPath != stat_get_tmp.LogPath {
+	if stat_get.Name != stat_get_tmp.Name {
 		panic(stat_get)
 	}
 
@@ -252,8 +247,7 @@ func TestStatsAccess(*testing.T) {
 	}
 
 	for _, stat := range stats {
-		if !strings.Contains(stat.Name, name) ||
-			!strings.Contains(stat.LogPath, logPath) {
+		if !strings.Contains(stat.Name, name) {
 			panic(stats)
 		}
 	}
@@ -261,7 +255,6 @@ func TestStatsAccess(*testing.T) {
 	// Test RemoveStat
 	for i := 0; i < 10; i++ {
 		stat.Name = fmt.Sprintf("%s-%d", name, i)
-		stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
 		err = db.RemoveStat(stat.Name)
 		if err != nil {
 			panic(fmt.Errorf("i[%d] err[%s]", i, err))
@@ -328,12 +321,10 @@ func TestConfigCompat(*testing.T) {
 }
 func TestStatCompat(*testing.T) {
 	name := "test_peck_task"
-	logPath := "./test.log"
 
 	stat := PeckTaskStat{
-		Name:    name,
-		LogPath: logPath,
-		Stop:    true,
+		Name: name,
+		Stop: true,
 	}
 
 	defer LogExecTime(time.Now(), "stats access")
@@ -347,7 +338,6 @@ func TestStatCompat(*testing.T) {
 	// Test SaveStat
 	for i := 0; i < 10; i++ {
 		stat.Name = fmt.Sprintf("%s#%d", name, i)
-		stat.LogPath = fmt.Sprintf("%s-%d", logPath, i)
 		err = db.SaveStat(&stat)
 		if err != nil {
 			panic(fmt.Errorf("i[%d] err[%s]", i, err))
@@ -365,16 +355,14 @@ func TestStatCompat(*testing.T) {
 
 	// Test GetStat
 	stat_get_tmp := &PeckTaskStat{
-		Name:    name + "#0",
-		LogPath: logPath + "-0",
+		Name: name + "#0",
 	}
 	stat_get, e := db.GetStat("0")
 	if e != nil {
 		panic(e)
 	}
-	if stat_get.Name != stat_get_tmp.Name ||
-		stat_get.LogPath != stat_get_tmp.LogPath {
-		fmt.Printf("%s %s %s %s\n", stat_get.Name, stat_get_tmp.Name, stat_get.LogPath, stat_get_tmp.LogPath)
+	if stat_get.Name != stat_get_tmp.Name {
+		fmt.Printf("%s %s \n", stat_get.Name, stat_get_tmp.Name)
 		panic(stat_get)
 	}
 

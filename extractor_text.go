@@ -9,6 +9,7 @@ import (
 
 type TextExtractorConfig struct {
 	Delimiters string
+	Fields     []PeckField
 }
 
 type TextExtractor struct {
@@ -25,7 +26,7 @@ func NewTextExtractorConfig(configStr []byte) (TextExtractorConfig, error) {
 	return c, nil
 }
 
-func NewTextExtractor(config interface{}, fields []PeckField) (TextExtractor, error) {
+func NewTextExtractor(config interface{}) (TextExtractor, error) {
 	c, ok := config.(TextExtractorConfig)
 	e := TextExtractor{
 		config: &c,
@@ -34,7 +35,8 @@ func NewTextExtractor(config interface{}, fields []PeckField) (TextExtractor, er
 	if !ok {
 		return e, errors.New("TextExtractor config error")
 	}
-	for _, f := range fields {
+	log.Info(c.Fields)
+	for _, f := range c.Fields {
 		if f.Value[0] != '$' {
 			return e, errors.New("field format error: " + f.Value)
 		}

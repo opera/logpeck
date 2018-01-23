@@ -20,20 +20,19 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	var stat *PeckTaskStat
 	if s == nil {
 		stat = &PeckTaskStat{
-			Name:    c.Name,
-			LogPath: c.LogPath,
-			Stop:    true,
+			Name: c.Name,
+			Stop: true,
 		}
 	} else {
 		stat = s
 	}
-	extractor, err := NewExtractor(config.ExtractorConfig, config.Fields)
+	extractor, err := NewExtractor(config.ExtractorConfig)
 	if err != nil {
 		return nil, err
 	}
 	filter := NewPeckFilter(config.Keywords)
 	//var sender Sender
-	sender, err := NewSender(&config.SenderConfig, config.Fields)
+	sender, err := NewSender(&config.SenderConfig)
 	if err != nil {
 		return nil, err
 	}
