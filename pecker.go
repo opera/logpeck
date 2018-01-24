@@ -243,7 +243,6 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 	}
 	ch := make(chan bool, 1)
 	resultsCh := make(chan map[string]interface{}, config.Test.TestNum)
-	errCh := make(chan string, 1)
 	id := 0
 	close := false
 	tail, err := tail.TailFile(config.LogPath, tailConf)
@@ -256,11 +255,13 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 				break
 			}
 			fields, err := task.ProcessTest(content.Text)
-			if err != nil {
-				errCh <- err.Error()
-			}
 			Log := make(map[string]interface{})
-			if _, ok := fields["_Log"]; !ok {
+			if err != nil {
+				if err.Error() == "The content is discarded" {
+					continue
+				}
+				Log["_Error"] = err.Error()
+			} else if _, ok := fields["_Log"]; !ok {
 				Log["_Log"] = content.Text
 				Log["_Fields"] = fields
 			} else {
@@ -275,17 +276,10 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 		ch <- true
 	}()
 	var res []map[string]interface{}
-	var errString = ""
 	select {
 	case <-ch:
 	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
 		close = true
-	case errString = <-errCh:
-		close = true
-	}
-	log.Info(errString)
-	if errString != "" {
-		return []map[string]interface{}{}, errors.New(errString)
 	}
 	l := len(resultsCh)
 	for i := 0; i < l; i++ {

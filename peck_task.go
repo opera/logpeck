@@ -93,9 +93,7 @@ func (p *PeckTask) Process(content string) {
 
 func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 	if p.filter.Drop(content) {
-		var err error = errors.New("[peck_task]The line does not meet the rules ")
-		s := make(map[string]interface{})
-		return s, err
+		return map[string]interface{}{}, errors.New("The content is discarded")
 	}
 	fields, err := p.extractor.Extract(content)
 	if err != nil {
