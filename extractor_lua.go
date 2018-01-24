@@ -69,14 +69,16 @@ func (le LuaExtractor) Extract(content string) (map[string]interface{}, error) {
 	log.Debugf("[LuaExtractor] %s %#v", content, lT)
 	ret := make(map[string]interface{})
 	enable := true
+	key := ""
 	lT.ForEach(func(k, v lua.LValue) {
 		if _, ok := le.fields[k.String()]; !ok {
 			enable = false
+			key = k.String()
 		}
 		ret[k.String()] = v.String()
 	})
 	if !enable {
-		return map[string]interface{}{}, errors.New("[Extract]Fields is not exist")
+		return map[string]interface{}{}, errors.New(key + " is not in Fields")
 	} else {
 		return ret, nil
 	}

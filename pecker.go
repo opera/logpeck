@@ -257,10 +257,11 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 			fields, err := task.ProcessTest(content.Text)
 			Log := make(map[string]interface{})
 			if err != nil {
-				if err.Error() == "The content is discarded" {
+				if err.Error() == "Discarded" {
 					continue
 				}
 				Log["_Error"] = err.Error()
+				Log["_Log"] = content.Text
 			} else if _, ok := fields["_Log"]; !ok {
 				Log["_Log"] = content.Text
 				Log["_Fields"] = fields
