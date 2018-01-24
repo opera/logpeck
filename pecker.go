@@ -255,11 +255,14 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 				break
 			}
 			fields, err := task.ProcessTest(content.Text)
-			if err != nil {
-				continue
-			}
 			Log := make(map[string]interface{})
-			if _, ok := fields["_Log"]; !ok {
+			if err != nil {
+				if err.Error() == "Discarded" {
+					continue
+				}
+				Log["_Error"] = err.Error()
+				Log["_Log"] = content.Text
+			} else if _, ok := fields["_Log"]; !ok {
 				Log["_Log"] = content.Text
 				Log["_Fields"] = fields
 			} else {

@@ -50,7 +50,7 @@ func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) 
 	}
 	mContent, err := jContent.Map()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Log is not json format")
 	}
 	if len(je.fields) == 0 {
 		return map[string]interface{}{"_Log": content}, nil

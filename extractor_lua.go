@@ -9,10 +9,12 @@ import (
 
 type LuaExtractorConfig struct {
 	LuaString string
+	Fields    []PeckField
 }
 
 type LuaExtractor struct {
-	state *lua.LState
+	state  *lua.LState
+	fields map[string]bool
 }
 
 var LuaExtractorFuncName string = "extract"
@@ -31,16 +33,21 @@ func NewLuaExtractor(config interface{}) (LuaExtractor, error) {
 	if !ok {
 		return LuaExtractor{}, errors.New("LuaExtractor config error")
 	}
-	return newLuaExtractor(c.LuaString)
+	return newLuaExtractor(c)
 }
 
-func newLuaExtractor(luaStr string) (LuaExtractor, error) {
+func newLuaExtractor(c LuaExtractorConfig) (LuaExtractor, error) {
 	l := LuaExtractor{
-		state: lua.NewState(),
+		state:  lua.NewState(),
+		fields: make(map[string]bool),
 	}
-	if err := l.state.DoString(luaStr); err != nil {
+	if err := l.state.DoString(c.LuaString); err != nil {
 		return l, err
 	}
+	for _, f := range c.Fields {
+		l.fields[f.Name] = true
+	}
+	log.Infof("[LuoExtractor] Init extractor finished %#v", l)
 	return l, nil
 }
 
@@ -61,10 +68,20 @@ func (le LuaExtractor) Extract(content string) (map[string]interface{}, error) {
 	le.state.Pop(1)
 	log.Debugf("[LuaExtractor] %s %#v", content, lT)
 	ret := make(map[string]interface{})
+	enable := true
+	key := ""
 	lT.ForEach(func(k, v lua.LValue) {
+		if _, ok := le.fields[k.String()]; !ok {
+			enable = false
+			key = k.String()
+		}
 		ret[k.String()] = v.String()
 	})
-	return ret, nil
+	if !enable {
+		return map[string]interface{}{}, errors.New(key + " is not in Fields")
+	} else {
+		return ret, nil
+	}
 }
 
 func (le LuaExtractor) Close() {
