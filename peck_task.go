@@ -97,6 +97,9 @@ func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 		s := make(map[string]interface{})
 		return s, err
 	}
-	fields, _ := p.extractor.Extract(content)
+	fields, err := p.extractor.Extract(content)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
 	return fields, nil
 }

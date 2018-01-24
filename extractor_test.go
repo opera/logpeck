@@ -42,21 +42,21 @@ func TestLuaExtractorConfig(*testing.T) {
 }
 
 func TestLuaExtractor(*testing.T) {
-	luaStr := `
-		function extract(s)
-		  local ret = {}
-			ret["haha"] = string.sub(s, 2, -2)
-			return ret
-    end`
-
-	le, err := newLuaExtractor(luaStr)
+	confStr := `{ "LuaString":"function extract(s) local ret = {} ret['haha'] = string.sub(s, 2, -2) return ret end","Fields":[{"Name":"haha"}] }`
+	config, err := NewLuaExtractorConfig([]byte(confStr))
 	if err != nil {
 		panic(err)
 	}
+	le, err := newLuaExtractor(config)
+	if err != nil {
+		panic(err)
+	}
+
 	defer le.Close()
 
 	ret, err := le.Extract("12345678")
 	if err != nil || ret["haha"] != "234567" {
+		fmt.Printf("-------------%v\n", err)
 		panic(err)
 	}
 	fmt.Printf("%#v\n", ret)

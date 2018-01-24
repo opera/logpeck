@@ -19,7 +19,7 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 	}
 	senderConfig.SenderName, err = cJson.Get("SenderName").String()
 	if err != nil {
-		log.Infof("[ParseConfig]err: %v", err)
+		log.Infof("[GetSenderConfig]err: %v", err)
 		return senderConfig, err
 	}
 	cJson = cJson.Get("Config")

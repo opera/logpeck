@@ -243,6 +243,7 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 	}
 	ch := make(chan bool, 1)
 	resultsCh := make(chan map[string]interface{}, config.Test.TestNum)
+	errCh := make(chan string, 1)
 	id := 0
 	close := false
 	tail, err := tail.TailFile(config.LogPath, tailConf)
@@ -256,7 +257,7 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 			}
 			fields, err := task.ProcessTest(content.Text)
 			if err != nil {
-				continue
+				errCh <- err.Error()
 			}
 			Log := make(map[string]interface{})
 			if _, ok := fields["_Log"]; !ok {
@@ -274,10 +275,17 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 		ch <- true
 	}()
 	var res []map[string]interface{}
+	var errString = ""
 	select {
 	case <-ch:
 	case <-time.After(time.Second * time.Duration(config.Test.Timeout)):
 		close = true
+	case errString = <-errCh:
+		close = true
+	}
+	log.Info(errString)
+	if errString != "" {
+		return []map[string]interface{}{}, errors.New(errString)
 	}
 	l := len(resultsCh)
 	for i := 0; i < l; i++ {
