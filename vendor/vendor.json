@@ -38,6 +38,24 @@
 			"revisionTime": "2017-10-02T20:02:53Z"
 		},
 		{
+			"checksumSHA1": "y2Kh4iPlgCPXSGTCcFpzePYdzzg=",
+			"path": "github.com/eapache/go-resiliency/breaker",
+			"revision": "ef9aaa7ea8bd2448429af1a77cf41b2b3b34bdd6",
+			"revisionTime": "2018-01-01T20:33:13Z"
+		},
+		{
+			"checksumSHA1": "WHl96RVZlOOdF4Lb1OOadMpw8ls=",
+			"path": "github.com/eapache/go-xerial-snappy",
+			"revision": "bb955e01b9346ac19dc29eb16586c90ded99a98c",
+			"revisionTime": "2016-06-09T14:24:08Z"
+		},
+		{
+			"checksumSHA1": "oCCs6kDanizatplM5e/hX76busE=",
+			"path": "github.com/eapache/queue",
+			"revision": "44cc805cf13205b55f69e14bcb69867d1ae92f98",
+			"revisionTime": "2016-08-05T00:47:13Z"
+		},
+		{
 			"checksumSHA1": "Yz28Zxff+3FcqcfL9iIZE3MEn38=",
 			"path": "github.com/go-zoo/bone",
 			"revision": "11ae278a93c8268a0f98758aa915def5dfca3254",
@@ -86,10 +104,40 @@
 			"revisionTime": "2017-06-28T07:24:49Z"
 		},
 		{
+			"checksumSHA1": "xKzx54LbkghuMauevGWevn5ip3w=",
+			"path": "github.com/pierrec/lz4",
+			"revision": "ed8d4cc3b461464e69798080a0092bd028910298",
+			"revisionTime": "2018-01-13T15:17:03Z"
+		},
+		{
+			"checksumSHA1": "oY/QEEFSa+kRKlgeIIAhCOYbnrE=",
+			"path": "github.com/rcrowley/go-metrics",
+			"revision": "8732c616f52954686704c8645fe1a9d59e9df7c1",
+			"revisionTime": "2018-01-25T23:19:41Z"
+		},
+		{
 			"checksumSHA1": "evaKLjhScVfgZWZBc8Oo5Ti9Fnk=",
 			"path": "github.com/yuin/gopher-lua",
 			"revision": "478861c8ce6e8c2f16d5984d5ed30c4327c70437",
 			"revisionTime": "2017-12-29T01:25:08Z"
+		},
+		{
+			"checksumSHA1": "yNGEI9BMDbGwabUnaHvV9ZZm/a0=",
+			"path": "github.com/yuin/gopher-lua/ast",
+			"revision": "7d7bc8747e3f614c5c587729a341fe7d8903cdb8",
+			"revisionTime": "2018-01-22T00:52:51Z"
+		},
+		{
+			"checksumSHA1": "tvgTwUPQPLSmdytjLH0ah9XxiA0=",
+			"path": "github.com/yuin/gopher-lua/parse",
+			"revision": "7d7bc8747e3f614c5c587729a341fe7d8903cdb8",
+			"revisionTime": "2018-01-22T00:52:51Z"
+		},
+		{
+			"checksumSHA1": "HjgsWY3i3eO1EueP3EbP+K5gOxc=",
+			"path": "github.com/yuin/gopher-lua/pm",
+			"revision": "7d7bc8747e3f614c5c587729a341fe7d8903cdb8",
+			"revisionTime": "2018-01-22T00:52:51Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"
