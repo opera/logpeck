@@ -49,6 +49,7 @@ We can also control collection tasks with RESTful API. [See more](doc/restful.md
  * [boltdb/bolt](https://github.com/boltdb/bolt): local storage
  * [go-zoo/bone](https://github.com/go-zoo/bone): http multiplexer
  * [hpcloud/tail](https://github.com/hpcloud/tail): watching log file
+ * [Shopify/sarama](https://github.com/Shopify/sarama): kafka client
  
  Saulte to all these excellent projects.
  
