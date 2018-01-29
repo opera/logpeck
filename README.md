@@ -37,7 +37,7 @@ We can also control collection tasks with RESTful API. [See more](doc/restful.md
 
 ## Documentation
 
- * [Peck Task Configuration](doc/task_config.md)
+ * [Task Configuration](doc/task_config.md)
  * [Frequently Asked Questions](doc/FAQ.md)
  
 ## Dependencies
