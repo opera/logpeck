@@ -7,11 +7,11 @@ import (
 )
 
 type PeckTaskConfig struct {
-	Name             string
-	LogPath          string
-	ExtractorConfig  ExtractorConfig
-	SenderConfig     SenderConfig
-	AggregatorConfig AggregatorConfig
+	Name       string
+	LogPath    string
+	Extractor  ExtractorConfig
+	Sender     SenderConfig
+	Aggregator AggregatorConfig
 
 	Keywords string
 	Test     TestModule
@@ -22,9 +22,14 @@ type PeckField struct {
 	Value string
 }
 
+type ExtractorConfig struct {
+	Name   string
+	Config interface{}
+}
+
 type SenderConfig struct {
-	SenderName string
-	Config     interface{}
+	Name   string
+	Config interface{}
 }
 
 type PeckTaskStat struct {
@@ -114,27 +119,27 @@ func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	}
 
 	// Parse "ExtractorConfig", optional
-	eConfStr, ok := GetMarshalString(j, "ExtractorConfig")
+	eConfStr, ok := GetMarshalString(j, "Extractor")
 	if ok {
-		p.ExtractorConfig, e = NewExtractorConfig(eConfStr)
+		p.Extractor, e = NewExtractorConfig(eConfStr)
 		if e != nil {
 			return e
 		}
 	}
 
 	// Parse "SenderConfig", optional
-	p.SenderConfig, e = GetSenderConfig(j)
+	p.Sender, e = GetSenderConfig(j)
 	if e != nil {
 		return e
 	}
 
 	//Parse "aggregatorConfig", optional
-	aggregatorConfig := j.Get("AggregatorConfig")
+	aggregatorConfig := j.Get("Aggregator")
 	jbyte, e := aggregatorConfig.MarshalJSON()
 	if e != nil {
 		return e
 	}
-	e = json.Unmarshal(jbyte, &p.AggregatorConfig)
+	e = json.Unmarshal(jbyte, &p.Aggregator)
 	if e != nil {
 		return e
 	}

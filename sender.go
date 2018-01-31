@@ -6,6 +6,12 @@ import (
 	sjson "github.com/bitly/go-simplejson"
 )
 
+const (
+	SenderTypeES       = "ElasticSearch"
+	SenderTypeKafka    = "Kafka"
+	SenderTypeInfluxDb = "InfluxDb"
+)
+
 type Sender interface {
 	Send(map[string]interface{})
 	Start() error
@@ -13,11 +19,11 @@ type Sender interface {
 }
 
 func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
-	cJson := j.Get("SenderConfig")
+	cJson := j.Get("Sender")
 	if cJson.Interface() == nil {
 		return senderConfig, nil
 	}
-	senderConfig.SenderName, err = cJson.Get("SenderName").String()
+	senderConfig.Name, err = cJson.Get("Name").String()
 	if err != nil {
 		log.Infof("[GetSenderConfig]err: %v", err)
 		return senderConfig, err
@@ -31,30 +37,30 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 		return senderConfig, err
 	}
 
-	switch senderConfig.SenderName {
-	case "ElasticsearchConfig":
+	switch senderConfig.Name {
+	case SenderTypeES:
 		senderConfig.Config, err = NewElasticSearchSenderConfig(jbyte)
-	case "InfluxDbConfig":
+	case SenderTypeInfluxDb:
 		senderConfig.Config, err = NewInfluxDbSenderConfig(jbyte)
-	case "KafkaConfig":
+	case SenderTypeKafka:
 		senderConfig.Config, err = NewKafkaSenderConfig(jbyte)
 	default:
-		err = errors.New("[GetSenderConfig]sender name error: " + senderConfig.SenderName)
+		err = errors.New("[GetSenderConfig]sender name error: " + senderConfig.Name)
 	}
 
 	return senderConfig, err
 }
 
 func NewSender(senderConfig *SenderConfig) (sender Sender, err error) {
-	switch senderConfig.SenderName {
-	case "ElasticsearchConfig":
+	switch senderConfig.Name {
+	case SenderTypeES:
 		sender, err = NewElasticSearchSender(senderConfig)
-	case "InfluxDbConfig":
+	case SenderTypeInfluxDb:
 		sender, err = NewInfluxDbSender(senderConfig)
-	case "KafkaConfig":
+	case SenderTypeKafka:
 		sender, err = NewKafkaSender(senderConfig)
 	default:
-		err = errors.New("[NewSender]sender name error: " + senderConfig.SenderName)
+		err = errors.New("[NewSender]sender name error: " + senderConfig.Name)
 	}
 	return sender, err
 }
