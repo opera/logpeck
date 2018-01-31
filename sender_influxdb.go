@@ -16,8 +16,8 @@ import (
 )
 
 type InfluxDbConfig struct {
-	Hosts  string `json:"Hosts"`
-	DBName string `json:"DBName"`
+	Hosts    string `json:"Hosts"`
+	Database string `json:"Database"`
 }
 
 type InfluxDbSender struct {
@@ -90,7 +90,7 @@ func (p *InfluxDbSender) Send(fields map[string]interface{}) {
 	lines := p.toInfluxdbLine(fields)
 	raw_data := []byte(lines)
 	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
-	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.DBName
+	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.Database
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
 		log.Infof("[InfluxDbSender.Sender] Post error, err[%s]", err)
