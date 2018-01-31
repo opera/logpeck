@@ -124,14 +124,14 @@ func TestConfigsAccess(*testing.T) {
 		Type:  "testType",
 	}
 	esconfig := SenderConfig{
-		SenderName: "ElasticsearchConfig",
-		Config:     ESConfig,
+		Name:   "ElasticSearch",
+		Config: ESConfig,
 	}
 	config := PeckTaskConfig{
-		Name:         name,
-		LogPath:      logPath,
-		Keywords:     filterExpr,
-		SenderConfig: esconfig,
+		Name:     name,
+		LogPath:  logPath,
+		Keywords: filterExpr,
+		Sender:   esconfig,
 	}
 
 	defer LogExecTime(time.Now(), "config access")
