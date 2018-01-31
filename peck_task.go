@@ -26,17 +26,17 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	} else {
 		stat = s
 	}
-	extractor, err := NewExtractor(config.ExtractorConfig)
+	extractor, err := NewExtractor(config.Extractor)
 	if err != nil {
 		return nil, err
 	}
 	filter := NewPeckFilter(config.Keywords)
 	//var sender Sender
-	sender, err := NewSender(&config.SenderConfig)
+	sender, err := NewSender(&config.Sender)
 	if err != nil {
 		return nil, err
 	}
-	aggregator := NewAggregator(&config.AggregatorConfig)
+	aggregator := NewAggregator(&config.Aggregator)
 	task := &PeckTask{
 		Config:     *config,
 		Stat:       *stat,

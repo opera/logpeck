@@ -13,8 +13,8 @@ func TestGetIndexName(*testing.T) {
 			Type:  "hello",
 		}
 		config := SenderConfig{
-			SenderName: "ElasticsearchConfig",
-			Config:     ESConfig,
+			Name:   "ElasticSearch",
+			Config: ESConfig,
 		}
 		sender, err := NewSender(&config)
 		if err != nil {
@@ -34,8 +34,8 @@ func TestGetIndexName(*testing.T) {
 			Type:  "hello",
 		}
 		config := SenderConfig{
-			SenderName: "ElasticsearchConfig",
-			Config:     ESConfig,
+			Name:   "ElasticSearch",
+			Config: ESConfig,
 		}
 		sender, err := NewSender(&config)
 		if err != nil {

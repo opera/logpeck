@@ -1,0 +1,47 @@
+{
+  "Name": "PerfLog",
+  "LogPath": "/data01/app/log",
+  "Extractor": {
+    "Name": "Text",
+    "Config": {
+      "Delimiters": "",
+      "Fields": [
+        {
+          "Name": "req_len",
+          "Value": "$15"
+        },
+        {
+          "Name": "article_cnt",
+          "Value": "$17"
+        }
+      ]
+    }
+  },
+  "Sender": {
+    "Name": "InfluxDb",
+    "Config": {
+      "Hosts": "127.0.0.1:8086",
+      "Database": "db"
+    }
+  },
+  "Aggregator": {
+    "Enable": true,
+    "Interval": 30,
+    "Options": [
+      {
+        "PreMeasurment": "test_aggr",
+        "Measurment": "module",
+        "Target": "cost",
+        "Tags": [
+          "upstream"
+        ],
+        "Aggregations": [
+          "avg",
+          "p99"
+        ],
+        "Timestamp": "timestamp"
+      }
+    ]
+  },
+  "Keywords": "Influxdb"
+}

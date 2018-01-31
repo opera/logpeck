@@ -8,7 +8,7 @@ import (
 
 func TestExtractor(*testing.T) {
 	confStr := `{ 
-		"Name":"lua",
+		"Name":"Lua",
 		"Config":{
 			"LuaString":"function conv(s) local ret = {} ret['haha'] = string.sub(s, 2, -2) return ret end" }
 		}
