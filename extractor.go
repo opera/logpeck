@@ -4,12 +4,13 @@ import (
 	"errors"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
+	"strings"
 )
 
 const (
-	ExTypeLua  = "Lua"
-	ExTypeJson = "Json"
-	ExTypeText = "Text"
+	ExTypeLua  = "lua"
+	ExTypeJson = "json"
+	ExTypeText = "text"
 )
 
 type Extractor interface {
@@ -29,7 +30,7 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	if err != nil {
 		return c, err
 	}
-	switch name {
+	switch strings.ToLower(name) {
 	case ExTypeLua:
 		c.Config, err = NewLuaExtractorConfig(jbyte)
 	case ExTypeJson:
@@ -45,7 +46,7 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 }
 
 func NewExtractor(c ExtractorConfig) (e Extractor, err error) {
-	switch c.Name {
+	switch strings.ToLower(c.Name) {
 	case ExTypeLua:
 		e, err = NewLuaExtractor(c.Config)
 	case ExTypeJson:

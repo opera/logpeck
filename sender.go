@@ -4,12 +4,13 @@ import (
 	"errors"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
+	"strings"
 )
 
 const (
-	SenderTypeES       = "ElasticSearch"
-	SenderTypeKafka    = "Kafka"
-	SenderTypeInfluxDb = "InfluxDb"
+	SenderTypeES       = "elasticsearch"
+	SenderTypeKafka    = "kafka"
+	SenderTypeInfluxDb = "influxdb"
 )
 
 type Sender interface {
@@ -37,7 +38,7 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 		return senderConfig, err
 	}
 
-	switch senderConfig.Name {
+	switch strings.ToLower(senderConfig.Name) {
 	case SenderTypeES:
 		senderConfig.Config, err = NewElasticSearchSenderConfig(jbyte)
 	case SenderTypeInfluxDb:
@@ -52,7 +53,7 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 }
 
 func NewSender(senderConfig *SenderConfig) (sender Sender, err error) {
-	switch senderConfig.Name {
+	switch strings.ToLower(senderConfig.Name) {
 	case SenderTypeES:
 		sender, err = NewElasticSearchSender(senderConfig)
 	case SenderTypeInfluxDb:
