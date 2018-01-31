@@ -17,12 +17,12 @@ func TestStartSend(*testing.T) {
 		Target:        "cost",
 		Timestamp:     "time",
 	}
-	var aggregatorOptions []AggregatorOption
-	aggregatorOptions = append(aggregatorOptions, test)
+	var options []AggregatorOption
+	options = append(options, test)
 	aggregatorConfig := AggregatorConfig{
-		Enable:         true,
-		Interval:          int64(30),
-		AggregatorOptions: aggregatorOptions,
+		Enable:   true,
+		Interval: int64(30),
+		Options:  options,
 	}
 	aggregator := NewAggregator(&aggregatorConfig)
 
@@ -45,12 +45,12 @@ func TestRecord(*testing.T) {
 		Target:        "cost",
 		Timestamp:     "time",
 	}
-	var aggregatorOptions []AggregatorOption
-	aggregatorOptions = append(aggregatorOptions, test)
+	var options []AggregatorOption
+	options = append(options, test)
 	aggregatorConfig := AggregatorConfig{
-		Enable:         true,
-		Interval:          int64(30),
-		AggregatorOptions: aggregatorOptions,
+		Enable:   true,
+		Interval: int64(30),
+		Options:  options,
 	}
 	aggregator := NewAggregator(&aggregatorConfig)
 
@@ -82,12 +82,12 @@ func TestDump(*testing.T) {
 		Target:        "cost",
 		Timestamp:     "time",
 	}
-	var aggregatorOptions []AggregatorOption
-	aggregatorOptions = append(aggregatorOptions, test)
+	var options []AggregatorOption
+	options = append(options, test)
 	aggregatorConfig := AggregatorConfig{
-		Enable:         true,
-		Interval:          int64(30),
-		AggregatorOptions: aggregatorOptions,
+		Enable:   true,
+		Interval: int64(30),
+		Options:  options,
 	}
 	aggregator := NewAggregator(&aggregatorConfig)
 
