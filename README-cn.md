@@ -1,84 +1,61 @@
-# Logpeck - 交互式日志采集组件
+# Logpeck - 简洁灵活的日志收集组件
 
 [![Build Status](https://travis-ci.org/opera/logpeck.svg?branch=master)](https://travis-ci.org/opera/logpeck)
 [![Documentation Status](https://img.shields.io/badge/English-Doc-brightgreen.svg)](README.md)
 
-## 主要功能
- * 与[ElasticSearch](https://github.com/elastic/elasticsearch)/[Kibana](https://github.com/elastic/kibana)深度集成，方便使用其强大的存储、检索、可视化等功能
- * 支持普通文本及Json格式日志采集
- * 支持按表达式进行过滤、分段采集
- * 通过HTTP协议对日志收集进行控制和管理，方便集群进行集中管理
- * 可以随时对日志收集任务进行填加、暂停、更新、删除等操作
- * 容易支持Web端管理([logpeck-web](https://github.com/opera/logpeck-web))
+## 功能
+Logpeck尝试用最简洁灵活的方式收集并解析日志文件，将数据推送至不同的存储系统中去（比如[ElasticSearch](https://github.com/elastic/elasticsearch), [Influxdb](https://github.com/influxdata/influxdb), [Kafka](https://github.com/apache/kafka)）。
+
+ * Logpeck通过HTTP API的方式进行任务管理、更新，脱离配置文件。
+ * 支持多种方法解析日志
+  * 按列分隔－－简单有效，节省资源
+  * 内嵌Lua－－功能强大，可处理任意格式日志
+  * Json－－Json格式数据最有效
+ * 方便支持Web UI, 默认提供[logpeck-kibana-plugin](https://github.com/opera/logpeck-kibana-plugin)
+
+## 使用
+
+### 安装与启动
+#### 安装包
+
+ * 仅提供linux，其它系统需自己编译
+ * 下载安装包 [logpeck_0.5.0.deb](https://github.com/opera/resources/blob/master/logpeck/releases/logpeck_0.5.0.deb)
+ * 安装： `sudo dpkg -i logpeck_0.5.0.deb`
+ * 启动： `sudo service logpeck start` (如果支持`supervisor`，可使用 `sudo supervisorctl update`) 
+
+#### 源码编译
+
+ * 下载源代码: [Release page v0.5.0](https://github.com/opera/logpeck/releases/tag/0.5.0)
+ * 编译： `go build cmd/logpeckd/logpeckd.go`
+ * 启动： `./logpeckd -config logpeckd.conf`
+
+### 可视化界面
+
+[**logpeck-kibana-plugin**](https://github.com/opera/logpeck-kibana-plugin) 是默认提供的Logpeck可视化界面，通过此插件可以使用Logpeck的全部功能，并提供任务及集群管理功能，推荐使用。
+
+<p float="left">
+  <img src="https://github.com/opera/resources/blob/master/logpeck/1.png" width="400" />
+  <img src="https://github.com/opera/resources/blob/master/logpeck/2.png" width="400" /> 
+</p>
+
+## 文档
+
+ * [HTTP API协议](doc/task_config.md)
+ * [FAQ](doc/FAQ.md)
  
-## 构建
+## 项目依赖
 
-`go build cmd/logpeckd/logpeckd.go`
-
-## 快速使用
-
-以系统syslog为例进行日志采集。
-
-#### 环境要求
-
-Logpeck需要利用ElasticSearch进行数据存储和检索，使用Logpeck前，先保证有一个可用的ElasticSearch服务，详情[参见](https://github.com/elastic/elasticsearch)。
-
-#### 启动
+ * [BurntSushi/toml](https://github.com/BurntSushi/toml)
+ * [Sirupsen/logrus](https://github.com/Sirupsen/logrus)
+ * [bitly/go-simplejson](https://github.com/bitly/go-simplejson)
+ * [yuin/gopher-lua](https://github.com/yuin/gopher-lua)
+ * [boltdb/bolt](https://github.com/boltdb/bolt)
+ * [go-zoo/bone](https://github.com/go-zoo/bone)
+ * [hpcloud/tail](https://github.com/hpcloud/tail)
+ * [Shopify/sarama](https://github.com/Shopify/sarama)
  
-`./logpeckd -config logpeckd.conf`
+由衷感谢
+ 
+## 讨论
 
-也可以使用`supervisor`或其它管理软件对Logpeck进程进行管理。
-
-#### 日志采集
-
-1. 新增采集任务
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/add -d {
-  	"Name":"SystemLog",
-	"LogPath":"/var/log/syslog",
-	"ESConfig":{
-	  	"Hosts":["127.0.0.1:9200"],
-		"Index":"syslog",
-		"Type":"raw"
-	}
-}
-```
-```
-Add Success
-```
-
-2. 开始采集
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/start -d {
-  	"Name":"SystemLog"
-}
-```
-```
-Start Success
-```
-
-此时应该已经可以将`/var/log/syslog`中新增的日志写入配置好的ElasticSearch中。
-
-3. 暂停采集
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/stop -d {
-  	"Name":"SystemLog"
-}
-```
-
-4. 删除任务
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/remove -d {
-  	"Name":"SystemLog"
-}
-```
-
-5. 列出所有采集任务
-
-```
-curl -XPOST http://127.0.0.1:7117/peck_task/list
-```
+有任何建议或问题, 通过[issue](https://github.com/opera/logpeck/issues/new)反馈。
