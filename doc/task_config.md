@@ -4,20 +4,38 @@ Logpeck use a json string to define a task. A simplest config is as follows.
 
 ```
 {
-    "Name":"HttpServer",
-    "LogPath":"/var/log/http_server/http_server.out.log",
-    "ESConfig":{
-        "Hosts":["172.10.1.1:9200","172.10.1.2:9200","172.10.1.3:9200"],
-        "Index":"http_server-%{+2006.01.02}",
-        "Type":"ErrorLog"
+  "Name": "HttpServer",
+  "LogPath": "/data/log/http_server.log",
+  "Keywords": "Performace",
+  "Sender": {
+    "Name": "Elasticsearch",
+    "Config": {
+      "Index": "http_server",
+      "Type": "perf",
+      "Hosts": [
+        "10.0.0.11:9200",
+        "10.0.0.12:9200",
+        "10.0.0.13:9200"
+      ]
     }
+  },
+  "Extractor": {
+    "Name": "text",
+    "Config": {
+      "Fields": [
+        {
+          "Name": "module",
+          "Value": "$6"
+        },
+        {
+          "Name": "server",
+          "Value": "$7"
+        }
+      ]
+    }
+  }
 }
 ```
-
-## Required Configuration
-
-There are three required field named "Name", "LogPath", "ESConfig". 
-If we only use required configuration, Logpeck will post each line from "LogPath" into ElasticSearch.
 
 #### Name
 
@@ -43,7 +61,7 @@ If the file is not exist, task will still keep pecking. If the file is rotated, 
 
 Choose how to parse log data. "json" and "plain" are valid. Default value is "plain".
 
-#### FilterExpr
+#### Keywords
 
 We can define a filter string to drop useless log.
 
@@ -51,7 +69,7 @@ Filter string use '|' to connect multiple strings.
 
 `error1|error2`
 
-#### Delimiters
+#### Extractor
 
-#### Fields
+#### Sender
 
