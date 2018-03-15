@@ -42,7 +42,7 @@ type AggregatorOption struct {
 
 type Aggregator struct {
 	config   AggregatorConfig
-	buckets  map[string]map[string][]int64
+	buckets  map[string]map[string][]float64
 	postTime int64
 }
 
@@ -50,7 +50,7 @@ func NewAggregator(config *AggregatorConfig) *Aggregator {
 
 	aggregator := &Aggregator{
 		config:   *config,
-		buckets:  make(map[string]map[string][]int64),
+		buckets:  make(map[string]map[string][]float64),
 		postTime: 0,
 	}
 	return aggregator
@@ -128,20 +128,20 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			return now
 		}
 		if _, ok := p.buckets[bucketName]; !ok {
-			p.buckets[bucketName] = make(map[string][]int64)
+			p.buckets[bucketName] = make(map[string][]float64)
 		}
-		aggValueInt, err := strconv.ParseInt(aggValue, 10, 64)
+		aggValueFloat64, err := strconv.ParseFloat(aggValue, 64)
 		if err != nil {
-			log.Debug("[Record] target:%v can't use strconv.ParseInt", aggValue)
-			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], 1)
+			log.Debug("[Record] target:%v can't use strconv.ParseFloat", aggValue)
+			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], -1)
 		} else {
-			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueInt)
+			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueFloat64)
 		}
 	}
 	return now
 }
 
-func quickSort(values []int64, left, right int64) {
+func quickSort(values []float64, left, right int64) {
 	temp := values[left]
 	p := left
 	i, j := left, right
@@ -171,13 +171,13 @@ func quickSort(values []int64, left, right int64) {
 	}
 }
 
-func getAggregation(targetValue []int64, aggregations []string) map[string]int64 {
-	aggregationResults := map[string]int64{}
+func getAggregation(targetValue []float64, aggregations []string) map[string]float64 {
+	aggregationResults := map[string]float64{}
 	cnt := int64(len(targetValue))
-	avg := int64(0)
-	sum := int64(0)
-	min := int64(0)
-	max := int64(0)
+	avg := float64(0)
+	sum := float64(0)
+	min := float64(0)
+	max := float64(0)
 	if cnt > 0 {
 		min = targetValue[0]
 		max = targetValue[0]
@@ -192,11 +192,11 @@ func getAggregation(targetValue []int64, aggregations []string) map[string]int64
 			min = value
 		}
 	}
-	avg = sum / cnt
+	avg = sum / float64(cnt)
 	for i := 0; i < len(aggregations); i++ {
 		switch aggregations[i] {
 		case "cnt":
-			aggregationResults["cnt"] = int64(len(targetValue))
+			aggregationResults["cnt"] = float64(len(targetValue))
 		case "sum":
 			aggregationResults["sum"] = sum
 		case "avg":
@@ -241,7 +241,7 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	}
 	fields["timestamp"] = timestamp
 	p.postTime = getSampleTime(timestamp, p.config.Interval)
-	p.buckets = map[string]map[string][]int64{}
+	p.buckets = map[string]map[string][]float64{}
 	log.Debug("[Dump] fields is : %v", fields)
 	return fields
 }

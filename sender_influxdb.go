@@ -65,10 +65,10 @@ func (p *InfluxDbSender) toInfluxdbLine(fields map[string]interface{}) string {
 		if k == "timestamp" {
 			continue
 		}
-		aggregationResults := v.(map[string]int64)
+		aggregationResults := v.(map[string]float64)
 		line := k + ",host=" + p.host + " "
 		for aggregation, result := range aggregationResults {
-			line += aggregation + "=" + strconv.FormatInt(result, 10) + ","
+			line += aggregation + "=" + strconv.FormatFloat(result, 'f', 3, 64) + ","
 		}
 		length := len(line)
 		line = line[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
