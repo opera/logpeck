@@ -110,6 +110,12 @@
 			"revisionTime": "2018-01-13T15:17:03Z"
 		},
 		{
+			"checksumSHA1": "zPWRjzsPeXCoqmidIcJtHbvrvRs=",
+			"path": "github.com/pierrec/xxHash/xxHash32",
+			"revision": "a0006b13c722f7f12368c00a3d3c2ae8a999a0c6",
+			"revisionTime": "2017-07-14T08:24:55Z"
+		},
+		{
 			"checksumSHA1": "oY/QEEFSa+kRKlgeIIAhCOYbnrE=",
 			"path": "github.com/rcrowley/go-metrics",
 			"revision": "8732c616f52954686704c8645fe1a9d59e9df7c1",

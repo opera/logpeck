@@ -74,7 +74,7 @@ func TestBoltDBAccess(*testing.T) {
 	}
 
 	// test remove
-	log.Printf("remove key[%s] value[%s]\n", key)
+	log.Printf("remove key[%s]\n", key)
 	err = db.remove(configBucket, key)
 	if err != nil {
 		panic(err)
