@@ -102,12 +102,12 @@ func TestDump(*testing.T) {
 	}
 	dump := aggregator.Dump(int64(30))
 	log.Infof("%v", dump)
-	a := dump["Test_getTest_cost,upstream=127.0.0.1"].(map[string]int64)
+	a := dump["Test_getTest_cost,upstream=127.0.0.1"].(map[string]float64)
 	if a["cnt"] != 10 {
 		panic(a)
 	}
-	if a["avg"] != 4 {
-		panic(a)
+	if a["avg"] != 4.5 {
+		log.Panicf("%#v", a)
 	}
 	if a["p99"] != 8 {
 		panic(a)
