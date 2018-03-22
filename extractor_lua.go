@@ -3,8 +3,9 @@ package logpeck
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
-	luajson "github.com/gopher-json"
+	luajson "github.com/layeh/gopher-json"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -44,10 +45,16 @@ func newLuaExtractor(c LuaExtractorConfig) (LuaExtractor, error) {
 	}
 	c.LuaString = "local json = require(\"luajson.json\") " + c.LuaString
 	l.state.PreloadModule("luajson.json", luajson.Loader)
-	if err := l.state.DoString(c.LuaString); err != nil {
-		return l, err
+	{
+		defer func() {
+			if err := recover(); err != nil {
+				log.Info("[newLuaExtractor] error:%v", err)
+			}
+		}()
+		if err := l.state.DoString(c.LuaString); err != nil {
+			return l, err
+		}
 	}
-	log.Info("----------" + c.LuaString)
 	for _, f := range c.Fields {
 		l.fields[f.Name] = true
 	}
@@ -61,8 +68,16 @@ func (le LuaExtractor) Extract(content string) (map[string]interface{}, error) {
 		NRet:    1,
 		Protect: true,
 	}
-	if err := le.state.CallByParam(param, lua.LString(content)); err != nil {
-		return nil, err
+	{
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println(err)
+				log.Info("[LuaExtractor] error:%v", err)
+			}
+		}()
+		if err := le.state.CallByParam(param, lua.LString(content)); err != nil {
+			return nil, err
+		}
 	}
 	lRet := le.state.Get(-1)
 	lT, ok := lRet.(*lua.LTable)
