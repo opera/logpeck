@@ -150,12 +150,6 @@
 			"path": "github.com/yuin/gopher-lua/pm",
 			"revision": "7d7bc8747e3f614c5c587729a341fe7d8903cdb8",
 			"revisionTime": "2018-01-22T00:52:51Z"
-		},
-		{
-			"checksumSHA1": "Q5LjZRE7RBP33Cq5ESd0QsEZZR4=",
-			"path": "golang.org/x/sys/unix",
-			"revision": "03467258950d845cd1877eab69461b98e8c09219",
-			"revisionTime": "2018-01-25T12:54:57Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"

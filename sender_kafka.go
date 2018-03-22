@@ -232,6 +232,11 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 		return
 	}
 	msg.Value = sarama.ByteEncoder(value)
+	defer func(){
+		if err:=recover();err!=nil{
+			log.Info("[KafkaSender]error:%v",err)
+		}
+	}()
 	paritition, offset, err := p.producer.SendMessage(msg)
 	if err != nil {
 		log.Error("Send Message Fail")
