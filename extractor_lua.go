@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	log "github.com/Sirupsen/logrus"
+	luajson "github.com/layeh/gopher-json"
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -41,6 +42,8 @@ func newLuaExtractor(c LuaExtractorConfig) (LuaExtractor, error) {
 		state:  lua.NewState(),
 		fields: make(map[string]bool),
 	}
+	c.LuaString = "local json = require(\"luajson.json\") " + c.LuaString
+	l.state.PreloadModule("luajson.json", luajson.Loader)
 	if err := l.state.DoString(c.LuaString); err != nil {
 		return l, err
 	}

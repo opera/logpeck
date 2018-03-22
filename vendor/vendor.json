@@ -104,6 +104,12 @@
 			"revisionTime": "2017-06-28T07:24:49Z"
 		},
 		{
+			"checksumSHA1": "aqtQUSEbVB3cgeRqLB3FmrIH3F0=",
+			"path": "github.com/layeh/gopher-json",
+			"revision": "1f632b9a4f86b51489c7aa028bc05512f6807785",
+			"revisionTime": "2018-01-23T23:11:45Z"
+		},
+		{
 			"checksumSHA1": "xKzx54LbkghuMauevGWevn5ip3w=",
 			"path": "github.com/pierrec/lz4",
 			"revision": "ed8d4cc3b461464e69798080a0092bd028910298",
