@@ -199,12 +199,12 @@ func (p *KafkaSender) Start() error {
 		config.Producer.Partitioner = sarama.NewRoundRobinPartitioner
 	default:
 		config.Producer.Partitioner = sarama.NewRandomPartitioner
-		log.Debug("[Start]Partitioner：%v is Invalid", p.config.Partitioner)
+		log.Debugf("[Start]Partitioner：%v is Invalid", p.config.Partitioner)
 	}
 
 	producer, err := sarama.NewSyncProducer(p.config.Brokers, config)
 	if err != nil {
-		log.Error("[Start] producer err:%v", err)
+		log.Error("[Start] producer err", err)
 		return err
 	}
 	p.producer = producer
@@ -228,13 +228,13 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 	}
 	value, err := json.Marshal(fields)
 	if err != nil {
-		log.Error("[Send] fields Marshal err:%v", err)
+		log.Error("[Send] fields Marshal err", err)
 		return
 	}
 	msg.Value = sarama.ByteEncoder(value)
-	defer func(){
-		if err:=recover();err!=nil{
-			log.Info("[KafkaSender]error:%v",err)
+	defer func() {
+		if err := recover(); err != nil {
+			log.Info("[KafkaSender]error", err)
 		}
 	}()
 	paritition, offset, err := p.producer.SendMessage(msg)
@@ -242,6 +242,6 @@ func (p *KafkaSender) Send(fields map[string]interface{}) {
 		log.Error("Send Message Fail")
 	}
 
-	log.Debug("[Send]Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
+	log.Debugf("[Send]Partion = %d, offset = %d, value = %v \n", paritition, offset, fields)
 	//p.measurments.MeasurmentRecall(fields)
 }

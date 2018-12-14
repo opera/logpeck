@@ -41,7 +41,7 @@ func (p *Pecker) restorePeckTasks(db *DB) error {
 	for i, config := range configs {
 		stat, _ := p.db.GetStat(config.Name)
 		p.AddPeckTask(&config, stat)
-		log.Infof("[Pecker] Restore PeckTask[%d] : %s", i, config)
+		log.Infof("[Pecker] Restore PeckTask[%d] : %v", i, config)
 	}
 	return nil
 }
@@ -63,7 +63,7 @@ func (p *Pecker) record(config *PeckTaskConfig, stat *PeckTaskStat) {
 func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log.Infof("[Pecker] AddPeckTask %s", *config)
+	log.Info("[Pecker] AddPeckTask", *config)
 	if _, ok := p.nameToPath[config.Name]; ok {
 		return errors.New("Peck task already exist")
 	}
@@ -78,15 +78,15 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	// AddPeckTask must be successful
 	p.logTasks[p.nameToPath[config.Name]].AddPeckTask(task)
 
-	log.Infof("[Pecker] Add PeckTask nameToPath: %v", p.nameToPath)
-	log.Infof("[Pecker] Add PeckTask logTasks: %v", p.logTasks)
+	log.Info("[Pecker] Add PeckTask nameToPath", p.nameToPath)
+	log.Info("[Pecker] Add PeckTask logTasks", p.logTasks)
 	return nil
 }
 
 func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log.Infof("[Pecker] UpdatePeckTask %s", *config)
+	log.Info("[Pecker] UpdatePeckTask", *config)
 	if _, ok := p.nameToPath[config.Name]; !ok {
 		return errors.New("Peck task name not exist")
 	}
@@ -103,8 +103,8 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	if err := p.logTasks[p.nameToPath[config.Name]].UpdatePeckTask(task); err != nil {
 		return err
 	}
-	log.Infof("[Pecker] Update PeckTask nameToPath: %v", p.nameToPath)
-	log.Infof("[Pecker] Update PeckTask logTasks: %v", p.logTasks)
+	log.Info("[Pecker] Update PeckTask nameToPath", p.nameToPath)
+	log.Info("[Pecker] Update PeckTask logTasks", p.logTasks)
 	return nil
 }
 
@@ -121,7 +121,7 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		log.Panicf("%v\n%v\n%v", config.Name, p.nameToPath, p.logTasks)
 	}
 
-	log.Infof("[Pecker] Remove PeckTask try clean db: %s", config)
+	log.Info("[Pecker] Remove PeckTask try clean db", config)
 	err1 := db.RemoveConfig(config.Name)
 	err2 := db.RemoveStat(config.Name)
 	if err1 != nil || err2 != nil {
@@ -136,8 +136,8 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		log_task.Close()
 		delete(p.logTasks, log_path)
 	}
-	log.Infof("[Pecker] Remove PeckTask nameToPath: %v", p.nameToPath)
-	log.Infof("[Pecker] Remove PeckTask logTasks: %v", p.logTasks)
+	log.Info("[Pecker] Remove PeckTask nameToPath", p.nameToPath)
+	log.Info("[Pecker] Remove PeckTask logTasks", p.logTasks)
 	return nil
 }
 
@@ -296,7 +296,7 @@ func (p *Pecker) Start() error {
 		return errors.New("Pecker already started")
 	}
 	for path, logTask := range p.logTasks {
-		log.Infof("[Pecker] Start LogTask %s", path)
+		log.Info("[Pecker] Start LogTask", path)
 		logTask.Start()
 	}
 	return nil
