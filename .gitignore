@@ -1,17 +1,3 @@
-.unittest.db
-logpeck.db
-.test.log
 logpeckd
 logmocker
 logpeckd.log
-.idea/workspace.xml
-.idea/
-logpeck.iml
-haha
-_config.yml
-
-.DS_store
-*/.DS_store
-*/*/.DS_store
-*/*/*/.DS_store
-*/*/*/*/.DS_store
