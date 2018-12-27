@@ -104,7 +104,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		} else {
 			now, err = strconv.ParseInt(timestamp_tmp, 10, 64)
 			if err != nil {
-				log.Debug("[Record] timestamp:%v can't use strconv.ParseInt", timestamp_tmp)
+				log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestamp_tmp)
 				now = time.Now().Unix()
 			}
 		}
@@ -116,7 +116,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		for i := 0; i < len(tags); i++ {
 			tags_tmp, ok := fields[tags[i]].(string)
 			if !ok {
-				log.Debug("[Record] Fields[tag] format error: Fields[tag] must be a string")
+				log.Debugf("[Record] Fields[tag] format error: Fields[tag] must be a string")
 			} else {
 				bucketTag += "," + tags[i] + "=" + tags_tmp
 			}
@@ -132,7 +132,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		}
 		aggValueFloat64, err := strconv.ParseFloat(aggValue, 64)
 		if err != nil {
-			log.Debug("[Record] target:%v can't use strconv.ParseFloat", aggValue)
+			log.Debugf("[Record] target:%v can't use strconv.ParseFloat", aggValue)
 			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], -1)
 		} else {
 			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueFloat64)
@@ -225,7 +225,7 @@ func getAggregation(targetValue []float64, aggregations []string) map[string]flo
 
 func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	fields := map[string]interface{}{}
-	log.Debug("[Dump] bucket is : %v", p.buckets)
+	log.Debug("[Dump] bucket is", p.buckets)
 	//now := strconv.FormatInt(timestamp, 10)
 	for bucketName, bucketTag_value := range p.buckets {
 		aggregations := []string{}
@@ -242,6 +242,6 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	fields["timestamp"] = timestamp
 	p.postTime = getSampleTime(timestamp, p.config.Interval)
 	p.buckets = map[string]map[string][]float64{}
-	log.Debug("[Dump] fields is : %v", fields)
+	log.Debug("[Dump] fields is", fields)
 	return fields
 }
