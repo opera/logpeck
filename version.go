@@ -1,3 +1,3 @@
 package logpeck
 
-const VersionString string = "0.5.0"
+const VersionString string = "0.6.0"
