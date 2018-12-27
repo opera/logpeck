@@ -1,7 +1,7 @@
 Package: logpeck
 Version: LOGPECK_VERSION
 Section: free
-Prioritt: optional
+Priority: optional
 Architecture: amd64
 Maintainer: opera <github.com/opera/logpeck>
 Description: A Simple, RESTful Log Collector
