@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// MockLog .
 type MockLog struct {
 	Path      string
 	IsRunning bool
@@ -17,20 +18,22 @@ type MockLog struct {
 	mu   sync.Mutex
 }
 
+// NewMockLog .
 func NewMockLog(path string) (*MockLog, error) {
-	f, f_err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	if f_err != nil {
-		return nil, f_err
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
 	}
 	return &MockLog{Path: path, IsRunning: false, file: f, stop: false}, nil
 }
 
 func genLog() string {
 	now := time.Now().String()
-	rand_num := rand.Intn(65536)
-	return fmt.Sprintf("%s mocklog %d .\n", now, rand_num)
+	randNum := rand.Intn(65536)
+	return fmt.Sprintf("%s mocklog %d .\n", now, randNum)
 }
 
+// Run .
 func (p *MockLog) Run() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -50,12 +53,14 @@ func (p *MockLog) Run() error {
 	return nil
 }
 
+// Stop .
 func (p *MockLog) Stop() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.stop = true
 }
 
+// Close .
 func (p *MockLog) Close() {
 	p.Stop()
 	p.mu.Lock()

@@ -3,19 +3,21 @@ package logpeck
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/go-zoo/bone"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/go-zoo/bone"
 )
 
 func logRequest(r *http.Request, prefix string) {
-	r_str, _ := httputil.DumpRequest(r, true)
-	log.Infof("[Handler] [%s] req_len[%d] req[%s]", prefix, len(r_str), r_str)
+	str, _ := httputil.DumpRequest(r, true)
+	log.Infof("[Handler] [%s] req_len[%d] req[%s]", prefix, len(str), str)
 }
 
+// NewAddTaskHandler .
 func NewAddTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "AddTaskHandler")
@@ -46,6 +48,7 @@ func NewAddTaskHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
+// NewUpdateTaskHandler .
 func NewUpdateTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "UpdateTaskHandler")
@@ -81,6 +84,7 @@ func NewUpdateTaskHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
+// NewStartTaskHandler .
 func NewStartTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "StartTaskHandler")
@@ -110,6 +114,7 @@ func NewStartTaskHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
+// NewStopTaskHandler .
 func NewStopTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "StopTaskHandler")
@@ -139,6 +144,7 @@ func NewStopTaskHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
+// NewRemoveTaskHandler .
 func NewRemoveTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "RemoveTaskHandler")
@@ -167,6 +173,7 @@ func NewRemoveTaskHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
+// NewListTaskHandler .
 func NewListTaskHandler(pecker *Pecker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "ListTaskHandler")
@@ -198,6 +205,7 @@ func NewListTaskHandler(pecker *Pecker) http.HandlerFunc {
 	}
 }
 
+// NewTestTaskHandler .
 func NewTestTaskHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "TestTaskHandler")
@@ -231,13 +239,14 @@ func NewTestTaskHandler() http.HandlerFunc {
 	}
 }
 
+// NewListPathHandler .
 func NewListPathHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "ListPathHandler")
 
 		path := ""
-		if path_arr := bone.GetQuery(r, "path"); len(path_arr) > 0 {
-			path = path_arr[0]
+		if pathArr := bone.GetQuery(r, "path"); len(pathArr) > 0 {
+			path = pathArr[0]
 		} else {
 			w.WriteHeader(http.StatusNotAcceptable)
 			w.Write([]byte("Need path"))
@@ -250,7 +259,7 @@ func NewListPathHandler() http.HandlerFunc {
 			w.Write([]byte("Path should be absolute"))
 		}
 		dir := path[0 : index+1]
-		file_prefix := path[index+1:]
+		filePrefix := path[index+1:]
 
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
@@ -261,8 +270,8 @@ func NewListPathHandler() http.HandlerFunc {
 
 		var names []string
 		for _, file := range files {
-			if name := file.Name(); strings.HasPrefix(name, file_prefix) {
-				names = append(names, strings.TrimPrefix(name, file_prefix))
+			if name := file.Name(); strings.HasPrefix(name, filePrefix) {
+				names = append(names, strings.TrimPrefix(name, filePrefix))
 				if len(names) >= 20 {
 					break
 				}
@@ -280,6 +289,7 @@ func NewListPathHandler() http.HandlerFunc {
 	}
 }
 
+// NewVersionHandler .
 func NewVersionHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logRequest(r, "VersionHandler")

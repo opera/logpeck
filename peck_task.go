@@ -2,9 +2,11 @@ package logpeck
 
 import (
 	"errors"
+
 	log "github.com/Sirupsen/logrus"
 )
 
+// PeckTask .
 type PeckTask struct {
 	Config PeckTaskConfig
 	Stat   PeckTaskStat
@@ -15,8 +17,9 @@ type PeckTask struct {
 	aggregator *Aggregator
 }
 
+// NewPeckTask .
 func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
-	var config *PeckTaskConfig = c
+	config := c
 	var stat *PeckTaskStat
 	if s == nil {
 		stat = &PeckTaskStat{
@@ -49,6 +52,7 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 	return task, nil
 }
 
+// Start .
 func (p *PeckTask) Start() error {
 	p.Stat.Stop = false
 	if err := p.sender.Start(); err != nil {
@@ -57,6 +61,7 @@ func (p *PeckTask) Start() error {
 	return nil
 }
 
+// Stop .
 func (p *PeckTask) Stop() error {
 	p.Stat.Stop = true
 	if err := p.sender.Stop(); err != nil {
@@ -65,10 +70,12 @@ func (p *PeckTask) Stop() error {
 	return nil
 }
 
+// IsStop .
 func (p *PeckTask) IsStop() bool {
 	return p.Stat.Stop
 }
 
+// Process .
 func (p *PeckTask) Process(content string) {
 	//log.Infof("sender%v",p.sender)
 	if p.Stat.Stop {
@@ -91,6 +98,7 @@ func (p *PeckTask) Process(content string) {
 	}
 }
 
+// ProcessTest .
 func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 	if p.filter.Drop(content) {
 		return map[string]interface{}{}, errors.New("Discarded")

@@ -2,8 +2,9 @@ package logpeck
 
 import (
 	"fmt"
-	lua "github.com/yuin/gopher-lua"
 	"testing"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 func TestExtractor(*testing.T) {
@@ -47,7 +48,7 @@ func TestLuaExtractor(*testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	le, err := newLuaExtractor(config)
+	le, err := NewLuaExtractor(config)
 	if err != nil {
 		panic(err)
 	}
@@ -69,25 +70,25 @@ func TestLuaExtractor(*testing.T) {
 }
 
 func TestLua(*testing.T) {
-	lua_str := `
+	luaStr := `
 		function conv(s)
 		  local ret = {}
 			ret["haha"] = string.sub(s, 2, -2)
 			return ret
     end`
 
-	test_str := `12345678`
+	testStr := `12345678`
 
 	L := lua.NewState()
 	defer L.Close()
-	if err := L.DoString(lua_str); err != nil {
+	if err := L.DoString(luaStr); err != nil {
 		panic(err)
 	}
 	if err := L.CallByParam(lua.P{
 		Fn:      L.GetGlobal("conv"),
 		NRet:    1,
 		Protect: true,
-	}, lua.LString(test_str)); err != nil {
+	}, lua.LString(testStr)); err != nil {
 		panic(err)
 	}
 	ret := L.Get(-1).(*lua.LTable)

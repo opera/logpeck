@@ -3,20 +3,24 @@ package logpeck
 import (
 	"encoding/json"
 	"errors"
-	log "github.com/Sirupsen/logrus"
 	"strconv"
+
+	log "github.com/Sirupsen/logrus"
 )
 
+// TextExtractorConfig .
 type TextExtractorConfig struct {
 	Delimiters string
 	Fields     []PeckField
 }
 
+// TextExtractor .
 type TextExtractor struct {
 	config *TextExtractorConfig
 	fields map[string]int
 }
 
+// NewTextExtractorConfig .
 func NewTextExtractorConfig(configStr []byte) (TextExtractorConfig, error) {
 	c := TextExtractorConfig{}
 	err := json.Unmarshal(configStr, &c)
@@ -26,6 +30,7 @@ func NewTextExtractorConfig(configStr []byte) (TextExtractorConfig, error) {
 	return c, nil
 }
 
+// NewTextExtractor .
 func NewTextExtractor(config interface{}) (TextExtractor, error) {
 	c, ok := config.(TextExtractorConfig)
 	e := TextExtractor{
@@ -50,6 +55,7 @@ func NewTextExtractor(config interface{}) (TextExtractor, error) {
 	return e, nil
 }
 
+// Extract .
 func (te TextExtractor) Extract(content string) (map[string]interface{}, error) {
 	if len(te.fields) == 0 {
 		return map[string]interface{}{"_Log": content}, nil
@@ -65,5 +71,6 @@ func (te TextExtractor) Extract(content string) (map[string]interface{}, error) 
 	return fields, nil
 }
 
+// Close .
 func (te TextExtractor) Close() {
 }

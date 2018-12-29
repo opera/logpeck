@@ -3,23 +3,27 @@ package logpeck
 import (
 	"encoding/json"
 	"errors"
+
 	log "github.com/Sirupsen/logrus"
 	luajson "github.com/layeh/gopher-json"
 	lua "github.com/yuin/gopher-lua"
 )
 
+// LuaExtractorConfig .
 type LuaExtractorConfig struct {
 	LuaString string
 	Fields    []PeckField
 }
 
+// LuaExtractor .
 type LuaExtractor struct {
 	state  *lua.LState
 	fields map[string]bool
 }
 
-var LuaExtractorFuncName string = "extract"
+var luaExtractorFuncName = "extract"
 
+// NewLuaExtractorConfig .
 func NewLuaExtractorConfig(configStr []byte) (LuaExtractorConfig, error) {
 	c := LuaExtractorConfig{}
 	err := json.Unmarshal(configStr, &c)
@@ -29,15 +33,13 @@ func NewLuaExtractorConfig(configStr []byte) (LuaExtractorConfig, error) {
 	return c, nil
 }
 
+// NewLuaExtractor .
 func NewLuaExtractor(config interface{}) (LuaExtractor, error) {
 	c, ok := config.(LuaExtractorConfig)
 	if !ok {
 		return LuaExtractor{}, errors.New("LuaExtractor config error")
 	}
-	return newLuaExtractor(c)
-}
 
-func newLuaExtractor(c LuaExtractorConfig) (LuaExtractor, error) {
 	l := LuaExtractor{
 		state:  lua.NewState(),
 		fields: make(map[string]bool),
@@ -54,9 +56,10 @@ func newLuaExtractor(c LuaExtractorConfig) (LuaExtractor, error) {
 	return l, nil
 }
 
+// Extract .
 func (le LuaExtractor) Extract(content string) (map[string]interface{}, error) {
 	param := lua.P{
-		Fn:      le.state.GetGlobal(LuaExtractorFuncName),
+		Fn:      le.state.GetGlobal(luaExtractorFuncName),
 		NRet:    1,
 		Protect: true,
 	}
@@ -82,11 +85,11 @@ func (le LuaExtractor) Extract(content string) (map[string]interface{}, error) {
 	})
 	if !enable {
 		return map[string]interface{}{}, errors.New(key + " is not in Fields")
-	} else {
-		return ret, nil
 	}
+	return ret, nil
 }
 
+// Close .
 func (le LuaExtractor) Close() {
 	le.state.Close()
 }

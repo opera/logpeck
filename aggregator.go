@@ -1,36 +1,20 @@
 package logpeck
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"strconv"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
-var FormatTime map[string]string = map[string]string{
-	"ANSIC":       "Mon Jan _2 15:04:05 2006",
-	"UnixDate":    "Mon Jan _2 15:04:05 MST 2006",
-	"RubyDate":    "Mon Jan 02 15:04:05 -0700 2006",
-	"RFC822":      "02 Jan 06 15:04 MST",
-	"RFC822Z":     "02 Jan 06 15:04 -0700", // RFC822 with numeric zone
-	"RFC850":      "Monday, 02-Jan-06 15:04:05 MST",
-	"RFC1123":     "Mon, 02 Jan 2006 15:04:05 MST",
-	"RFC1123Z":    "Mon, 02 Jan 2006 15:04:05 -0700", // RFC1123 with numeric zone
-	"RFC3339":     "2006-01-02T15:04:05Z07:00",
-	"RFC3339Nano": "2006-01-02T15:04:05.999999999Z07:00",
-	"Kitchen":     "3:04PM",
-	// Handy time stamps.
-	"Stamp":      "Jan _2 15:04:05",
-	"StampMilli": "Jan _2 15:04:05.000",
-	"StampMicro": "Jan _2 15:04:05.000000",
-	"StampNano":  "Jan _2 15:04:05.000000000",
-}
-
+// AggregatorConfig .
 type AggregatorConfig struct {
-	Enable   bool               `json:Enable`
+	Enable   bool               `json:"Enable"`
 	Interval int64              `json:"Interval"`
 	Options  []AggregatorOption `json:"Options"`
 }
 
+// AggregatorOption .
 type AggregatorOption struct {
 	PreMeasurment string   `json:"PreMeasurment"`
 	Measurment    string   `json:"Measurment"`
@@ -40,14 +24,15 @@ type AggregatorOption struct {
 	Timestamp     string   `json:"Timestamp"`
 }
 
+// Aggregator .
 type Aggregator struct {
 	config   AggregatorConfig
 	buckets  map[string]map[string][]float64
 	postTime int64
 }
 
+// NewAggregator create aggregator
 func NewAggregator(config *AggregatorConfig) *Aggregator {
-
 	aggregator := &Aggregator{
 		config:   *config,
 		buckets:  make(map[string]map[string][]float64),
@@ -60,10 +45,12 @@ func getSampleTime(ts int64, interval int64) int64 {
 	return ts / interval
 }
 
+// IsEnable return true if enable
 func (p *Aggregator) IsEnable() bool {
 	return p.config.Enable
 }
 
+// IsDeadline return true if reaching config.Interval
 func (p *Aggregator) IsDeadline(timestamp int64) bool {
 	interval := p.config.Interval
 	nowTime := getSampleTime(timestamp, interval)
@@ -73,6 +60,7 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 	return false
 }
 
+// Record fields
 func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 	var now int64
 	for i := 0; i < len(p.config.Options); i++ {
@@ -98,13 +86,13 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 
 		//get time
 		var err error
-		timestamp_tmp, ok := fields[timestamp].(string)
+		timestampTmp, ok := fields[timestamp].(string)
 		if !ok {
 			now = time.Now().Unix()
 		} else {
-			now, err = strconv.ParseInt(timestamp_tmp, 10, 64)
+			now, err = strconv.ParseInt(timestampTmp, 10, 64)
 			if err != nil {
-				log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestamp_tmp)
+				log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestampTmp)
 				now = time.Now().Unix()
 			}
 		}
@@ -114,11 +102,11 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			return time.Now().Unix()
 		}
 		for i := 0; i < len(tags); i++ {
-			tags_tmp, ok := fields[tags[i]].(string)
+			tagsTmp, ok := fields[tags[i]].(string)
 			if !ok {
 				log.Debugf("[Record] Fields[tag] format error: Fields[tag] must be a string")
 			} else {
-				bucketTag += "," + tags[i] + "=" + tags_tmp
+				bucketTag += "," + tags[i] + "=" + tagsTmp
 			}
 		}
 
@@ -223,11 +211,12 @@ func getAggregation(targetValue []float64, aggregations []string) map[string]flo
 	return aggregationResults
 }
 
+// Dump aggregation result
 func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 	fields := map[string]interface{}{}
 	log.Debug("[Dump] bucket is", p.buckets)
 	//now := strconv.FormatInt(timestamp, 10)
-	for bucketName, bucketTag_value := range p.buckets {
+	for bucketName, bucketTagValue := range p.buckets {
 		aggregations := []string{}
 		for i := 0; i < len(p.config.Options); i++ {
 			if p.config.Options[i].PreMeasurment+"_"+p.config.Options[i].Measurment+"_"+p.config.Options[i].Target == bucketName {
@@ -235,7 +224,7 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 				break
 			}
 		}
-		for bucketTag, targetValue := range bucketTag_value {
+		for bucketTag, targetValue := range bucketTagValue {
 			fields[bucketTag] = getAggregation(targetValue, aggregations)
 		}
 	}

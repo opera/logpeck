@@ -1,3 +1,5 @@
 logpeckd
 logmocker
 logpeckd.log
+.test.log
+.unittest.db

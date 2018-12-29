@@ -2,22 +2,25 @@ package logpeck
 
 import (
 	"errors"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
-	"strings"
 )
 
 const (
-	ExTypeLua  = "lua"
-	ExTypeJson = "json"
-	ExTypeText = "text"
+	exTypeLua  = "lua"
+	exTypeJson = "json"
+	exTypeText = "text"
 )
 
+// Extractor .
 type Extractor interface {
 	Extract(content string) (map[string]interface{}, error)
 	Close()
 }
 
+// NewExtractorConfig .
 func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	c := ExtractorConfig{}
 	j, err := sjson.NewJson([]byte(configStr))
@@ -31,11 +34,11 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 		return c, err
 	}
 	switch strings.ToLower(name) {
-	case ExTypeLua:
+	case exTypeLua:
 		c.Config, err = NewLuaExtractorConfig(jbyte)
-	case ExTypeJson:
+	case exTypeJson:
 		c.Config, err = NewJsonExtractorConfig(jbyte)
-	case ExTypeText:
+	case exTypeText:
 		c.Config, err = NewTextExtractorConfig(jbyte)
 	default:
 		err = errors.New("extractor name error: " + c.Name)
@@ -45,13 +48,14 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	return c, err
 }
 
+// NewExtractor .
 func NewExtractor(c ExtractorConfig) (e Extractor, err error) {
 	switch strings.ToLower(c.Name) {
-	case ExTypeLua:
+	case exTypeLua:
 		e, err = NewLuaExtractor(c.Config)
-	case ExTypeJson:
+	case exTypeJson:
 		e, err = NewJsonExtractor(c.Config)
-	case ExTypeText:
+	case exTypeText:
 		e, err = NewTextExtractor(c.Config)
 	default:
 		err = errors.New("extractor name error: " + c.Name)

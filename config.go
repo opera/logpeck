@@ -2,11 +2,13 @@ package logpeck
 
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"os"
+
+	"github.com/BurntSushi/toml"
 )
 
-type LogPeckConfig struct {
+// LPConfig .
+type LPConfig struct {
 	Port          int32         `toml:"port"`
 	LogLevel      string        `toml:"log_level"`
 	MaxTaskNum    int32         `toml:"max_task_num"`
@@ -14,15 +16,18 @@ type LogPeckConfig struct {
 	PeckTaskLimit PeckTaskLimit `toml:"peck_task_limit"`
 }
 
+// PeckTaskLimit .
 type PeckTaskLimit struct {
 	MaxLinesPerSec int64 `toml:"max_lines_per_sec"`
 	MaxBytesPerSec int64 `toml:"max_bytes_per_sec"`
 }
 
-var Config LogPeckConfig
+// Config global variable
+var Config LPConfig
 
+// InitConfig init Config
 func InitConfig(file *string) bool {
-	Config = LogPeckConfig{
+	Config = LPConfig{
 		Port:         7117,
 		MaxTaskNum:   16,
 		DatabaseFile: "logpeck.db",

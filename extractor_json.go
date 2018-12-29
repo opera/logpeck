@@ -4,19 +4,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
 )
 
+// JsonExtractorConfig .
 type JsonExtractorConfig struct {
 	Fields []PeckField
 }
 
+// JsonExtractor .
 type JsonExtractor struct {
 	config *JsonExtractorConfig
 	fields map[string]bool
 }
 
+// NewJsonExtractorConfig .
 func NewJsonExtractorConfig(configStr []byte) (JsonExtractorConfig, error) {
 	c := JsonExtractorConfig{}
 	err := json.Unmarshal(configStr, &c)
@@ -26,6 +30,7 @@ func NewJsonExtractorConfig(configStr []byte) (JsonExtractorConfig, error) {
 	return c, nil
 }
 
+// NewJsonExtractor .
 func NewJsonExtractor(config interface{}) (JsonExtractor, error) {
 	c, ok := config.(JsonExtractorConfig)
 	if !ok {
@@ -42,6 +47,7 @@ func NewJsonExtractor(config interface{}) (JsonExtractor, error) {
 	return e, nil
 }
 
+// Extract .
 func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) {
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
@@ -55,7 +61,7 @@ func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) 
 	if len(je.fields) == 0 {
 		return map[string]interface{}{"_Log": content}, nil
 	}
-	for field, _ := range je.fields {
+	for field := range je.fields {
 		key := SplitString(field, ".")
 		value := ""
 		length := len(key)
@@ -78,5 +84,6 @@ func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) 
 	return fields, nil
 }
 
+// Close .
 func (je JsonExtractor) Close() {
 }

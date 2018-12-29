@@ -4,15 +4,17 @@ import (
 	"strings"
 )
 
+// PeckFilter .
 type PeckFilter struct {
-	incl      []string
-	excl      []string
-	have_incl bool
-	have_excl bool
+	incl     []string
+	excl     []string
+	haveIncl bool
+	haveExcl bool
 }
 
+// NewPeckFilter .
 func NewPeckFilter(Keywords string) *PeckFilter {
-	filter := &PeckFilter{have_incl: false, have_excl: false}
+	filter := &PeckFilter{haveIncl: false, haveExcl: false}
 	substrs := strings.Split(Keywords, "|")
 	for _, substr := range substrs {
 		if substr == "" {
@@ -20,15 +22,16 @@ func NewPeckFilter(Keywords string) *PeckFilter {
 		}
 		if substr[0] == '^' {
 			filter.excl = append(filter.excl, substr[1:])
-			filter.have_excl = true
+			filter.haveExcl = true
 		} else {
 			filter.incl = append(filter.incl, substr)
-			filter.have_incl = true
+			filter.haveIncl = true
 		}
 	}
 	return filter
 }
 
+// Drop return true if do not need processing
 func (p *PeckFilter) Drop(str string) bool {
 	res := false
 	for _, f := range p.incl {

@@ -3,12 +3,14 @@ package logpeck
 import (
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/hpcloud/tail"
 	"sync"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/hpcloud/tail"
 )
 
+// Pecker .
 type Pecker struct {
 	logTasks   map[string]*LogTask
 	nameToPath map[string]string
@@ -18,6 +20,7 @@ type Pecker struct {
 	stop bool
 }
 
+// NewPecker .
 func NewPecker(db *DB) (*Pecker, error) {
 	pecker := &Pecker{
 		logTasks:   make(map[string]*LogTask),
@@ -60,6 +63,7 @@ func (p *Pecker) record(config *PeckTaskConfig, stat *PeckTaskStat) {
 	}
 }
 
+// AddPeckTask .
 func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -83,6 +87,7 @@ func (p *Pecker) AddPeckTask(config *PeckTaskConfig, stat *PeckTaskStat) error {
 	return nil
 }
 
+// UpdatePeckTask .
 func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -108,6 +113,7 @@ func (p *Pecker) UpdatePeckTask(config *PeckTaskConfig) error {
 	return nil
 }
 
+// RemovePeckTask .
 func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -115,8 +121,8 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		return errors.New("Peck task name not exist")
 	}
 
-	log_path, ok1 := p.nameToPath[config.Name]
-	log_task, ok2 := p.logTasks[log_path]
+	logPath, ok1 := p.nameToPath[config.Name]
+	logTask, ok2 := p.logTasks[logPath]
 	if !ok1 || !ok2 {
 		log.Panicf("%v\n%v\n%v", config.Name, p.nameToPath, p.logTasks)
 	}
@@ -128,19 +134,20 @@ func (p *Pecker) RemovePeckTask(config *PeckTaskConfig) error {
 		panic(err1.Error() + " " + err2.Error())
 	}
 
-	if err := log_task.RemovePeckTask(config); err != nil {
+	if err := logTask.RemovePeckTask(config); err != nil {
 		return err
 	}
 	delete(p.nameToPath, config.Name)
-	if log_task.Empty() {
-		log_task.Close()
-		delete(p.logTasks, log_path)
+	if logTask.Empty() {
+		logTask.Close()
+		delete(p.logTasks, logPath)
 	}
 	log.Info("[Pecker] Remove PeckTask nameToPath", p.nameToPath)
 	log.Info("[Pecker] Remove PeckTask logTasks", p.logTasks)
 	return nil
 }
 
+// ListPeckTask .
 func (p *Pecker) ListPeckTask() ([]PeckTaskConfig, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -150,6 +157,8 @@ func (p *Pecker) ListPeckTask() ([]PeckTaskConfig, error) {
 	}
 	return configs, nil
 }
+
+// ListTaskStats .
 func (p *Pecker) ListTaskStats() ([]PeckTaskStat, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -160,18 +169,19 @@ func (p *Pecker) ListTaskStats() ([]PeckTaskStat, error) {
 	return stats, nil
 }
 
+// StartPeckTask .
 func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	log_path, ok := p.nameToPath[config.Name]
+	logPath, ok := p.nameToPath[config.Name]
 	if !ok {
 		log.Infof("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
 		return fmt.Errorf("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
 	}
 
-	log_task := p.logTasks[log_path]
+	logTask := p.logTasks[logPath]
 
-	if err := log_task.StartPeckTask(config); err != nil {
+	if err := logTask.StartPeckTask(config); err != nil {
 		return err
 	}
 
@@ -188,25 +198,26 @@ func (p *Pecker) StartPeckTask(config *PeckTaskConfig) error {
 		stat.Stop = false
 		err = db.SaveStat(stat)
 	}
-	if log_task.IsStop() {
-		log_task.Start()
+	if logTask.IsStop() {
+		logTask.Start()
 	}
 	return nil
 }
 
+// StopPeckTask .
 func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	log.Infof("[Pecker]Try stop task, Name: %s, Exist: %v", config.Name, p.nameToPath)
-	log_path, ok := p.nameToPath[config.Name]
+	logPath, ok := p.nameToPath[config.Name]
 	if !ok {
 		log.Infof("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
 		return fmt.Errorf("Task not exist, Name: %s, Exist: %v", config.Name, p.nameToPath)
 	}
 
-	log_task := p.logTasks[log_path]
+	logTask := p.logTasks[logPath]
 
-	if err := log_task.StopPeckTask(config); err != nil {
+	if err := logTask.StopPeckTask(config); err != nil {
 		return err
 	}
 
@@ -226,6 +237,7 @@ func (p *Pecker) StopPeckTask(config *PeckTaskConfig) error {
 	return nil
 }
 
+// TestPeckTask .
 func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 	task, err := NewPeckTask(config, nil)
 	if err != nil {
@@ -289,6 +301,7 @@ func TestPeckTask(config *PeckTaskConfig) ([]map[string]interface{}, error) {
 	return res, nil
 }
 
+// Start .
 func (p *Pecker) Start() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -302,6 +315,7 @@ func (p *Pecker) Start() error {
 	return nil
 }
 
+// GetStat .
 func (p *Pecker) GetStat() *PeckerStat {
 	p.mu.Lock()
 	defer p.mu.Unlock()

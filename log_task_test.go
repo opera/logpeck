@@ -1,10 +1,11 @@
 package logpeck
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/hpcloud/tail"
 	"testing"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/hpcloud/tail"
 )
 
 func TestTailLog(*testing.T) {
@@ -12,14 +13,14 @@ func TestTailLog(*testing.T) {
 	logName := ".test.log"
 
 	// Mock a user log
-	mock_log, m_err := NewMockLog(logName)
-	if m_err != nil {
-		panic(m_err)
+	mockLog, err := NewMockLog(logName)
+	if err != nil {
+		panic(err)
 	}
-	defer mock_log.Close()
+	defer mockLog.Close()
 	go func() {
 		time.Sleep(200 * time.Millisecond)
-		mock_log.Run()
+		mockLog.Run()
 	}()
 
 	conf := tail.Config{ReOpen: true, Poll: true, Follow: true}
@@ -30,7 +31,7 @@ func TestTailLog(*testing.T) {
 		if cnt > 5 {
 			break
 		}
-		cnt += 1
+		cnt++
 		time.Sleep(100 * time.Millisecond)
 	}
 }
