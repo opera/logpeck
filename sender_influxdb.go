@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -13,13 +12,17 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	log "github.com/Sirupsen/logrus"
 )
 
+// InfluxDbConfig .
 type InfluxDbConfig struct {
 	Hosts    string `json:"Hosts"`
 	Database string `json:"Database"`
 }
 
+// InfluxDbSender .
 type InfluxDbSender struct {
 	config        InfluxDbConfig
 	mu            sync.Mutex
@@ -27,6 +30,7 @@ type InfluxDbSender struct {
 	host          string
 }
 
+// NewInfluxDbSenderConfig .
 func NewInfluxDbSenderConfig(jbyte []byte) (InfluxDbConfig, error) {
 	influxDbConfig := InfluxDbConfig{}
 	err := json.Unmarshal(jbyte, &influxDbConfig)
@@ -37,6 +41,7 @@ func NewInfluxDbSenderConfig(jbyte []byte) (InfluxDbConfig, error) {
 	return influxDbConfig, nil
 }
 
+// NewInfluxDbSender .
 func NewInfluxDbSender(senderConfig *SenderConfig) (*InfluxDbSender, error) {
 	sender := InfluxDbSender{}
 	config, ok := senderConfig.Config.(InfluxDbConfig)
@@ -78,25 +83,28 @@ func (p *InfluxDbSender) toInfluxdbLine(fields map[string]interface{}) string {
 	return lines
 }
 
+// Start .
 func (p *InfluxDbSender) Start() error {
 	return nil
 }
 
+// Stop .
 func (p *InfluxDbSender) Stop() error {
 	return nil
 }
 
+// Send .
 func (p *InfluxDbSender) Send(fields map[string]interface{}) {
 	lines := p.toInfluxdbLine(fields)
-	raw_data := []byte(lines)
-	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
+	rawData := []byte(lines)
+	body := ioutil.NopCloser(bytes.NewBuffer(rawData))
 	uri := "http://" + p.config.Hosts + "/write?db=" + p.config.Database
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
 		log.Infof("[InfluxDbSender.Sender] Post error, err[%s]", err)
 	} else {
-		resp_str, _ := httputil.DumpResponse(resp, true)
-		log.Infof("[InfluxDbSender.Sender] Response %s", resp_str)
+		respStr, _ := httputil.DumpResponse(resp, true)
+		log.Infof("[InfluxDbSender.Sender] Response %s", respStr)
 	}
 	//p.measurments.MeasurmentRecall(fields)
 }

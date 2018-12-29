@@ -7,40 +7,44 @@ import (
 	sjson "github.com/bitly/go-simplejson"
 )
 
+// GetString from Json struct
 func GetString(j *sjson.Json, key string, required bool) (string, error) {
-	valJson := j.Get(key)
+	valJ := j.Get(key)
 
-	if valJson.Interface() == nil {
+	if valJ.Interface() == nil {
 		if required {
 			return "", errors.New("Parse error: need field " + key)
 		} else {
 			return "", nil
 		}
 	}
-	return valJson.String()
+	return valJ.String()
 }
 
+// GetStringArray .
 func GetStringArray(j *sjson.Json, key string) ([]string, error) {
-	valJson := j.Get(key)
+	valJ := j.Get(key)
 
-	if valJson.Interface() == nil {
+	if valJ.Interface() == nil {
 		return []string{""}, errors.New("Parse error: need field " + key)
 	}
-	return valJson.StringArray()
+	return valJ.StringArray()
 }
 
+// GetMarshalString .
 func GetMarshalString(j *sjson.Json, name string) (string, bool) {
-	cJson := j.Get(name)
-	if cJson.Interface() == nil {
+	cJ := j.Get(name)
+	if cJ.Interface() == nil {
 		return "", false
 	}
-	jbyte, err := cJson.MarshalJSON()
+	jbyte, err := cJ.MarshalJSON()
 	if err != nil {
 		return "", false
 	}
 	return string(jbyte), true
 }
 
+// Unmarshal .
 func (p *PeckTaskConfig) Unmarshal(jsonStr []byte) (e error) {
 	j, e := sjson.NewJson(jsonStr)
 	if e != nil {

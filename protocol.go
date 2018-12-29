@@ -30,6 +30,7 @@ type PeckField struct {
 	Value string
 }
 
+// PeckTaskStat .
 type PeckTaskStat struct {
 	Name        string
 	LinesPerSec int64
@@ -39,6 +40,7 @@ type PeckTaskStat struct {
 	Stop        bool
 }
 
+// Stat .
 type Stat struct {
 	Name        string
 	LinesPerSec int64
@@ -47,18 +49,21 @@ type Stat struct {
 	BytesTotal  int64
 }
 
+// LogStat .
 type LogStat struct {
 	LogPath         string
 	PeckTaskConfigs []PeckTaskConfig
 	PeckTaskStats   []PeckTaskStat
 }
 
+// PeckerStat .
 type PeckerStat struct {
 	Name     string
 	Stat     Stat
 	LogStats []LogStat
 }
 
+// TestModule .
 type TestModule struct {
 	TestNum int
 	Timeout int

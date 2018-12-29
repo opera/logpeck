@@ -22,7 +22,7 @@ func TestGetIndexName(*testing.T) {
 		}
 		proto := "logpeck"
 		Esender := sender.(*ElasticSearchSender)
-		if proto != Esender.GetIndexName() {
+		if proto != Esender.getIndexName() {
 			//panic(proto)
 		}
 	}
@@ -42,7 +42,7 @@ func TestGetIndexName(*testing.T) {
 			fmt.Printf("New sender error")
 		}
 		Esender := sender.(*ElasticSearchSender)
-		indexName := Esender.GetIndexName()
+		indexName := Esender.getIndexName()
 		fmt.Printf("proto: %s, indexName: %s\n", config.Config.(ElasticSearchConfig).Index, indexName)
 		if len(indexName) != 18 {
 			panic(indexName)

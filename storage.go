@@ -4,21 +4,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/boltdb/bolt"
 	"os"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/boltdb/bolt"
 )
 
 const configBucket string = "config"
 const statBucket string = "stat"
 
+// DB .
 type DB struct {
 	boltdb *bolt.DB
 }
 
 var db *DB
 
+// GetDBHandler .
 func GetDBHandler() *DB {
 	if db == nil {
 		panic("DB not open")
@@ -26,6 +29,7 @@ func GetDBHandler() *DB {
 	return db
 }
 
+// OpenDB .
 func OpenDB(path string) (err error) {
 	boltdb, e := bolt.Open(path, 0600, nil)
 	if e != nil {
@@ -47,6 +51,7 @@ func OpenDB(path string) (err error) {
 	return nil
 }
 
+// Close .
 func (p *DB) Close() error {
 	e := p.boltdb.Close()
 	if e != nil {
@@ -59,6 +64,7 @@ func (p *DB) makeConfigRawKey(logPath, name string) string {
 	return logPath + "#" + name
 }
 
+// SaveConfig .
 func (p *DB) SaveConfig(config *PeckTaskConfig) error {
 	rawValueByte, err := json.Marshal(config)
 	if err != nil {
@@ -71,6 +77,7 @@ func (p *DB) SaveConfig(config *PeckTaskConfig) error {
 	return p.put(configBucket, config.Name, rawValue)
 }
 
+// GetConfig .
 func (p *DB) GetConfig(name string) (*PeckTaskConfig, error) {
 	rawValue := p.get(configBucket, name)
 	if len(rawValue) == 0 {
@@ -85,6 +92,7 @@ func (p *DB) GetConfig(name string) (*PeckTaskConfig, error) {
 	return &result, nil
 }
 
+// RemoveConfig .
 func (p *DB) RemoveConfig(name string) error {
 	err := p.remove(configBucket, name)
 	if err != nil {
@@ -93,6 +101,7 @@ func (p *DB) RemoveConfig(name string) error {
 	return nil
 }
 
+// GetAllConfigs .
 func (p *DB) GetAllConfigs() (configs []PeckTaskConfig, err error) {
 	rawKV, err := p.scan(configBucket)
 	if err != nil {
@@ -122,6 +131,7 @@ func (p *DB) makeStatRawKey(logPath, name string) string {
 	return logPath + "#" + name
 }
 
+// SaveStat .
 func (p *DB) SaveStat(stat *PeckTaskStat) error {
 	rawValueByte, err := json.Marshal(stat)
 	if err != nil {
@@ -132,6 +142,7 @@ func (p *DB) SaveStat(stat *PeckTaskStat) error {
 	return p.put(statBucket, stat.Name, rawValue)
 }
 
+// GetStat .
 func (p *DB) GetStat(name string) (*PeckTaskStat, error) {
 	rawValue := p.get(statBucket, name)
 	if len(rawValue) == 0 {
@@ -146,6 +157,7 @@ func (p *DB) GetStat(name string) (*PeckTaskStat, error) {
 	return &result, nil
 }
 
+// RemoveStat .
 func (p *DB) RemoveStat(name string) error {
 	err := p.remove(statBucket, name)
 	if err != nil {
@@ -154,6 +166,7 @@ func (p *DB) RemoveStat(name string) error {
 	return nil
 }
 
+// GetAllStats .
 func (p *DB) GetAllStats() (stats []PeckTaskStat, err error) {
 	rawKV, err := p.scan(statBucket)
 	if err != nil {

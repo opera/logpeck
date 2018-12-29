@@ -2,18 +2,21 @@ package logpeck
 
 import (
 	"errors"
-	log "github.com/Sirupsen/logrus"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
+// LogExecTime .
 func LogExecTime(start time.Time, prefix string) {
-	elapsed_ms := time.Since(start) / time.Millisecond
-	log.Debugf("Performance: %s cost %d ms.", prefix, elapsed_ms)
+	elapsedMs := time.Since(start) / time.Millisecond
+	log.Debugf("Performance: %s cost %d ms.", prefix, elapsedMs)
 }
 
+// GetHost .
 func GetHost() string {
 	host, err := os.Hostname()
 	if err != nil {
@@ -22,15 +25,17 @@ func GetHost() string {
 	return host
 }
 
+// SelectRandom .
 func SelectRandom(candidates []string) (string, error) {
-	candi_len := len(candidates)
-	if candi_len <= 0 {
+	l := len(candidates)
+	if l <= 0 {
 		return "", errors.New("none candidates")
 	}
-	ret := candidates[rand.Intn(candi_len)]
+	ret := candidates[rand.Intn(l)]
 	return ret, nil
 }
 
+// SplitString .
 func SplitString(content, delims string) []string {
 	if len(delims) == 0 {
 		delims = "\t\r\n "

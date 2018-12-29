@@ -3,14 +3,15 @@ package logpeck
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"log"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
-const kTestDBPath string = ".unittest.db"
+const testDBPath = ".unittest.db"
 
 func CleanTestDB(db *DB) {
 	err := db.boltdb.Update(func(tx *bolt.Tx) error {
@@ -32,7 +33,7 @@ func CleanTestDB(db *DB) {
 
 func TestBoltDBAccess(*testing.T) {
 	defer LogExecTime(time.Now(), "database access")
-	err := OpenDB(kTestDBPath)
+	err := OpenDB(testDBPath)
 	if err != nil {
 		panic(err)
 	}
@@ -49,10 +50,10 @@ func TestBoltDBAccess(*testing.T) {
 	}
 
 	// test get
-	value_get := db.get(configBucket, key)
-	log.Printf("value: %s\n", value_get)
-	if value_get != value {
-		panic(value_get)
+	valueGet := db.get(configBucket, key)
+	log.Printf("value: %s\n", valueGet)
+	if valueGet != value {
+		panic(valueGet)
 	}
 
 	// test scan
@@ -62,9 +63,9 @@ func TestBoltDBAccess(*testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	res, s_err := db.scan(configBucket)
-	if s_err != nil {
-		panic(s_err)
+	res, err := db.scan(configBucket)
+	if err != nil {
+		panic(err)
 	}
 	if len(res) != 2 || res[key] != value {
 		for k, v := range res {
@@ -79,9 +80,9 @@ func TestBoltDBAccess(*testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	value_get = db.get(configBucket, key)
-	if value_get != "" {
-		panic(value_get)
+	valueGet = db.get(configBucket, key)
+	if valueGet != "" {
+		panic(valueGet)
 	}
 }
 
@@ -135,7 +136,7 @@ func TestConfigsAccess(*testing.T) {
 	}
 
 	defer LogExecTime(time.Now(), "config access")
-	err := OpenDB(kTestDBPath)
+	err := OpenDB(testDBPath)
 	if err != nil {
 		panic(err)
 	}
@@ -153,24 +154,24 @@ func TestConfigsAccess(*testing.T) {
 	}
 
 	// Test GetConfig
-	config_get_tmp := &PeckTaskConfig{
+	configGetTmp := &PeckTaskConfig{
 		Name:    name + "-0",
 		LogPath: logPath + "-0",
 	}
-	config_get, e := db.GetConfig(config_get_tmp.Name)
+	configGet, e := db.GetConfig(configGetTmp.Name)
 	if e != nil {
 		panic(e)
 	}
-	if config_get.Name != config_get_tmp.Name ||
-		config_get.LogPath != config_get_tmp.LogPath {
-		fmt.Printf("%s vs %s, %s vs %s\n", config_get.Name, config_get_tmp.Name, config_get.LogPath, config_get_tmp.LogPath)
-		panic(config_get)
+	if configGet.Name != configGetTmp.Name ||
+		configGet.LogPath != configGetTmp.LogPath {
+		fmt.Printf("%s vs %s, %s vs %s\n", configGet.Name, configGetTmp.Name, configGet.LogPath, configGetTmp.LogPath)
+		panic(configGet)
 	}
 
 	// Test GetAllConfigs
-	configs, c_err := db.GetAllConfigs()
-	if c_err != nil {
-		panic(c_err)
+	configs, err := db.GetAllConfigs()
+	if err != nil {
+		panic(err)
 	}
 	if len(configs) != 10 {
 		panic(len(configs))
@@ -193,7 +194,7 @@ func TestConfigsAccess(*testing.T) {
 		}
 	}
 
-	configs, c_err = db.GetAllConfigs()
+	configs, err = db.GetAllConfigs()
 	if len(configs) != 0 {
 		panic(len(configs))
 	}
@@ -208,7 +209,7 @@ func TestStatsAccess(*testing.T) {
 	}
 
 	defer LogExecTime(time.Now(), "stats access")
-	err := OpenDB(kTestDBPath)
+	err := OpenDB(testDBPath)
 	if err != nil {
 		panic(err)
 	}
@@ -225,21 +226,21 @@ func TestStatsAccess(*testing.T) {
 	}
 
 	// Test GetStat
-	stat_get_tmp := &PeckTaskStat{
+	statGetTmp := &PeckTaskStat{
 		Name: name + "-0",
 	}
-	stat_get, e := db.GetStat(stat_get_tmp.Name)
+	statGet, e := db.GetStat(statGetTmp.Name)
 	if e != nil {
 		panic(e)
 	}
-	if stat_get.Name != stat_get_tmp.Name {
-		panic(stat_get)
+	if statGet.Name != statGetTmp.Name {
+		panic(statGet)
 	}
 
 	// Test GetAllStats
-	stats, c_err := db.GetAllStats()
-	if c_err != nil {
-		panic(c_err)
+	stats, err := db.GetAllStats()
+	if err != nil {
+		panic(err)
 	}
 	fmt.Printf("%#v\n", stats)
 	if len(stats) != 10 {
@@ -261,7 +262,7 @@ func TestStatsAccess(*testing.T) {
 		}
 	}
 
-	stats, c_err = db.GetAllStats()
+	stats, err = db.GetAllStats()
 	if len(stats) != 0 {
 		panic(len(stats))
 	}
@@ -277,7 +278,7 @@ func TestConfigCompat(*testing.T) {
 	}
 
 	defer LogExecTime(time.Now(), "config access")
-	err := OpenDB(kTestDBPath)
+	err := OpenDB(testDBPath)
 	if err != nil {
 		panic(err)
 	}
@@ -295,27 +296,27 @@ func TestConfigCompat(*testing.T) {
 	}
 
 	// Test GetAllConfigs
-	configs, c_err := db.GetAllConfigs()
-	if c_err != nil {
-		panic(c_err)
+	configs, err := db.GetAllConfigs()
+	if err != nil {
+		panic(err)
 	}
 	if len(configs) != 10 {
 		panic(len(configs))
 	}
 
 	// Test GetConfig
-	get_tmp := &PeckTaskConfig{
+	getTmp := &PeckTaskConfig{
 		Name:    name + "#0",
 		LogPath: logPath + "-0",
 	}
-	config_get, e := db.GetConfig("0")
+	configGet, e := db.GetConfig("0")
 	if e != nil {
 		panic(e)
 	}
-	if config_get.Name != get_tmp.Name ||
-		config_get.LogPath != get_tmp.LogPath {
-		fmt.Printf("%s %s %s %s\n", config_get.Name, get_tmp.Name, config_get.LogPath, get_tmp.LogPath)
-		panic(config_get)
+	if configGet.Name != getTmp.Name ||
+		configGet.LogPath != getTmp.LogPath {
+		fmt.Printf("%s %s %s %s\n", configGet.Name, getTmp.Name, configGet.LogPath, getTmp.LogPath)
+		panic(configGet)
 	}
 
 }
@@ -328,7 +329,7 @@ func TestStatCompat(*testing.T) {
 	}
 
 	defer LogExecTime(time.Now(), "stats access")
-	err := OpenDB(kTestDBPath)
+	err := OpenDB(testDBPath)
 	if err != nil {
 		panic(err)
 	}
@@ -345,25 +346,25 @@ func TestStatCompat(*testing.T) {
 	}
 
 	// Test GetAllStats
-	stats, c_err := db.GetAllStats()
-	if c_err != nil {
-		panic(c_err)
+	stats, err := db.GetAllStats()
+	if err != nil {
+		panic(err)
 	}
 	if len(stats) != 10 {
 		panic(len(stats))
 	}
 
 	// Test GetStat
-	stat_get_tmp := &PeckTaskStat{
+	statGetTmp := &PeckTaskStat{
 		Name: name + "#0",
 	}
-	stat_get, e := db.GetStat("0")
+	statGet, e := db.GetStat("0")
 	if e != nil {
 		panic(e)
 	}
-	if stat_get.Name != stat_get_tmp.Name {
-		fmt.Printf("%s %s \n", stat_get.Name, stat_get_tmp.Name)
-		panic(stat_get)
+	if statGet.Name != statGetTmp.Name {
+		fmt.Printf("%s %s \n", statGet.Name, statGetTmp.Name)
+		panic(statGet)
 	}
 
 }

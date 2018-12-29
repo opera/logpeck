@@ -2,23 +2,26 @@ package logpeck
 
 import (
 	"errors"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
-	"strings"
 )
 
 const (
-	SenderTypeES       = "elasticsearch"
-	SenderTypeKafka    = "kafka"
-	SenderTypeInfluxDb = "influxdb"
+	senderTypeES       = "elasticsearch"
+	senderTypeKafka    = "kafka"
+	senderTypeInfluxDb = "influxdb"
 )
 
+// Sender .
 type Sender interface {
 	Send(map[string]interface{})
 	Start() error
 	Stop() error
 }
 
+// GetSenderConfig .
 func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 	cJson := j.Get("Sender")
 	if cJson.Interface() == nil {
@@ -39,11 +42,11 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 	}
 
 	switch strings.ToLower(senderConfig.Name) {
-	case SenderTypeES:
+	case senderTypeES:
 		senderConfig.Config, err = NewElasticSearchSenderConfig(jbyte)
-	case SenderTypeInfluxDb:
+	case senderTypeInfluxDb:
 		senderConfig.Config, err = NewInfluxDbSenderConfig(jbyte)
-	case SenderTypeKafka:
+	case senderTypeKafka:
 		senderConfig.Config, err = NewKafkaSenderConfig(jbyte)
 	default:
 		err = errors.New("[GetSenderConfig]sender name error: " + senderConfig.Name)
@@ -52,13 +55,14 @@ func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
 	return senderConfig, err
 }
 
+// NewSender .
 func NewSender(senderConfig *SenderConfig) (sender Sender, err error) {
 	switch strings.ToLower(senderConfig.Name) {
-	case SenderTypeES:
+	case senderTypeES:
 		sender, err = NewElasticSearchSender(senderConfig)
-	case SenderTypeInfluxDb:
+	case senderTypeInfluxDb:
 		sender, err = NewInfluxDbSender(senderConfig)
-	case SenderTypeKafka:
+	case senderTypeKafka:
 		sender, err = NewKafkaSender(senderConfig)
 	default:
 		err = errors.New("[NewSender]sender name error: " + senderConfig.Name)

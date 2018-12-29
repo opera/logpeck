@@ -3,13 +3,15 @@ package logpeck
 import (
 	"encoding/json"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/Shopify/sarama"
 	log "github.com/Sirupsen/logrus"
 	sjson "github.com/bitly/go-simplejson"
-	"sync"
-	"time"
 )
 
+// KafkaConfig .
 type KafkaConfig struct {
 	Brokers []string `json:"Brokers"`
 	Topic   string   `json:"Topic"`
@@ -24,6 +26,7 @@ type KafkaConfig struct {
 	Retry           KafkaRetry              `json:"Retry"`
 }
 
+// KafkaFlush .
 type KafkaFlush struct {
 	Bytes       int           `json:"FlushBytes"`
 	Messages    int           `json:"FlushMessages"`
@@ -31,11 +34,13 @@ type KafkaFlush struct {
 	MaxMessages int           `json:"FlushMaxMessages"`
 }
 
+// KafkaRetry .
 type KafkaRetry struct {
 	Max     int           `json:"RetryMax"`
 	Backoff time.Duration `json:"RetryBackoff"`
 }
 
+// KafkaSender .
 type KafkaSender struct {
 	config        KafkaConfig
 	mu            sync.Mutex
@@ -43,6 +48,7 @@ type KafkaSender struct {
 	producer      sarama.SyncProducer
 }
 
+// NewKafkaSenderConfig .
 func NewKafkaSenderConfig(jbyte []byte) (KafkaConfig, error) {
 	KafkaConfig := KafkaConfig{}
 	err := json.Unmarshal(jbyte, &KafkaConfig)
@@ -53,6 +59,7 @@ func NewKafkaSenderConfig(jbyte []byte) (KafkaConfig, error) {
 	return KafkaConfig, nil
 }
 
+// NewKafkaSender .
 func NewKafkaSender(senderConfig *SenderConfig) (*KafkaSender, error) {
 	sender := KafkaSender{}
 	config, ok := senderConfig.Config.(KafkaConfig)
@@ -64,7 +71,8 @@ func NewKafkaSender(senderConfig *SenderConfig) (*KafkaSender, error) {
 	}
 	return &sender, nil
 }
-func GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
+
+func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 	kafkaConfig.Brokers, e = GetStringArray(cJson, "Brokers")
 	if e != nil {
 		return kafkaConfig, e
@@ -173,6 +181,7 @@ func GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 	return kafkaConfig, nil
 }
 
+// Start .
 func (p *KafkaSender) Start() error {
 	config := sarama.NewConfig()
 
@@ -211,6 +220,7 @@ func (p *KafkaSender) Start() error {
 	return nil
 }
 
+// Stop .
 func (p *KafkaSender) Stop() error {
 	if p.producer == nil {
 		return nil
@@ -220,6 +230,7 @@ func (p *KafkaSender) Stop() error {
 	return nil
 }
 
+// Send .
 func (p *KafkaSender) Send(fields map[string]interface{}) {
 	msg := &sarama.ProducerMessage{
 		Topic:     p.config.Topic,

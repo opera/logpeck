@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
+// ElasticSearchConfig .
 type ElasticSearchConfig struct {
 	Hosts   []string               `json:"Hosts"`
 	Index   string                 `json:"Index"`
@@ -20,12 +22,14 @@ type ElasticSearchConfig struct {
 	Mapping map[string]interface{} `json:"Mapping"`
 }
 
+// ElasticSearchSender .
 type ElasticSearchSender struct {
 	config        ElasticSearchConfig
 	mu            sync.Mutex
 	lastIndexName string
 }
 
+// NewElasticSearchSenderConfig .
 func NewElasticSearchSenderConfig(jbyte []byte) (ElasticSearchConfig, error) {
 	elasticSearchConfig := ElasticSearchConfig{}
 	err := json.Unmarshal(jbyte, &elasticSearchConfig)
@@ -36,6 +40,7 @@ func NewElasticSearchSenderConfig(jbyte []byte) (ElasticSearchConfig, error) {
 	return elasticSearchConfig, nil
 }
 
+// NewElasticSearchSender .
 func NewElasticSearchSender(senderConfig *SenderConfig) (*ElasticSearchSender, error) {
 	sender := ElasticSearchSender{}
 	config, ok := senderConfig.Config.(ElasticSearchConfig)
@@ -48,7 +53,7 @@ func NewElasticSearchSender(senderConfig *SenderConfig) (*ElasticSearchSender, e
 	return &sender, nil
 }
 
-func HttpCall(method, url string, bodyString string) {
+func httpCall(method, url string, bodyString string) {
 	body := ioutil.NopCloser(bytes.NewBuffer([]byte(bodyString)))
 
 	req, err := http.NewRequest(method, url, body)
@@ -60,12 +65,12 @@ func HttpCall(method, url string, bodyString string) {
 	if err != nil {
 		log.Infof("[Sender] Put error, err[%s]", err)
 	} else {
-		resp_str, _ := httputil.DumpResponse(resp, true)
-		log.Infof("[Sender] Response %s", resp_str)
+		respStr, _ := httputil.DumpResponse(resp, true)
+		log.Infof("[Sender] Response %s", respStr)
 	}
 }
 
-func (p *ElasticSearchSender) GetIndexName() (indexName string) {
+func (p *ElasticSearchSender) getIndexName() (indexName string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	prototype := p.config.Index
@@ -82,48 +87,51 @@ func (p *ElasticSearchSender) GetIndexName() (indexName string) {
 
 	if indexName != p.lastIndexName {
 		p.lastIndexName = indexName
-		p.InitMapping()
+		p.initMapping()
 	}
 
 	return indexName
 }
 
-func (p *ElasticSearchSender) InitMapping() error {
+func (p *ElasticSearchSender) initMapping() error {
 	host, err := SelectRandom(p.config.Hosts)
 	if err != nil {
 		return err
 	}
 	uri := "http://" + host + "/" + p.lastIndexName
-	typeUri := uri + "/_mappings/" + p.config.Type
+	typeURI := uri + "/_mappings/" + p.config.Type
 
 	// Try init index mapping
 	// indexMapping := `{"mappings":` + p.config.Mapping + `}`
 	indexMapping := map[string]interface{}{
 		"mappings": p.config.Mapping,
 	}
-	raw_data, err := json.Marshal(indexMapping)
+	rawData, err := json.Marshal(indexMapping)
 	if p.config.Mapping == nil {
-		raw_data = []byte(`{"mappings":{}}`)
+		rawData = []byte(`{"mappings":{}}`)
 	}
-	log.Infof("[Sender] Init ElasticSearch mapping %s %s ", uri, string(raw_data[:]))
-	HttpCall(http.MethodPut, uri, string(raw_data[:]))
+	log.Infof("[Sender] Init ElasticSearch mapping %s %s ", uri, string(rawData[:]))
+	httpCall(http.MethodPut, uri, string(rawData[:]))
 
 	// Try init Timestamp Field mapping
 	propString := `{"properties":{"Timestamp":{"type":"date","format":"epoch_millis"}}}`
 	log.Infof("[Sender] Init ElasticSearch mapping %s %s ", uri, propString)
-	HttpCall(http.MethodPut, typeUri, propString)
+	httpCall(http.MethodPut, typeURI, propString)
 
 	return nil
 }
 
+// Start .
 func (p *ElasticSearchSender) Start() error {
 	return nil
 }
 
+// Stop .
 func (p *ElasticSearchSender) Stop() error {
 	return nil
 }
 
+// Send .
 func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 	defer LogExecTime(time.Now(), "Sender")
 	data := map[string]interface{}{
@@ -133,7 +141,7 @@ func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 	for k, v := range fields {
 		data[k] = v
 	}
-	raw_data, err := json.Marshal(data)
+	rawData, err := json.Marshal(data)
 	if err != nil {
 		panic(err)
 	}
@@ -142,14 +150,14 @@ func (p *ElasticSearchSender) Send(fields map[string]interface{}) {
 		log.Debugf("[Sender] ElasticSearch Host error [%v] ", err)
 		return
 	}
-	uri := "http://" + host + "/" + p.GetIndexName() + "/" + p.config.Type
-	log.Debugf("[Sender] Post ElasticSearch %s content [%s] ", uri, raw_data)
-	body := ioutil.NopCloser(bytes.NewBuffer(raw_data))
+	uri := "http://" + host + "/" + p.getIndexName() + "/" + p.config.Type
+	log.Debugf("[Sender] Post ElasticSearch %s content [%s] ", uri, rawData)
+	body := ioutil.NopCloser(bytes.NewBuffer(rawData))
 	resp, err := http.Post(uri, "application/json", body)
 	if err != nil {
 		log.Infof("[Sender] Post error, err[%s]", err)
 	} else {
-		resp_str, _ := httputil.DumpResponse(resp, true)
-		log.Debugf("[Sender] Response %s", resp_str)
+		respStr, _ := httputil.DumpResponse(resp, true)
+		log.Debugf("[Sender] Response %s", respStr)
 	}
 }
