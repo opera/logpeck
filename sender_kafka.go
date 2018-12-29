@@ -72,27 +72,27 @@ func NewKafkaSender(senderConfig *SenderConfig) (*KafkaSender, error) {
 	return &sender, nil
 }
 
-func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
-	kafkaConfig.Brokers, e = GetStringArray(cJson, "Brokers")
+func _GetKafkaConfig(cJ *sjson.Json) (kafkaConfig KafkaConfig, e error) {
+	kafkaConfig.Brokers, e = GetStringArray(cJ, "Brokers")
 	if e != nil {
 		return kafkaConfig, e
 	}
 
-	kafkaConfig.Topic, e = GetString(cJson, "Topic", true)
+	kafkaConfig.Topic, e = GetString(cJ, "Topic", true)
 	if e != nil {
 		return kafkaConfig, e
 	}
 
-	kafkaConfig.MaxMessageBytes, e = cJson.Get("MaxMessageBytes").Int()
+	kafkaConfig.MaxMessageBytes, e = cJ.Get("MaxMessageBytes").Int()
 	if e != nil {
 		kafkaConfig.MaxMessageBytes = 1000000
 	}
 
-	kafkaJson := cJson.Get("RequiredAcks")
-	if kafkaJson.Interface() == nil {
+	kafkaJ := cJ.Get("RequiredAcks")
+	if kafkaJ.Interface() == nil {
 		kafkaConfig.RequiredAcks = 1
 	} else {
-		kafkaByte, e := kafkaJson.MarshalJSON()
+		kafkaByte, e := kafkaJ.MarshalJSON()
 		if e != nil {
 			return kafkaConfig, e
 		}
@@ -102,11 +102,11 @@ func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 		}
 	}
 
-	kafkaJson = cJson.Get("Timeout")
-	if kafkaJson.Interface() == nil {
+	kafkaJ = cJ.Get("Timeout")
+	if kafkaJ.Interface() == nil {
 		kafkaConfig.Timeout = 10 * time.Second
 	} else {
-		kafkaByte, e := kafkaJson.MarshalJSON()
+		kafkaByte, e := kafkaJ.MarshalJSON()
 		if e != nil {
 			return kafkaConfig, e
 		}
@@ -116,11 +116,11 @@ func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 		}
 	}
 
-	kafkaJson = cJson.Get("Compression")
-	if kafkaJson.Interface() == nil {
+	kafkaJ = cJ.Get("Compression")
+	if kafkaJ.Interface() == nil {
 		kafkaConfig.Compression = 0
 	} else {
-		kafkaByte, e := kafkaJson.MarshalJSON()
+		kafkaByte, e := kafkaJ.MarshalJSON()
 		if e != nil {
 			return kafkaConfig, e
 		}
@@ -130,16 +130,16 @@ func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 		}
 	}
 
-	kafkaConfig.Partitioner, e = GetString(cJson, "Partitioner", true)
+	kafkaConfig.Partitioner, e = GetString(cJ, "Partitioner", true)
 	if e != nil {
 		kafkaConfig.Partitioner = "RandomPartitioner"
 	}
 
-	kafkaJson = cJson.Get("ReturnErrors")
-	if kafkaJson.Interface() == nil {
+	kafkaJ = cJ.Get("ReturnErrors")
+	if kafkaJ.Interface() == nil {
 		kafkaConfig.ReturnErrors = true
 	} else {
-		kafkaByte, e := kafkaJson.MarshalJSON()
+		kafkaByte, e := kafkaJ.MarshalJSON()
 		if e != nil {
 			return kafkaConfig, e
 		}
@@ -149,11 +149,11 @@ func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 		}
 	}
 
-	kafkaJson = cJson.Get("Flush")
-	if kafkaJson.Interface() == nil {
+	kafkaJ = cJ.Get("Flush")
+	if kafkaJ.Interface() == nil {
 
 	} else {
-		kafkaByte, e := kafkaJson.MarshalJSON()
+		kafkaByte, e := kafkaJ.MarshalJSON()
 		if e != nil {
 			return kafkaConfig, e
 		}
@@ -163,12 +163,12 @@ func _GetKafkaConfig(cJson *sjson.Json) (kafkaConfig KafkaConfig, e error) {
 		}
 	}
 
-	kafkaJson = cJson.Get("Retry")
-	if kafkaJson.Interface() == nil {
+	kafkaJ = cJ.Get("Retry")
+	if kafkaJ.Interface() == nil {
 		kafkaConfig.Retry.Max = 3
 		kafkaConfig.Retry.Backoff = 100 * time.Millisecond
 	} else {
-		kafkaByte, e := kafkaJson.MarshalJSON()
+		kafkaByte, e := kafkaJ.MarshalJSON()
 		if e != nil {
 			return kafkaConfig, e
 		}

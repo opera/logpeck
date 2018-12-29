@@ -23,20 +23,20 @@ type Sender interface {
 
 // GetSenderConfig .
 func GetSenderConfig(j *sjson.Json) (senderConfig SenderConfig, err error) {
-	cJson := j.Get("Sender")
-	if cJson.Interface() == nil {
+	cJ := j.Get("Sender")
+	if cJ.Interface() == nil {
 		return senderConfig, nil
 	}
-	senderConfig.Name, err = cJson.Get("Name").String()
+	senderConfig.Name, err = cJ.Get("Name").String()
 	if err != nil {
 		log.Infof("[GetSenderConfig]err: %v", err)
 		return senderConfig, err
 	}
-	cJson = cJson.Get("Config")
-	if cJson.Interface() == nil {
+	cJ = cJ.Get("Config")
+	if cJ.Interface() == nil {
 		return senderConfig, nil
 	}
-	jbyte, err := cJson.MarshalJSON()
+	jbyte, err := cJ.MarshalJSON()
 	if err != nil {
 		return senderConfig, err
 	}

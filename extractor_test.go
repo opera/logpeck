@@ -122,19 +122,19 @@ func TestTextExtractor(*testing.T) {
 	fmt.Printf("[Extract] %#v\n", m)
 }
 
-func TestJsonExtractor(*testing.T) {
+func TestJSONExtractor(*testing.T) {
 	confStr := `{"fields":[{"Name": "k1"},{"Name": "k2.1"},{"Name": "k3.2.3"}]}`
-	config, err := NewJsonExtractorConfig([]byte(confStr))
+	config, err := NewJSONExtractorConfig([]byte(confStr))
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("[NewJsonExtractorConfig] %#v\n", config)
+	fmt.Printf("[NewJSONExtractorConfig] %#v\n", config)
 
-	extractor, err := NewJsonExtractor(config)
+	extractor, err := NewJSONExtractor(config)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("[NewJsonExtractor] %#v\n", extractor)
+	fmt.Printf("[NewJSONExtractor] %#v\n", extractor)
 
 	content := `{
 		"k1":"v1",

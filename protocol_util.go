@@ -14,9 +14,8 @@ func GetString(j *sjson.Json, key string, required bool) (string, error) {
 	if valJ.Interface() == nil {
 		if required {
 			return "", errors.New("Parse error: need field " + key)
-		} else {
-			return "", nil
 		}
+		return "", nil
 	}
 	return valJ.String()
 }

@@ -9,20 +9,20 @@ import (
 	sjson "github.com/bitly/go-simplejson"
 )
 
-// JsonExtractorConfig .
-type JsonExtractorConfig struct {
+// JSONExtractorConfig .
+type JSONExtractorConfig struct {
 	Fields []PeckField
 }
 
-// JsonExtractor .
-type JsonExtractor struct {
-	config *JsonExtractorConfig
+// JSONExtractor .
+type JSONExtractor struct {
+	config *JSONExtractorConfig
 	fields map[string]bool
 }
 
-// NewJsonExtractorConfig .
-func NewJsonExtractorConfig(configStr []byte) (JsonExtractorConfig, error) {
-	c := JsonExtractorConfig{}
+// NewJSONExtractorConfig .
+func NewJSONExtractorConfig(configStr []byte) (JSONExtractorConfig, error) {
+	c := JSONExtractorConfig{}
 	err := json.Unmarshal(configStr, &c)
 	if err != nil {
 		return c, err
@@ -30,25 +30,25 @@ func NewJsonExtractorConfig(configStr []byte) (JsonExtractorConfig, error) {
 	return c, nil
 }
 
-// NewJsonExtractor .
-func NewJsonExtractor(config interface{}) (JsonExtractor, error) {
-	c, ok := config.(JsonExtractorConfig)
+// NewJSONExtractor .
+func NewJSONExtractor(config interface{}) (JSONExtractor, error) {
+	c, ok := config.(JSONExtractorConfig)
 	if !ok {
-		return JsonExtractor{}, errors.New("JsonExtractor config error")
+		return JSONExtractor{}, errors.New("JSONExtractor config error")
 	}
-	e := JsonExtractor{
+	e := JSONExtractor{
 		config: &c,
 		fields: make(map[string]bool),
 	}
 	for _, f := range c.Fields {
 		e.fields[f.Name] = true
 	}
-	log.Infof("[JsonExtractor] Init extractor finished %#v", e)
+	log.Infof("[JSONExtractor] Init extractor finished %#v", e)
 	return e, nil
 }
 
 // Extract .
-func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) {
+func (je JSONExtractor) Extract(content string) (map[string]interface{}, error) {
 	fields := make(map[string]interface{})
 	jContent, err := sjson.NewJson([]byte(content))
 	if err != nil {
@@ -85,5 +85,5 @@ func (je JsonExtractor) Extract(content string) (map[string]interface{}, error) 
 }
 
 // Close .
-func (je JsonExtractor) Close() {
+func (je JSONExtractor) Close() {
 }

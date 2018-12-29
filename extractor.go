@@ -10,7 +10,7 @@ import (
 
 const (
 	exTypeLua  = "lua"
-	exTypeJson = "json"
+	exTypeJSON = "json"
 	exTypeText = "text"
 )
 
@@ -36,8 +36,8 @@ func NewExtractorConfig(configStr string) (ExtractorConfig, error) {
 	switch strings.ToLower(name) {
 	case exTypeLua:
 		c.Config, err = NewLuaExtractorConfig(jbyte)
-	case exTypeJson:
-		c.Config, err = NewJsonExtractorConfig(jbyte)
+	case exTypeJSON:
+		c.Config, err = NewJSONExtractorConfig(jbyte)
 	case exTypeText:
 		c.Config, err = NewTextExtractorConfig(jbyte)
 	default:
@@ -53,8 +53,8 @@ func NewExtractor(c ExtractorConfig) (e Extractor, err error) {
 	switch strings.ToLower(c.Name) {
 	case exTypeLua:
 		e, err = NewLuaExtractor(c.Config)
-	case exTypeJson:
-		e, err = NewJsonExtractor(c.Config)
+	case exTypeJSON:
+		e, err = NewJSONExtractor(c.Config)
 	case exTypeText:
 		e, err = NewTextExtractor(c.Config)
 	default:
