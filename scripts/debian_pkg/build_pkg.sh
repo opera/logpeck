@@ -15,7 +15,7 @@ if [ ! -f $verfile ]; then
 	echo "error: version file not exist: $verfile"
 	exit 1
 fi
-ver=`grep VersionString $verfile | cut -d'"' -f 2`
+ver=`grep "const VersionString" $verfile | cut -d'"' -f 2`
 
 pkg_dir="logpeck_$ver"
 if [ -d $pkg_dir ] || [ -f $pkg_dir ]; then
