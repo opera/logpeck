@@ -78,7 +78,7 @@ func (p *InfluxDbSender) toInfluxdbLine(fields map[string]interface{}) string {
 		length := len(line)
 		line = line[0:length-1] + " " + strconv.FormatInt(timestamp*1000000000, 10) + "\n"
 		lines += line
-		log.Infof("[toInfluxdbLine] line is %s", line)
+		log.Debug(line)
 	}
 	return lines
 }
