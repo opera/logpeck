@@ -98,7 +98,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		}
 
 		if target == "" {
-			log.Error("[Record] Target is error: Target is null")
+			log.Debug("[Record] Target is error: Target is null")
 			return time.Now().Unix()
 		}
 		for i := 0; i < len(tags); i++ {
@@ -112,7 +112,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 
 		aggValue, ok := fields[target].(string)
 		if !ok {
-			log.Error("[Record] Fields[aggValue] format error: Fields[aggValue] must be a string")
+			log.Debugf("[Record] Fields[aggValue] format error: %v", fields[target])
 			return now
 		}
 		if _, ok := p.buckets[bucketName]; !ok {
