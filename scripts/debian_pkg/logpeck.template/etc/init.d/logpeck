@@ -145,12 +145,18 @@ case "$1" in
 	|| exit 0
 	;;
   restart)
-    echo -n "Restarting $DESC: "
+    echo -n "Stopping $DESC: "
     start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
-	[ -n "$DODTIME" ] && sleep $DODTIME
-	start-stop-daemon --start --quiet --pidfile $PIDFILE \
-		--startas $DAEMON -- $DAEMON_OPTS
-	echo "$NAME."
+		sleep 1
+	  echo -n "Starting $DESC: "
+	  $DAEMON $DAEMON_OPTS >$LOGDIR/$NAME.log 2>$LOGDIR/$NAME.err &
+	  echo $! > $PIDFILE
+	  test -f $PIDFILE || sleep 1
+    if running ; then
+        echo "$NAME."
+    else
+        echo "$NAME ERROR."
+    fi
 	;;
   status)
     echo -n "$LABEL is "
