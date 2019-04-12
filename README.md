@@ -6,6 +6,10 @@
 ## Objectives
 Logpeck aims to be an easy-to-use module that parsing and collecting contents from log file and posting into specific storage system, such as [ElasticSearch](https://github.com/elastic/elasticsearch), [Influxdb](https://github.com/influxdata/influxdb), [Kafka](https://github.com/apache/kafka). We want to control collection tasks remotely with HTTP API (**NONE configuration file**).
 
+<p float="left">
+  <img src="https://github.com/opera/resources/blob/master/logpeck/3.png" width="800" />
+</p>
+
 ## Getting Started
 
 ### Installation
