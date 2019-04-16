@@ -94,7 +94,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) {
 		timestampTmp, ok := fields[timestamp].(string)
 		if ok {
 			ts, err := strconv.ParseInt(timestampTmp, 10, 64)
-			if err != nil {
+			if err == nil {
 				p.recordTime = ts
 			} else {
 				log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestampTmp)

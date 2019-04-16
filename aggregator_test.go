@@ -1,9 +1,10 @@
 package logpeck
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"strconv"
 	"testing"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 func TestStartSend(*testing.T) {
@@ -25,12 +26,14 @@ func TestStartSend(*testing.T) {
 		Options:  options,
 	}
 	aggregator := NewAggregator(&aggregatorConfig)
+	aggregator.recordTime = 29
 
-	deadline := aggregator.IsDeadline(int64(29))
+	deadline := aggregator.IsDeadline()
 	if deadline == true {
 		panic(aggregator)
 	}
-	deadline = aggregator.IsDeadline(int64(31))
+	aggregator.recordTime = 31
+	deadline = aggregator.IsDeadline()
 	if deadline == false {
 		panic(aggregator)
 	}
@@ -59,13 +62,13 @@ func TestRecord(*testing.T) {
 	fields["upstream"] = "127.0.0.1"
 	fields["cost"] = "2"
 	fields["time"] = "15"
-	if aggregator.Record(fields) != int64(15) {
+	if aggregator.Record(fields); aggregator.recordTime != int64(15) {
 		panic(fields)
 	}
 	if aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][0] != 2 {
 		panic(aggregator)
 	}
-	if aggregator.Record(fields) != int64(15) {
+	if aggregator.Record(fields); aggregator.recordTime != int64(15) {
 		panic(fields)
 	}
 	if aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][0]+aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][1] != 4 {
@@ -100,7 +103,8 @@ func TestDump(*testing.T) {
 		fields["cost"] = strconv.Itoa(i)
 		aggregator.Record(fields)
 	}
-	dump := aggregator.Dump(int64(30))
+	aggregator.recordTime = int64(30)
+	dump := aggregator.Dump()
 	log.Infof("%v", dump)
 	a := dump["Test_getTest_cost,upstream=127.0.0.1"].(map[string]float64)
 	if a["cnt"] != 10 {
