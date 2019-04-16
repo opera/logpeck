@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"errors"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -48,6 +49,9 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 		sender:     sender,
 		aggregator: aggregator,
 	}
+	if aggregator.IsEnable() {
+		go task.tryDumpAggragator()
+	}
 	log.Infof("[PeckTask] new peck task %#v", task)
 	return task, nil
 }
@@ -87,12 +91,7 @@ func (p *PeckTask) Process(content string) {
 
 	fields, _ := p.extractor.Extract(content)
 	if p.aggregator.IsEnable() {
-		timestamp := p.aggregator.Record(fields)
-		deadline := p.aggregator.IsDeadline(timestamp)
-		if deadline {
-			fields = p.aggregator.Dump(timestamp)
-			p.sender.Send(fields)
-		}
+		p.aggregator.Record(fields)
 	} else {
 		p.sender.Send(fields)
 	}
@@ -108,4 +107,16 @@ func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 		return map[string]interface{}{}, err
 	}
 	return fields, nil
+}
+
+func (p *PeckTask) tryDumpAggragator() {
+	for {
+		deadline := p.aggregator.IsDeadline()
+		if deadline {
+			fields := p.aggregator.Dump()
+			p.sender.Send(fields)
+		}
+		time.Sleep(time.Second)
+	}
+
 }

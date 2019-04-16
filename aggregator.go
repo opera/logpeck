@@ -2,6 +2,7 @@ package logpeck
 
 import (
 	"strconv"
+	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -26,17 +27,20 @@ type AggregatorOption struct {
 
 // Aggregator .
 type Aggregator struct {
-	config   AggregatorConfig
-	buckets  map[string]map[string][]float64
-	postTime int64
+	config     AggregatorConfig
+	buckets    map[string]map[string][]float64
+	postTime   int64
+	recordTime int64
+	mu         sync.Mutex
 }
 
 // NewAggregator create aggregator
 func NewAggregator(config *AggregatorConfig) *Aggregator {
 	aggregator := &Aggregator{
-		config:   *config,
-		buckets:  make(map[string]map[string][]float64),
-		postTime: 0,
+		config:     *config,
+		buckets:    make(map[string]map[string][]float64),
+		postTime:   0,
+		recordTime: 0,
 	}
 	return aggregator
 }
@@ -51,9 +55,9 @@ func (p *Aggregator) IsEnable() bool {
 }
 
 // IsDeadline return true if reaching config.Interval
-func (p *Aggregator) IsDeadline(timestamp int64) bool {
+func (p *Aggregator) IsDeadline() bool {
 	interval := p.config.Interval
-	nowTime := getSampleTime(timestamp, interval)
+	nowTime := getSampleTime(p.recordTime, interval)
 	if p.postTime != nowTime {
 		return true
 	}
@@ -61,8 +65,10 @@ func (p *Aggregator) IsDeadline(timestamp int64) bool {
 }
 
 // Record fields
-func (p *Aggregator) Record(fields map[string]interface{}) int64 {
-	var now int64
+func (p *Aggregator) Record(fields map[string]interface{}) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.recordTime = time.Now().Unix()
 	for i := 0; i < len(p.config.Options); i++ {
 		tags := p.config.Options[i].Tags
 		target := p.config.Options[i].Target
@@ -78,7 +84,6 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			measurment, ok := fields[p.config.Options[i].Measurment].(string)
 			if !ok {
 				log.Debug("[Record] Fields[measurment] format error: Fields[measurment] must be a string")
-				now = time.Now().Unix()
 				continue
 			}
 			bucketTag += measurment + "_" + target
@@ -87,19 +92,18 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		//get time
 		var err error
 		timestampTmp, ok := fields[timestamp].(string)
-		if !ok {
-			now = time.Now().Unix()
-		} else {
-			now, err = strconv.ParseInt(timestampTmp, 10, 64)
+		if ok {
+			ts, err := strconv.ParseInt(timestampTmp, 10, 64)
 			if err != nil {
+				p.recordTime = ts
+			} else {
 				log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestampTmp)
-				now = time.Now().Unix()
 			}
 		}
 
 		if target == "" {
 			log.Debug("[Record] Target is error: Target is null")
-			return time.Now().Unix()
+			return
 		}
 		for i := 0; i < len(tags); i++ {
 			tagsTmp, ok := fields[tags[i]].(string)
@@ -113,7 +117,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 		aggValue, ok := fields[target].(string)
 		if !ok {
 			log.Debugf("[Record] Fields[aggValue] format error: %v", fields[target])
-			return now
+			return
 		}
 		if _, ok := p.buckets[bucketName]; !ok {
 			p.buckets[bucketName] = make(map[string][]float64)
@@ -126,7 +130,7 @@ func (p *Aggregator) Record(fields map[string]interface{}) int64 {
 			p.buckets[bucketName][bucketTag] = append(p.buckets[bucketName][bucketTag], aggValueFloat64)
 		}
 	}
-	return now
+	return
 }
 
 func quickSort(values []float64, left, right int64) {
@@ -212,7 +216,9 @@ func getAggregation(targetValue []float64, aggregations []string) map[string]flo
 }
 
 // Dump aggregation result
-func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
+func (p *Aggregator) Dump() map[string]interface{} {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	fields := map[string]interface{}{}
 	log.Debug("[Dump] bucket is", p.buckets)
 	//now := strconv.FormatInt(timestamp, 10)
@@ -228,8 +234,8 @@ func (p *Aggregator) Dump(timestamp int64) map[string]interface{} {
 			fields[bucketTag] = getAggregation(targetValue, aggregations)
 		}
 	}
-	fields["timestamp"] = timestamp
-	p.postTime = getSampleTime(timestamp, p.config.Interval)
+	fields["timestamp"] = p.recordTime
+	p.postTime = getSampleTime(p.recordTime, p.config.Interval)
 	p.buckets = map[string]map[string][]float64{}
 	log.Debug("[Dump] fields is", fields)
 	return fields
