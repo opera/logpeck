@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+/*
 func TestStartSend(*testing.T) {
 	log.Infof("[aggregator_test] TestStartSend")
 
@@ -28,6 +29,7 @@ func TestStartSend(*testing.T) {
 	aggregator := NewAggregator(&aggregatorConfig)
 	aggregator.recordTime = 29
 }
+*/
 
 func TestRecord(*testing.T) {
 	test := AggregatorOption{
@@ -52,15 +54,11 @@ func TestRecord(*testing.T) {
 	fields["upstream"] = "127.0.0.1"
 	fields["cost"] = "2"
 	fields["time"] = "15"
-	if aggregator.Record(fields); aggregator.recordTime != int64(15) {
-		panic(fields)
-	}
+	aggregator.Record(fields)
 	if aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][0] != 2 {
 		panic(aggregator)
 	}
-	if aggregator.Record(fields); aggregator.recordTime != int64(15) {
-		panic(fields)
-	}
+	aggregator.Record(fields)
 	if aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][0]+aggregator.buckets["Test_aaa_cost"]["Test_getTest_cost,upstream=127.0.0.1"][1] != 4 {
 		panic(aggregator)
 	}
@@ -93,7 +91,6 @@ func TestDump(*testing.T) {
 		fields["cost"] = strconv.Itoa(i)
 		aggregator.Record(fields)
 	}
-	aggregator.recordTime = int64(30)
 	dump := aggregator.Dump()
 	log.Infof("%v", dump)
 	a := dump["Test_getTest_cost,upstream=127.0.0.1"].(map[string]float64)
@@ -108,8 +105,5 @@ func TestDump(*testing.T) {
 	}
 	if a["p50"] != 4 {
 		panic(a)
-	}
-	if dump["timestamp"].(int64) != 30 {
-		panic(dump)
 	}
 }
