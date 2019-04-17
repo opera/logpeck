@@ -27,16 +27,6 @@ func TestStartSend(*testing.T) {
 	}
 	aggregator := NewAggregator(&aggregatorConfig)
 	aggregator.recordTime = 29
-
-	deadline := aggregator.IsDeadline()
-	if deadline == true {
-		panic(aggregator)
-	}
-	aggregator.recordTime = 31
-	deadline = aggregator.IsDeadline()
-	if deadline == false {
-		panic(aggregator)
-	}
 }
 
 func TestRecord(*testing.T) {
