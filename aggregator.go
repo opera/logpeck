@@ -29,7 +29,6 @@ type AggregatorOption struct {
 type Aggregator struct {
 	config     AggregatorConfig
 	buckets    map[string]map[string][]float64
-	postTime   int64
 	recordTime int64
 	mu         sync.Mutex
 }
@@ -39,29 +38,14 @@ func NewAggregator(config *AggregatorConfig) *Aggregator {
 	aggregator := &Aggregator{
 		config:     *config,
 		buckets:    make(map[string]map[string][]float64),
-		postTime:   0,
 		recordTime: 0,
 	}
 	return aggregator
 }
 
-func getSampleTime(ts int64, interval int64) int64 {
-	return ts / interval
-}
-
 // IsEnable return true if enable
 func (p *Aggregator) IsEnable() bool {
 	return p.config.Enable
-}
-
-// IsDeadline return true if reaching config.Interval
-func (p *Aggregator) IsDeadline() bool {
-	interval := p.config.Interval
-	nowTime := getSampleTime(p.recordTime, interval)
-	if p.postTime != nowTime {
-		return true
-	}
-	return false
 }
 
 // Record fields
@@ -235,7 +219,6 @@ func (p *Aggregator) Dump() map[string]interface{} {
 		}
 	}
 	fields["timestamp"] = p.recordTime
-	p.postTime = getSampleTime(p.recordTime, p.config.Interval)
 	p.buckets = map[string]map[string][]float64{}
 	log.Debug("[Dump] fields is", fields)
 	return fields

@@ -16,6 +16,7 @@ type PeckTask struct {
 	extractor  Extractor
 	sender     Sender
 	aggregator *Aggregator
+	postTime   int64
 }
 
 // NewPeckTask .
@@ -111,10 +112,12 @@ func (p *PeckTask) ProcessTest(content string) (map[string]interface{}, error) {
 
 func (p *PeckTask) tryDumpAggragator() {
 	for {
-		deadline := p.aggregator.IsDeadline()
-		if deadline {
+		now := time.Now().Unix()
+		interval := p.aggregator.config.Interval
+		if now/interval != p.postTime/interval {
 			fields := p.aggregator.Dump()
 			p.sender.Send(fields)
+			p.postTime = now
 		}
 		time.Sleep(time.Second)
 	}
