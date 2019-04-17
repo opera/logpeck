@@ -116,10 +116,12 @@ func (p *PeckTask) tryDumpAggragator() {
 		interval := p.aggregator.config.Interval
 		if now/interval != p.postTime/interval {
 			fields := p.aggregator.Dump()
-			p.sender.Send(fields)
+			if len(fields) > 0 {
+				p.sender.Send(fields)
+			}
 			p.postTime = now
 		}
-		time.Sleep(time.Second)
+		time.Sleep(100 * time.Millisecond)
 	}
 
 }
