@@ -117,6 +117,7 @@ func (p *PeckTask) tryDumpAggragator() {
 		if now/interval != p.postTime/interval {
 			fields := p.aggregator.Dump()
 			if len(fields) > 0 {
+				fields["timestamp"] = now
 				p.sender.Send(fields)
 			}
 			p.postTime = now

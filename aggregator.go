@@ -3,7 +3,6 @@ package logpeck
 import (
 	"strconv"
 	"sync"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -27,18 +26,16 @@ type AggregatorOption struct {
 
 // Aggregator .
 type Aggregator struct {
-	config     AggregatorConfig
-	buckets    map[string]map[string][]float64
-	recordTime int64
-	mu         sync.Mutex
+	config  AggregatorConfig
+	buckets map[string]map[string][]float64
+	mu      sync.Mutex
 }
 
 // NewAggregator create aggregator
 func NewAggregator(config *AggregatorConfig) *Aggregator {
 	aggregator := &Aggregator{
-		config:     *config,
-		buckets:    make(map[string]map[string][]float64),
-		recordTime: 0,
+		config:  *config,
+		buckets: make(map[string]map[string][]float64),
 	}
 	return aggregator
 }
@@ -52,11 +49,10 @@ func (p *Aggregator) IsEnable() bool {
 func (p *Aggregator) Record(fields map[string]interface{}) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.recordTime = time.Now().Unix()
 	for i := 0; i < len(p.config.Options); i++ {
 		tags := p.config.Options[i].Tags
 		target := p.config.Options[i].Target
-		timestamp := p.config.Options[i].Timestamp
+		//timestamp := p.config.Options[i].Timestamp
 		bucketName := p.config.Options[i].PreMeasurment + "_" + p.config.Options[i].Measurment + "_" + target
 		bucketTag := ""
 		if p.config.Options[i].PreMeasurment != "" {
@@ -73,17 +69,17 @@ func (p *Aggregator) Record(fields map[string]interface{}) {
 			bucketTag += measurment + "_" + target
 		}
 
-		//get time
-		var err error
-		timestampTmp, ok := fields[timestamp].(string)
-		if ok {
-			ts, err := strconv.ParseInt(timestampTmp, 10, 64)
-			if err == nil {
-				p.recordTime = ts
-			} else {
-				log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestampTmp)
+		/*
+			//get time
+			var err error
+			timestampTmp, ok := fields[timestamp].(string)
+			if ok {
+				ts, err := strconv.ParseInt(timestampTmp, 10, 64)
+				if err == nil {
+					log.Debugf("[Record] timestamp:%v can't use strconv.ParseInt", timestampTmp)
+				}
 			}
-		}
+		*/
 
 		if target == "" {
 			log.Debug("[Record] Target is error: Target is null")
@@ -218,7 +214,6 @@ func (p *Aggregator) Dump() map[string]interface{} {
 			fields[bucketTag] = getAggregation(targetValue, aggregations)
 		}
 	}
-	fields["timestamp"] = p.recordTime
 	p.buckets = map[string]map[string][]float64{}
 	log.Debug("[Dump] fields is", fields)
 	return fields
