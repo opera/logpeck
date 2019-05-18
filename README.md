@@ -30,11 +30,6 @@ Logpeck aims to be an easy-to-use module that parsing and collecting contents fr
 
 We highly recommend to install [**logpeck-kibana-plugin**](https://github.com/opera/logpeck-kibana-plugin) into [Kibana](https://github.com/elastic/kibana). With this plugin, we can control all machines and collection tasks conveniently. At the same time, we can take advantage of powerful searching and visualization features of Kibana.
 
-<p float="left">
-  <img src="https://github.com/opera/resources/blob/master/logpeck/1.png" width="400" />
-  <img src="https://github.com/opera/resources/blob/master/logpeck/2.png" width="400" /> 
-</p>
-
 ### RESTful API
 
 We can also control collection tasks with RESTful API. [See more](doc/restful.md)
