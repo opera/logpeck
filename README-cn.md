@@ -33,11 +33,6 @@ Logpeck尝试用最简洁灵活的方式收集并解析日志文件，将数据�
 
 [**logpeck-kibana-plugin**](https://github.com/opera/logpeck-kibana-plugin) 是默认提供的Logpeck可视化界面，通过此插件可以使用Logpeck的全部功能，并提供任务及集群管理功能，推荐使用。
 
-<p float="left">
-  <img src="https://github.com/opera/resources/blob/master/logpeck/1.png" width="400" />
-  <img src="https://github.com/opera/resources/blob/master/logpeck/2.png" width="400" /> 
-</p>
-
 ## 文档
 
  * [HTTP API协议](doc/task_config.md)
