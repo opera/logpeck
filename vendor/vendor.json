@@ -150,6 +150,12 @@
 			"path": "github.com/yuin/gopher-lua/pm",
 			"revision": "7d7bc8747e3f614c5c587729a341fe7d8903cdb8",
 			"revisionTime": "2018-01-22T00:52:51Z"
+		},
+		{
+			"checksumSHA1": "Njx9TJ+KjMGN1KdEuCGZRfu+qgI=",
+			"path": "layeh.com/gopher-json",
+			"revision": "97fed8db84274c421dbfffbb28ec859901556b97",
+			"revisionTime": "2019-01-14T02:42:13Z"
 		}
 	],
 	"rootPath": "github.com/opera/logpeck"
