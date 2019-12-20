@@ -54,19 +54,19 @@ func NewPeckTask(c *PeckTaskConfig, s *PeckTaskStat) (*PeckTask, error) {
 
 // Start .
 func (p *PeckTask) Start() error {
-	p.Stat.Stop = false
 	if err := p.sender.Start(); err != nil {
 		return err
 	}
+	p.Stat.Stop = false
 	return nil
 }
 
 // Stop .
 func (p *PeckTask) Stop() error {
-	p.Stat.Stop = true
 	if err := p.sender.Stop(); err != nil {
 		return err
 	}
+	p.Stat.Stop = true
 	return nil
 }
 
