@@ -77,7 +77,10 @@ func (je JSONExtractor) Extract(content string) (map[string]interface{}, error) 
 				}
 				break
 			}
-			tmp = tmp[key[i]].(map[string]interface{})
+			var ok bool
+			if tmp, ok = tmp[key[i]].(map[string]interface{}); !ok {
+				break
+			}
 		}
 		fields[field] = value
 	}
